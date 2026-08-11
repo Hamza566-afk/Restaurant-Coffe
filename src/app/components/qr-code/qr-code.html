@@ -1,0 +1,157 @@
+<div class="qr-page">
+  <!-- Header -->
+  <div class="section-header">
+    <div>
+      <h2>{{ t('qr.title') }}</h2>
+      <p class="text-muted">{{ t('qr.sub') }}</p>
+    </div>
+  </div>
+
+  <!-- التنبيهات -->
+  @if (successMessage()) {
+    <div class="alert alert-success" style="color: var(--color-emerald-700); background: var(--color-emerald-50); padding: 12px; border-radius: 8px; margin-bottom: 20px; font-weight: 600;">
+      <i class="fas fa-check-circle"></i> {{ successMessage() }}
+    </div>
+  }
+  @if (errorMessage()) {
+    <div class="alert alert-danger" style="color: #dc3545; background: #fff5f5; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-weight: 600;">
+      <i class="fas fa-exclamation-circle"></i> {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- ➕ لوحة إضافة وتوليد الطاولات -->
+  <div class="setup-card" style="background: white; border: 1px solid var(--color-slate-200); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 28px;">
+    <div class="usage-header" style="margin-bottom: 16px;">
+      <i class="fas fa-plus-circle" style="color: var(--color-emerald-600); font-size: 1.3rem;"></i>
+      <h3 style="font-size: 1.05rem; font-weight: 700; display: inline-block; margin-inline-start: 8px;">{{ t('qr.generateTitle') }}</h3>
+    </div>
+    
+    <div class="mode-selector" style="display: flex; gap: 20px; margin-bottom: 20px;">
+      <label style="cursor: pointer; font-size: 0.9rem; font-weight: 600;">
+        <input type="radio" name="addMode" [checked]="addMode() === 'bulk'" (change)="addMode.set('bulk')"> {{ t('qr.radio.auto') }}
+      </label>
+      <label style="cursor: pointer; font-size: 0.9rem; font-weight: 600;">
+        <input type="radio" name="addMode" [checked]="addMode() === 'single'" (change)="addMode.set('single')"> {{ t('qr.radio.custom') }}
+      </label>
+    </div>
+
+    <div class="form-group" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      @if (addMode() === 'bulk') {
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 0.8rem; color: var(--color-slate-400);">{{ t('qr.inputLabel') }}</span>
+          <input type="number" class="form-control" [value]="numberOfTables()" (input)="numberOfTables.set($any($event.target).value)" [placeholder]="t('qr.inputPlaceholder')" min="1" style="width: 150px; padding: 8px; border: 1px solid var(--color-slate-200); border-radius: var(--radius-sm);">
+        </div>
+      } @else {
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 0.8rem; color: var(--color-slate-400);">{{ t('qr.singleLabel') }}</span>
+          <input type="number" class="form-control" [value]="specificTableNumber()" (input)="specificTableNumber.set($any($event.target).value)" [placeholder]="t('qr.singlePlaceholder')" min="1" style="width: 150px; padding: 8px; border: 1px solid var(--color-slate-200); border-radius: var(--radius-sm);">
+        </div>
+      }
+
+      <button class="btn btn-primary" (click)="addTables()" style="margin-top: 18px;">
+        <i class="fas fa-magic"></i> {{ t('qr.submitBtn') }}
+      </button>
+    </div>
+  </div>
+
+  <!-- 📋 شبكة الطاولات الديناميكية المزدوجة الـ QR -->
+  <div class="qr-grid">
+    @for (table of tables(); track table.id) {
+      <div class="qr-card">
+        <div class="qr-card-header">
+          <div class="qr-card-icon menu">
+            <i class="fas fa-chair"></i>
+          </div>
+          <div>
+            <h3>{{ t('qr.card.title') }} {{ table.table_number }}</h3>
+            <p class="text-muted">{{ t('qr.card.sub') }}</p>
+          </div>
+        </div>
+
+        <!-- عرض الـ QR Codes جنباً إلى جنب للعميل والسرور -->
+        <div style="display: flex; gap: 16px; padding: 20px 20px 10px;">
+          
+          <!-- 📱 QR العميل (المنيو) -->
+          <div class="qr-display" style="flex: 1; padding: 0; display: flex; flex-direction: column; align-items: center;">
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-emerald-600); margin-bottom: 6px;">{{ t('qr.card.clientMenu') }}</span>
+            
+            <div id="qr-client-{{ table.id }}" class="qr-image-wrapper" style="width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; background: #fafafa;">
+              <qrcode 
+                [qrdata]="getCustomerMenuUrl(table.table_number)" 
+                [width]="130" 
+                [errorCorrectionLevel]="'M'">
+              </qrcode>
+            </div>
+            
+            <div class="qr-url-display" style="margin-top: 8px; width: 100%;">
+              <button class="btn btn-primary" (click)="downloadQr(table, 'client')" style="width: 100%; justify-content: center; font-size: 0.75rem; padding: 6px;">
+                <i class="fas fa-download"></i> {{ t('qr.card.download') }}
+              </button>
+            </div>
+          </div>
+
+          <!-- 💼 QR السرور (الخلاص) -->
+          <div class="qr-display" style="flex: 1; padding: 0; display: flex; flex-direction: column; align-items: center;">
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-blue-600); margin-bottom: 6px;">{{ t('qr.card.waiterCall') }}</span>
+            
+            <div id="qr-server-{{ table.id }}" class="qr-image-wrapper" style="width: 100%; height: 150px; border-color: var(--color-blue-200); display: flex; align-items: center; justify-content: center; background: #fafafa;">
+              <qrcode 
+                [qrdata]="generateDynamicQrUrl(table, 'server')" 
+                [width]="130" 
+                [errorCorrectionLevel]="'M'">
+              </qrcode>
+            </div>
+            
+            <div class="qr-url-display" style="margin-top: 8px; width: 100%;">
+              <button class="btn btn-primary" (click)="downloadQr(table, 'server')" style="width: 100%; justify-content: center; font-size: 0.75rem; padding: 6px; background: linear-gradient(135deg, var(--color-blue-500), var(--color-blue-700));">
+                <i class="fas fa-download"></i> {{ t('qr.card.download') }}
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="qr-card-footer">
+          <div class="qr-info" style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+            <span class="text-muted" style="font-size: 0.75rem;">{{ t('qr.footerText') }}</span>
+            <button class="btn-icon toggle-btn" (click)="deleteTable(table.id)" [title]="t('qr.deleteTitle')" style="border-color: #ffc9c9; color: #dc3545; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: none; cursor: pointer;">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (tables().length === 0) {
+    <div style="text-align: center; padding: 40px; color: var(--color-slate-400); background: white; border: 1px dashed var(--color-slate-200); border-radius: var(--radius-lg); margin-bottom: 28px;">
+      <i class="fas fa-qrcode" style="font-size: 3rem; margin-bottom: 10px;"></i>
+      <p style="font-weight: 600;">{{ t('qr.empty') }}</p>
+    </div>
+  }
+
+  <!-- Usage Instructions -->
+  <div class="usage-card">
+    <div class="usage-header">
+      <i class="fas fa-lightbulb"></i>
+      <h3>{{ t('qr.howTitle') }}</h3>
+    </div>
+    <div class="usage-steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h4>{{ t('qr.card.clientMenu') }}</h4>
+          <p>{{ t('qr.step1Desc') }}</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h4>{{ t('qr.step2Title') }}</h4>
+          <p>{{ t('qr.step2Desc') }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

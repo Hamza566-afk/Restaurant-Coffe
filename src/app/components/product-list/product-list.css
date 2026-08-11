@@ -1,0 +1,625 @@
+/* ===== Products Page ===== */
+.products-page {
+  padding: 28px 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+  direction: rtl; /* دعم كامل للغة العربية والاتجاه الاحترافي */
+}
+
+/* ===== 🚀 الـ Header المطور (أزرار ملمومة وبجنب بعضها) ===== */
+.section-header-modern {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.header-title-block h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-slate-800);
+  margin: 0 0 4px 0;
+}
+
+.header-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ستايل مدمج واحترافي لـ إضافة تصنيف سريع */
+.add-category-inline-modern {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 4px 4px 4px 6px;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--color-slate-200);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  transition: border-color 0.2s;
+}
+
+.add-category-inline-modern:focus-within {
+  border-color: var(--color-blue-400);
+}
+
+.add-category-inline-modern .form-control-sm {
+  border: none;
+  outline: none;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  color: var(--color-slate-700);
+  width: 190px;
+  background: transparent;
+}
+
+/* زر إضافة تصنيف الصغير والمحكم بجنب الحقل */
+.btn-add-cat {
+  background: var(--color-blue-50);
+  color: var(--color-blue-700);
+  border: none;
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-add-cat:hover:not(:disabled) {
+  background: var(--color-blue-100);
+  color: var(--color-blue-800);
+}
+
+.btn-add-cat:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--color-slate-50);
+  color: var(--color-slate-400);
+}
+
+/* زر إضافة منتج الرئيسي والبارز بتصميم عصري وناعم */
+.btn-primary-modern {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 11px 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+  transition: all 0.2s;
+}
+
+.btn-primary-modern:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(16, 185, 129, 0.3);
+  filter: brightness(1.05);
+}
+
+/* ===== Filters Bar المطور والمنظف ===== */
+.filters-bar-modern {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;        /* 🆕 take available width */
+  min-width: 0;   /* 🆕 allow inner horizontal scroll */
+}
+.filter-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-slate-500);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* 🆕 Fixed horizontal scroll — new categories never push Search/Clear All down */
+.category-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;        /* single row, enforce horizontal scroll */
+  overflow-x: auto;         /* scroll when overflowing */
+  scrollbar-width: thin;    /* slim scrollbar (Firefox) */
+  max-width: 100%;
+  padding-bottom: 4px;      /* breathing room for the scrollbar */
+  -webkit-overflow-scrolling: touch;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1.5px solid var(--color-slate-200);
+  border-radius: var(--radius-lg);
+  background: white;
+  color: var(--color-slate-600);
+  font-family: var(--font-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.chip:hover {
+  border-color: var(--color-slate-300);
+  background: var(--color-slate-50);
+}
+.chip.active {
+  background: var(--color-emerald-50);
+  border-color: var(--color-emerald-400);
+  color: var(--color-emerald-700);
+}
+.chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: var(--color-slate-100);
+  color: var(--color-slate-500);
+}
+.chip.active .chip-count {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--color-emerald-600);
+}
+
+/* ===== 🆕 Category Chip with Inline Edit/Delete Actions ===== */
+.chip-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  margin-left: 4px;
+}
+
+/* 🆕 Tiny icons matching a browser tab close (x) button */
+.chip-action {
+  width: 14px;
+  height: 14px;
+  border: none;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.625rem; /* ~10px */
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-slate-400);
+  opacity: 0.55;
+  transition: color 0.15s, opacity 0.15s, background 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+.chip-action i {
+  font-size: 0.625rem; /* ~10px */
+  line-height: 1;
+  stroke-width: 1.5;   /* lighter stroke impression */
+}
+.chip-action.edit:hover {
+  color: #10b981; /* emerald/primary */
+  background: transparent;
+  opacity: 1;
+}
+.chip-action.delete:hover {
+  color: #ef4444; /* subtle red */
+  background: transparent;
+  opacity: 1;
+}
+
+/* ===== 🆕 Clear All Button (Modern Soft Danger) ===== */
+.btn-clear-all {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;           /* 🆕 strictly matches the Search input height */
+  padding: 0 16px;        /* vertical centering via line-height, horizontal only */
+  box-sizing: border-box;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 8px;     /* 🆕 same radius as the search field */
+  border: 1px solid #fecaca;
+  background: #fef2f2;    /* very soft red */
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  line-height: 1;
+}
+.btn-clear-all:hover:not(:disabled) {
+  background: #fee2e2;
+  color: #dc2626;
+}
+.btn-clear-all:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+/* ===== 🆕 Filters Right (Clear All + Search) alignment ===== */
+.filter-right {
+  display: flex;
+  align-items: center;     /* 🆕 vertical center → button & input line up perfectly */
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* ===== 🆕 Toast Notification ===== */
+.toast-notification {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 22px;
+  border-radius: var(--radius-lg);
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  animation: toast-in 0.3s ease;
+  max-width: 90%;
+}
+.toast-success {
+  background: #ecfdf5;
+  color: var(--color-emerald-700);
+  border: 1px solid var(--color-emerald-300);
+}
+.toast-error {
+  background: #fef2f2;
+  color: var(--color-danger);
+  border: 1px solid #fecaca;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.filter-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+.filter-search i {
+  position: absolute;
+  right: 12px;
+  color: var(--color-slate-400);
+  font-size: 0.85rem;
+}
+.filter-search input {
+  padding-right: 36px;
+  height: 40px;            /* 🆕 match the Clear All button height */
+  box-sizing: border-box;
+  border-radius: 8px;      /* 🆕 same radius as the Clear All button */
+}
+
+/* ===== Table Card ===== */
+.table-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-slate-200);
+  overflow: hidden;
+}
+
+/* ===== Product Thumbnail ===== */
+.product-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.product-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--color-slate-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-slate-400);
+  font-size: 1.1rem;
+}
+
+/* ===== Product Name Cell ===== */
+.product-name-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.product-name {
+  font-weight: 600;
+  color: var(--color-slate-800);
+}
+.product-desc {
+  font-size: 0.75rem;
+  color: var(--color-slate-400);
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== 🆕 Highlight Badges (Hero Crown + Featured Star) ===== */
+.product-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.highlight-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+.badge-hero {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.3);
+}
+.badge-featured {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: white;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+}
+
+/* ===== Category Tag ===== */
+.category-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  background: var(--color-blue-50);
+  color: var(--color-blue-700);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* ===== Product Price ===== */
+.product-price {
+  font-family: var(--font-numeric);
+  font-weight: 700;
+  color: var(--color-slate-900);
+  font-size: 0.95rem;
+}
+
+/* ===== 🆕 Product Sizes Cell (table display) ===== */
+.product-sizes-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.size-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: var(--color-emerald-50);
+  color: var(--color-emerald-700);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  width: fit-content;
+}
+
+/* ===== 🆕 Sizes Editor (modal dynamic rows) ===== */
+.sizes-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--color-slate-50);
+  border: 1px solid var(--color-slate-200);
+  border-radius: var(--radius-md);
+}
+.size-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.size-row .form-control {
+  margin: 0;
+}
+.size-row .size-price {
+  max-width: 120px;
+}
+.size-row .btn-icon.delete {
+  flex-shrink: 0;
+}
+
+/* 🆕 Add-size button */
+.btn-add-size {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1.5px dashed var(--color-emerald-400);
+  background: var(--color-emerald-50);
+  color: var(--color-emerald-700);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+  width: fit-content;
+}
+.btn-add-size:hover {
+  background: var(--color-emerald-100);
+  border-color: var(--color-emerald-500);
+}
+
+/* ===== Action Buttons ===== */
+.action-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-icon {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+  background: transparent;
+}
+.btn-icon.edit {
+  color: var(--color-blue-500);
+}
+.btn-icon.edit:hover {
+  background: var(--color-blue-50);
+}
+.btn-icon.delete {
+  color: var(--color-danger);
+}
+.btn-icon.delete:hover {
+  background: #fce4ec;
+}
+
+/* ===== Empty State ===== */
+.empty-cell {
+  text-align: center;
+  padding: 40px 20px !important;
+}
+
+.empty-state.small {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.empty-state.small i {
+  font-size: 2rem;
+  color: var(--color-slate-300);
+}
+.empty-state.small p {
+  color: var(--color-slate-400);
+  font-size: 0.85rem;
+}
+
+/* ===== Modal Form ===== */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+.form-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-slate-700);
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 6px;
+}
+.checkbox-group span {
+  font-size: 0.85rem;
+  color: var(--color-slate-600);
+}
+
+.file-upload {
+  border: 2px dashed var(--color-slate-300);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.file-upload:hover {
+  border-color: var(--color-emerald-400);
+  background: var(--color-emerald-50);
+}
+.file-upload i {
+  font-size: 1.5rem;
+  color: var(--color-slate-400);
+}
+.file-upload span {
+  font-size: 0.85rem;
+  color: var(--color-slate-600);
+}
+.file-hint {
+  font-size: 0.7rem !important;
+  color: var(--color-slate-400) !important;
+}
+
+/* ===== Loading ===== */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: var(--color-slate-400);
+}
+
+/* ===== Responsive (التجاوب مع الشاشات المختلفة) ===== */
+@media (max-width: 991px) {
+  .section-header-modern { flex-direction: column; align-items: flex-start; }
+  .header-actions-group { width: 100%; justify-content: flex-start; gap: 12px; }
+  .add-category-inline-modern { flex-grow: 1; }
+  .add-category-inline-modern .form-control-sm { width: 100%; }
+  .filters-bar-modern { flex-direction: column; align-items: stretch; gap: 12px; }
+  .filter-group { flex: none; width: 100%; }  /* reset in stacked/mobile layout */
+  .filter-right { justify-content: flex-start; flex-wrap: wrap; }
+  .filter-search { flex: 1; min-width: 200px; }
+  .filter-search input { width: 100% !important; }
+}
+
+@media (max-width: 768px) {
+  .products-page { padding: 16px; }
+  .form-grid { grid-template-columns: 1fr; }
+}

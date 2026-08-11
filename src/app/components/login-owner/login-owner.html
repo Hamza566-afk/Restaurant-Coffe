@@ -1,0 +1,8 @@
+<div class="auth-box">
+  <h2>دخول صاحب المحل</h2>
+  <form (submit)="onLogin()">
+    <input [(ngModel)]="credentials.email" name="email" type="email" placeholder="البريد الإلكتروني" required>
+    <input [(ngModel)]="credentials.password" name="password" type="password" placeholder="كلمة السر" required>
+    <button type="submit">تسجيل الدخول</button>
+  </form>
+</div>

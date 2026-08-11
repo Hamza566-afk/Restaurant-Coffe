@@ -1,0 +1,30 @@
+<div class="waiting-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; background: #f8f9fa; font-family: 'Cairo', sans-serif; padding: 20px;">
+  
+  <div class="card" style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 500px; width: 100%;">
+    
+    <!-- أيقونة الساعة أو الانتظار -->
+    <div class="icon-wrapper" style="font-size: 64px; color: #ffc107; margin-bottom: 20px; animation: pulse 2s infinite;">
+      <i class="fas fa-clock-rotate-left"></i>
+    </div>
+    
+    <h2 style="color: #333; margin-bottom: 15px; font-weight: 700;">مرحباً بك في Cafe SaaS!</h2>
+    
+    <p style="color: #666; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+       حسابك الآن قيد المراجعة من قبل **فريق الإدارة**. 
+      <br>
+      سيتم تفعيل متجرك في أقرب وقت ممكن، يرجى الانتظار أو الاتصال بالدعم الفني.
+    </p>
+
+    <!-- زر لإعادة التثبت أو تسجيل الخروج -->
+    <div style="display: flex; gap: 10px; justify-content: center;">
+      <button class="btn btn-primary" (click)="checkStatus()" style="background: #0d6efd; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
+        <i class="fas fa-sync"></i> تحديث الحالة
+      </button>
+      
+      <button class="btn btn-outline" (click)="logout()" style="background: transparent; color: #6c757d; border: 1px solid #6c757d; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
+        تسجيل الخروج
+      </button>
+    </div>
+
+  </div>
+</div>

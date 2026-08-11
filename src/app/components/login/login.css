@@ -1,0 +1,77 @@
+/* 1. إعدادات الصفحة الأساسية - تجعل المحتوى في السنتر تماماً */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  height: 100vh;
+  display: flex;
+  justify-content: center; /* يسنتر أفقياً */
+  align-items: center;     /* يسنتر عمودياً */
+}
+
+/* 2. الحاوية الرئيسية للـ Login */
+.login-container {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  width: 90%;          /* مرن في الشاشات الصغيرة */
+  max-width: 400px;    /* أقصى عرض في الشاشات الكبيرة */
+  text-align: center;
+  box-sizing: border-box;
+  margin: 70px 450px;
+}
+
+/* 3. العناوين والنصوص */
+h2 { 
+  color: #333; 
+  margin-bottom: 5px; 
+  font-size: 24px; 
+}
+p { 
+  color: #888; 
+  margin-bottom: 30px; 
+  font-size: 14px; 
+}
+
+/* 4. تنسيق حقول الإدخال */
+.input-group {
+  margin-bottom: 20px;
+  text-align: right; /* لجعل النص يكتب من اليمين لليسار */
+}
+
+.input-group input {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #eee;
+  border-radius: 12px;
+  box-sizing: border-box; /* يضمن عدم خروج الـ padding عن الحجم */
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+  border-color: #764ba2;
+  outline: none;
+  box-shadow: 0 0 8px rgba(118, 75, 162, 0.2);
+}
+
+/* 5. تنسيق زر الدخول */
+button {
+  width: 100%;
+  padding: 15px;
+  background-color: #764ba2;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.3s;
+}
+
+button:hover {
+  background-color: #5a377d;
+  transform: translateY(-2px); /* حركة خفيفة عند الوقوف بالفأرة */
+}

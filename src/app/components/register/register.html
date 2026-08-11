@@ -1,0 +1,22 @@
+<div class="auth-box">
+  <h2>إنشاء حساب</h2>
+  <form (submit)="onRegister()">
+    <input [(ngModel)]="userData.name" name="name" type="text" placeholder="الاسم" required>
+    <input [(ngModel)]="userData.email" name="email" type="email" placeholder="البريد الإلكتروني" required>
+
+    <input [(ngModel)]="userData.password" name="password" type="password" placeholder="كلمة السر" required>
+    <input [(ngModel)]="userData.password_confirmation" name="password_confirmation" type="password" placeholder="تأكيد كلمة السر" required>
+
+<!-- Shop fields (must match Laravel validation) -->
+    <input [(ngModel)]="userData.shop_name" name="shop_name" type="text" placeholder="اسم المحل" required>
+    <input [(ngModel)]="userData.subdomain" name="subdomain" type="text" placeholder="Subdomain (مثال: cafe-hamza)" required>
+
+    <!-- 🚀 Optional logo upload -->
+    <label class="file-field">
+      <span>Logo du café (optionnel)</span>
+      <input type="file" name="logo" accept="image/*" (change)="onFileSelected($event)">
+    </label>
+
+    <button type="submit">تسجيل</button>
+  </form>
+</div>

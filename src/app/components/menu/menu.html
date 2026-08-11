@@ -1,0 +1,209 @@
+<div class="app-mobile-container">
+
+  <!-- 🛑 1. VIEW: MAIN MENU -->
+  <div class="view-panel main-view" *ngIf="currentView === 'main' && !loading && !errorMessage">
+<!-- Header: Shop Logo + Name strictly TOP-LEFT (LTR), no cart icon -->
+    <header class="app-header">
+      <div class="shop-brand">
+        <div class="shop-logo">
+          <!-- Custom logo if present, else default green coffee cup logo asset -->
+          <img [src]="getLogoUrl()" alt="logo" class="shop-logo-img" (error)="onLogoError()" *ngIf="!logoError" />
+          <div *ngIf="logoError" class="shop-logo-fallback">
+            <i class="fas fa-mug-saucer"></i>
+          </div>
+        </div>
+        <div class="shop-name-wrap">
+          <span class="shop-greeting">Bonjour chez</span>
+          <span class="shop-name">{{ getShopName() }}</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Search Bar -->
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" [(ngModel)]="searchQuery" placeholder="إبحث عن قهوتك المفضلة...">
+    </div>
+
+    <!-- Categories Tab -->
+    <div class="categories-tabs" *ngIf="menuData?.data?.categories?.length > 0">
+      <button class="category-btn" [class.active]="selectedCategoryId === null" (click)="selectedCategoryId = null">ALL</button>
+      <button class="category-btn" *ngFor="let cat of menuData.data.categories" [class.active]="selectedCategoryId === cat.id" (click)="selectedCategoryId = cat.id">
+        {{ cat.name }}
+      </button>
+    </div>
+
+    <!-- Hero Featured Banner (Top Product) — shown only in the full menu view -->
+    <div class="hero-banner" *ngIf="!showFavorites && getFeaturedProduct()">
+      <div class="hero-badge"><i class="fas fa-crown"></i> </div>
+      <div class="hero-img-wrap">
+        <img [src]="getImageUrl(getFeaturedProduct().image_path)" [alt]="getFeaturedProduct().name" class="hero-img">
+      </div>
+      <div class="hero-info">
+        <h3 class="hero-title">{{ getFeaturedProduct().name }}</h3>
+        <p class="hero-desc" *ngIf="getFeaturedProduct().description && getFeaturedProduct().description.trim() !== ''">
+          {{ getFeaturedProduct().description }}
+        </p>
+        <div class="hero-footer">
+          <span class="hero-price">DT {{ getFeaturedProduct().price }}</span>
+          <button class="hero-add-btn" (click)="quickAddToCart(getFeaturedProduct())"><i class="fas fa-plus"></i> إضافة</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Favorites section title -->
+    <div class="favorites-title" *ngIf="showFavorites">
+      <i class="fas fa-star"></i> المفضلة / الأكثر طلباً
+    </div>
+
+    <!-- Products Grid (2 Columns) -->
+    <div class="products-grid">
+      <div class="product-card" *ngFor="let product of getFilteredProducts()" (click)="openDetails(product)">
+        <div class="card-img-wrapper">
+          <img [src]="getImageUrl(product.image_path)" alt="coffee">
+          <span class="rating">⭐ 4.5</span>
+        </div>
+        <div class="card-info">
+          <h4>{{ product.name }}</h4>
+          <!-- Description ONLY if present (no placeholder) -->
+          <p class="short-desc" *ngIf="product.description && product.description.trim() !== ''">{{ product.description }}</p>
+          <div class="card-footer">
+            <span class="price">DT {{ product.price }}</span>
+            <button class="add-btn">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-msg" *ngIf="getFilteredProducts().length === 0">لم نجد أي منتج يطابق بحثك.</div>
+  </div>
+
+  <!-- 🛑 2. VIEW: PRODUCT DETAILS -->
+  <div class="view-panel details-view" *ngIf="currentView === 'details' && selectedProduct">
+    <div class="back-nav" (click)="currentView = 'main'">⟨ العودة للمنيو</div>
+
+    <div class="details-hero-img">
+      <img [src]="getImageUrl(selectedProduct.image_path)" alt="coffee">
+    </div>
+
+    <div class="details-body">
+      <div class="details-header">
+        <div>
+          <h2>{{ selectedProduct.name }}</h2>
+          <!-- No hardcoded sub-text: only show rating -->
+          <div class="details-rating">⭐ 4.5</div>
+        </div>
+      </div>
+
+      <!-- Description ONLY if present (no placeholder) -->
+      <p class="full-description" *ngIf="selectedProduct.description && selectedProduct.description.trim() !== ''">
+        {{ selectedProduct.description }}
+      </p>
+
+      <!-- Sizes Selection (only when the product has size variants) -->
+      <div class="size-section" *ngIf="hasSizes">
+        <h4>الحجم (Size)</h4>
+        <div class="size-options">
+          <button
+            *ngFor="let size of getProductSizes()"
+            [class.active]="selectedSize === size.size_name"
+            (click)="selectSize(size)">
+            <span class="size-name">{{ size.size_name }}</span>
+            <span class="size-price">DT {{ size.price }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quantity Counter -->
+      <div class="qty-section">
+        <h4>الكمية</h4>
+        <div class="counter">
+          <button (click)="detailQuantity = detailQuantity > 1 ? detailQuantity - 1 : 1">-</button>
+          <span>{{ detailQuantity }}</span>
+          <button (click)="detailQuantity = detailQuantity + 1">+</button>
+        </div>
+      </div>
+
+      <!-- Footer Action -->
+      <div class="action-footer">
+        <div class="price-box">
+          <span>السعر الإجمالي</span>
+          <h3>DT {{ getSelectedTotalPrice() | number:'1.2-2' }}</h3>
+        </div>
+        <button class="primary-btn" (click)="addToCart()">إضافة إلى السلة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🛑 3. VIEW: REVIEW ORDER / CART -->
+  <div class="view-panel cart-view" *ngIf="currentView === 'cart'">
+    <div class="back-nav" (click)="currentView = 'main'">⟨ إضافة المزيد من المنتجات</div>
+    <h2 class="view-title">مراجعة الطلب (Review Order)</h2>
+
+    <div class="cart-items-list" *ngIf="cart.length > 0">
+      <div class="cart-item-card" *ngFor="let item of cart; let i = index">
+        <img [src]="getImageUrl(item.product.image_path)" alt="coffee">
+        <div class="item-meta">
+          <h4>{{ item.product.name }}</h4>
+          <p *ngIf="item.size">الحجم: {{ item.size }}</p>
+          <span class="item-price">DT {{ item.totalPrice | number:'1.2-2' }}</span>
+        </div>
+        <div class="item-counter">
+          <button (click)="updateCartQuantity(i, -1)">-</button>
+          <span>{{ item.quantity }}</span>
+          <button (click)="updateCartQuantity(i, 1)">+</button>
+        </div>
+      </div>
+
+      <!-- Invoice Details -->
+      <div class="invoice-box">
+        <div class="invoice-row"><span>المجموع الفرعي:</span> <strong>DT {{ getCartTotal() | number:'1.2-2' }}</strong></div>
+        <div class="invoice-row"><span>رسوم الخدمة / الطاولة:</span> <strong>DT 0.00</strong></div>
+        <hr>
+        <div class="invoice-row total"><span>الحساب الإجمالي:</span> <strong>DT {{ getCartTotal() | number:'1.2-2' }}</strong></div>
+      </div>
+
+      <div class="action-footer">
+        <button class="primary-btn block-btn" (click)="checkout()">تأكيد وإرسال الطلب</button>
+      </div>
+    </div>
+
+    <div class="empty-cart-state" *ngIf="cart.length === 0">
+      <p>سلتك فارغة حالياً 🛒</p>
+      <button class="primary-btn" (click)="currentView = 'main'">تصفح المنيو</button>
+    </div>
+  </div>
+
+  <!-- 🛑 4. VIEW: SUCCESS PAGE -->
+  <div class="view-panel success-view" *ngIf="currentView === 'success'">
+    <div class="success-animation-content">
+      <div class="success-icon-wrap">☕🎉</div>
+      <h2>شكراً لك!</h2>
+      <p>تم إرسال طلبك إلى الكاونتر بنجاح.</p>
+      <span class="sub-info">الرجاء الانتظار على طاولتك، سيصلك طلبك في أقرب وقت.</span>
+      <button class="white-btn" (click)="currentView = 'main'">العودة للمنيو الرئيسي</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- 🛑 5. FIXED BOTTOM NAVIGATION BAR (Star | Home | Cart — Home centered) -->
+<nav class="bottom-nav">
+  <button class="nav-btn" [class.active]="showFavorites" (click)="toggleFavorites()">
+    <i class="fas fa-star"></i>
+    <span>favoit</span>
+  </button>
+  <button class="nav-btn home-btn" [class.active]="!showFavorites && currentView === 'main'" (click)="goHome()">
+    <i class="fas fa-house"></i>
+    <span>Home</span>
+  </button>
+  <button class="nav-btn" [class.has-items]="cart.length > 0" (click)="openCart()">
+    <i class="fas fa-cart-shopping"></i>
+    <span class="nav-badge" *ngIf="cart.length > 0">{{ cart.length }}</span>
+    <span>Orders</span>
+  </button>
+</nav>
+
+<!-- Utilities States -->
+<div class="loading-full" *ngIf="loading"><div class="spinner"></div><p>جاري تحميل منيو المقهى...</p></div>
+<div class="error-full" *ngIf="!loading && errorMessage"><p>{{ errorMessage }}</p></div>

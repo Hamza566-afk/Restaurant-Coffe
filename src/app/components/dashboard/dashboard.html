@@ -1,0 +1,131 @@
+<div class="dashboard-root" [class.sidebar-collapsed]="isSidebarCollapsed()">
+  <!-- ===== Sidebar ===== -->
+  <aside class="sidebar">
+    <!-- Brand -->
+<div class="sidebar-brand">
+      <div class="brand-logo">
+        @if (shop()?.logo_url && !logoError()) {
+          <img class="brand-logo-img" [src]="shop()?.logo_url"
+               [alt]="shop()?.name || t('brand.name')"
+               (error)="onLogoError()" />
+        } @else {
+          <i class="fas fa-mug-saucer"></i>
+        }
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">{{ shop()?.name || t('brand.name') }}</span>
+        <span class="brand-sub">{{ t('brand.sub') }}</span>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+      <span class="nav-label">{{ t('nav.main') }}</span>
+
+      @for (item of navItems(); track item.path) {
+        <a [routerLink]="item.path"
+           routerLinkActive="active-link"
+           [routerLinkActiveOptions]="{exact: item.path === 'home'}"
+           class="nav-link">
+          <span class="nav-icon">
+            <i [class]="item.icon"></i>
+          </span>
+          <span class="nav-text">{{ t(item.labelKey) }}</span>
+          @if (item.badgeCount && item.badgeCount > 0) {
+            <span class="nav-badge">{{ item.badgeCount }}</span>
+          }
+        </a>
+      }
+    </nav>
+
+    <!-- Footer -->
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="user-info">
+          <span class="user-name">{{ ownerName() || t('footer.owner') }}</span>
+          <span class="user-role">{{ t('brand.sub') }}</span>
+        </div>
+      </div>
+      <button (click)="logout()" class="logout-btn" [title]="t('logout.title')">
+        <i class="fas fa-right-from-bracket"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ===== Main Area ===== -->
+  <div class="main-area">
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="header-left">
+        <button class="sidebar-toggle" (click)="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="header-search">
+          <i class="fas fa-search"></i>
+          <input type="text" [placeholder]="t('header.search')" class="search-input">
+        </div>
+      </div>
+      <div class="header-right">
+        <!-- 🆕 Language Selector Dropdown -->
+        <div class="lang-selector">
+          <button class="lang-btn" (click)="toggleLangDropdown()" [attr.aria-expanded]="langOpen()">
+            <i class="fas fa-globe"></i>
+            <span class="lang-current">{{ langService.lang() === 'ar' ? 'العربية' : langService.lang() === 'fr' ? 'Français' : 'English' }}</span>
+            <i class="fas fa-chevron-down lang-caret"></i>
+          </button>
+          @if (langOpen()) {
+            <div class="lang-dropdown">
+              <button class="lang-option" [class.active]="langService.lang() === 'ar'"
+                      (click)="setLanguage('ar')">
+                <span class="lang-flag">🇹🇳</span>
+                <span>العربية</span>
+                @if (langService.lang() === 'ar') { <i class="fas fa-check"></i> }
+              </button>
+              <button class="lang-option" [class.active]="langService.lang() === 'fr'"
+                      (click)="setLanguage('fr')">
+                <span class="lang-flag">🇫🇷</span>
+                <span>Français</span>
+                @if (langService.lang() === 'fr') { <i class="fas fa-check"></i> }
+              </button>
+              <button class="lang-option" [class.active]="langService.lang() === 'en'"
+                      (click)="setLanguage('en')">
+                <span class="lang-flag">🇬🇧</span>
+                <span>English</span>
+                @if (langService.lang() === 'en') { <i class="fas fa-check"></i> }
+              </button>
+            </div>
+          }
+        </div>
+
+        <div class="header-notifications" (click)="navigateToOrders()">
+          <i class="fas fa-bell"></i>
+          @if (notifService.unreadOrdersCount() > 0) {
+            <span class="notif-badge">{{ notifService.unreadOrdersCount() }}</span>
+          }
+          @if (notifService.latestNewOrder(); as newOrder) {
+            <div class="notif-popup">
+              <i class="fas fa-receipt"></i>
+              <span>{{ t('nav.orders') }} #{{ newOrder.id }}</span>
+              @if (newOrder.tableNumber) {
+                <span class="notif-table">{{ t('notif.table') }} {{ newOrder.tableNumber }}</span>
+              }
+            </div>
+          }
+        </div>
+        <div class="header-date">
+          <i class="fas fa-calendar-day"></i>
+          <span>{{ getCurrentDate() }}</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Area (router-outlet) -->
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
+

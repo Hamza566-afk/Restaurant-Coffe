@@ -1,0 +1,182 @@
+/* ===== 🎨 المتغيرات العامة للهوية البصرية المودرن ===== */
+:root {
+  --primary-color: #009879;
+  --primary-hover: #007f65;
+  --danger-color: #ef4444;
+  --danger-hover: #dc2626;
+  --bg-body: #f8fafc;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --radius-lg: 12px;
+  --radius-md: 8px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+}
+
+/* Container الرئيسي للوحة التحكم */
+.admin-container {
+  padding: 40px 20px;
+  max-width: 1000px; /* 📐 حددنا العرض الأقصى باش الواجهة ما تفرتكس في الشاشات الكبيرة */
+  margin: 0 auto;
+  direction: rtl;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 🚪 الـ Header Bar الاحترافي والمودرن */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  padding: 16px 24px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 24px;
+  border: 1px solid #e2e8f0;
+}
+
+.header-title h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.header-title p {
+  margin: 4px 0 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* زر تسجيل الخروج العصري */
+.btn-logout {
+  background-color: #fee2e2; /* خلفية حمراء ناعمة جداً */
+  color: var(--danger-hover);
+  padding: 10px 18px;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-logout:hover {
+  background-color: var(--danger-color);
+  color: rgb(212, 83, 83);
+  transform: translateY(-1px);
+}
+
+/* 📊 ستايل الجدول الملموم والمحكم */
+.shops-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0; /* لمنع تفكك الحواف */
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  border: 1px solid #e2e8f0;
+}
+
+/* تنسيق عناوين الجدول */
+.shops-table th {
+  background-color: #f8fafc; /* خلفية فاتحة ومريحة للعين عوضاً عن الأخضر الغامق القديم */
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 14px 20px;
+  text-align: right;
+  border-bottom: 2px solid #edf2f7;
+}
+
+/* سنترال دقيق لعمود الإجراءات عشان يجي قاد قد تحت كلمة إجراء */
+.shops-table th.text-center, 
+.shops-table td.action-cell {
+  text-align: center;
+}
+
+/* تنسيق الخلايا (td) والصفوف */
+.shops-table td {
+  padding: 14px 20px;
+  border-bottom: 1px solid #edf2f7;
+  color: var(--text-main);
+  font-size: 0.925rem;
+}
+
+/* إلغاء الخط السفلي لآخر صف */
+.shops-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* تأثير الـ Hover على الصفوف */
+.shops-table tbody tr:hover {
+  background-color: #fdfdfd;
+}
+
+/* 🛠️ الـ Flex Container لمجموعة الأزرار داخل الخلية */
+.action-flex-container {
+  display: inline-flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 🟢 زر تغيير الحالة المودرن */
+.btn-status {
+  padding: 8px 14px;
+  cursor: pointer;
+  background-color: #e6f7f4; /* أخضر ناعم للعين */
+  color: var(--primary-color);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-status:hover {
+  background-color: var(--primary-color);
+  color: rgb(201, 92, 92);
+}
+
+/* 🔴 زر الحذف المودرن */
+.btn-delete {
+  padding: 8px 14px;
+  cursor: pointer;
+  background-color: #fee2e2;
+  color: var(--danger-color);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-delete:hover {
+  background-color: var(--danger-color);
+  color: rgb(192, 74, 74);
+}
+
+/* ستايل تاغ الحالة المريحة (مفعلة / غير مفعلة) */
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.status-badge.active {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+.status-badge.inactive {
+  background-color: #fef3c7;
+  color: #92400e;
+}

@@ -1,0 +1,49 @@
+<div class="admin-container">
+  
+  <!-- 🌟 الـ Header Bar الاحترافي -->
+  <div class="admin-header">
+    <div class="header-title">
+      <h2>لوحة تحكم الإدارة</h2>
+      <p>إدارة مقاهي ومحلات الـ SaaS</p>
+    </div>
+    <button (click)="logout()" class="btn-logout">
+      <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+    </button>
+  </div>
+
+  <!-- 📊 الجدول المحكم والمودرن -->
+  <table class="shops-table">
+    <thead>
+      <tr>
+        <th>اسم القهوة</th>
+        <th>الحالة</th>
+        <th class="text-center">إجراء</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let shop of shops">
+        <!-- اسم القهوة -->
+        <td style="font-weight: 600;">{{ shop.name }}</td>
+        
+        <!-- الحالة كـ Badge مودرن ملون -->
+        <td>
+          <span class="status-badge" [ngClass]="shop.is_active ? 'active' : 'inactive'">
+            {{ shop.is_active ? 'مفعلة' : 'غير مفعلة' }}
+          </span>
+        </td>
+        
+        <!-- الإجراءات ملمومة في السنتر تماماً -->
+        <td class="action-cell">
+          <div class="action-flex-container">
+            <button (click)="toggle(shop.id)" class="btn-status">
+              تغيير الحالة
+            </button>
+            <button (click)="deleteShop(shop.id)" class="btn-delete">
+              <i class="fas fa-trash-can"></i> حذف
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

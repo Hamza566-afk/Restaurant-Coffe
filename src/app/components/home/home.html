@@ -1,0 +1,190 @@
+@if (loading()) {
+  <!-- Loading state -->
+  <div class="home-page">
+    <div class="loading-state">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>{{ t('orders.loading') }}</p>
+    </div>
+  </div>
+} @else if (error()) {
+  <!-- Error state with retry -->
+  <div class="home-page">
+    <div class="error-state">
+      <i class="fas fa-triangle-exclamation"></i>
+      <p>Impossible de charger les statistiques du tableau de bord.</p>
+      <button class="btn btn-primary" (click)="loadDashboardStats()">
+        <i class="fas fa-rotate"></i>
+        {{ t('dash.refresh') }}
+      </button>
+    </div>
+  </div>
+} @else {
+  <div class="home-page">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+      <div class="welcome-text">
+        <h1>{{ t('dash.welcome') }} 👋</h1>
+        <p class="text-muted">{{ t('dash.overview') }}</p>
+      </div>
+      <div class="welcome-actions">
+        <a routerLink="/dashboard/products" class="btn btn-primary">
+          <i class="fas fa-plus"></i>
+          {{ t('dash.addProduct') }}
+        </a>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      @for (card of statCards(); track card.titleKey) {
+        <div class="stat-card" [class]="'stat-' + card.color">
+          <div class="stat-card-header">
+            <div class="stat-icon" [class]="'icon-' + card.color">
+              <i [class]="card.icon"></i>
+            </div>
+            @if (card.color === 'amber') {
+              <div class="status-indicator" [class.active]="qrActive()">
+                <span class="status-dot"></span>
+                <span class="status-text">{{ qrActive() ? t('dash.connected') : t('dash.disconnected') }}</span>
+              </div>
+            }
+          </div>
+          <div class="stat-body">
+            <span class="stat-label">{{ t(card.titleKey) }}</span>
+            <span class="stat-value">{{ card.value }}</span>
+          </div>
+          <div class="stat-footer">
+            <span class="stat-trend" [class.trend-up]="card.trendUp" [class.trend-down]="!card.trendUp">
+              <i class="fas" [class.fa-arrow-up]="card.trendUp" [class.fa-arrow-down]="!card.trendUp"></i>
+              @if (card.titleKey === 'dash.activeOrders') {
+                {{ stats()?.pending_orders_count ?? 0 }} en attente
+              } @else {
+                {{ card.subtitle }}
+              }
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Charts Row (Weekly Sales) -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>{{ t('dash.chartTitle') }}</h3>
+          <span class="badge badge-info">{{ t('dash.chartBadge') }}</span>
+        </div>
+        <div class="chart-body">
+          @if (weeklySales().length) {
+            <div class="bar-chart">
+              @for (sale of weeklySales(); track sale.date; let i = $index) {
+                <div class="bar-item">
+                  <div class="bar" [style.height.pct]="getBarHeight(sale.total)">
+                    <span class="bar-value">{{ sale.total }}</span>
+                  </div>
+                  <span class="bar-label">{{ getDayLabel(i) }}</span>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="text-muted empty-chart">Aucune vente cette semaine.</p>
+          }
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>{{ t('dash.quickAction') }}</h3>
+          <span class="badge badge-success">{{ t('dash.active') }}</span>
+        </div>
+        <div class="chart-body">
+          <div class="quick-metrics">
+            <div class="metric-item">
+              <div class="metric-icon green">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <div class="metric-info">
+                <span class="metric-value">{{ stats()?.total_products ?? 0 }}</span>
+                <span class="metric-label">{{ t('dash.activeProducts') }}</span>
+              </div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-icon blue">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="metric-info">
+                <span class="metric-value">{{ stats()?.active_orders ?? 0 }}</span>
+                <span class="metric-label">{{ t('dash.pendingOrders') }}</span>
+              </div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-icon purple">
+                <i class="fas fa-qrcode"></i>
+              </div>
+              <div class="metric-info">
+                <span class="metric-value">{{ stats()?.qr_codes_count ?? 0 }}</span>
+                <span class="metric-label">{{ t('dash.qrStatusLabel') }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Orders Table -->
+    <div class="activity-section">
+      <div class="section-header">
+        <div>
+          <h2>{{ t('dash.recentActivity') }}</h2>
+          <p class="text-muted">{{ t('dash.activitySub') }}</p>
+        </div>
+        <button class="btn btn-outline btn-sm" (click)="loadDashboardStats()">
+          <i class="fas fa-rotate"></i>
+          {{ t('dash.refresh') }}
+        </button>
+      </div>
+
+      <div class="table-wrapper">
+        @if (recentOrders().length) {
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th class="col-table">TABLE</th>
+                <th class="col-articles">ARTICLES</th>
+                <th class="col-total">TOTAL</th>
+                <th class="col-status">STATUT</th>
+                <th class="col-heure">HEURE</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of recentOrders(); track order.id) {
+                <tr>
+                  <td class="col-table">
+                    <div class="activity-cell">
+                      <i class="fas fa-circle" [style.color]="getActivityDotColor(order.status)"></i>
+                      <span>Table n°{{ order.table_number ?? '—' }}</span>
+                    </div>
+                  </td>
+                  <td class="col-articles">
+                    <span class="products-text">{{ order.products || '—' }}</span>
+                  </td>
+                  <td class="col-total">
+                    <span class="time-text total-text">{{ formatCurrency(order.total_price) }}</span>
+                  </td>
+                  <td class="col-status">
+                    <span class="badge" [class]="getStatusClass(order.status)">{{ getStatusLabel(order.status) }}</span>
+                  </td>
+                  <td class="col-heure">
+                    <span class="time-text">{{ order.created_at ?? '—' }}</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="text-muted empty-table">Aucune commande récente.</p>
+        }
+      </div>
+    </div>
+  </div>
+}
