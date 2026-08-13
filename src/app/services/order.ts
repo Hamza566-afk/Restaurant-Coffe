@@ -1,17 +1,18 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export type OrderStatus = 'pending' | 'confirmed' | 'ready' | 'paid' | 'cancelled';
 
-// 🚀 زِدنا الـ Interface متع الـ Product اللي جاي مع الـ Eager Loading
+// 🚀 Interface متع الـ Product اللي جاي مع الـ Eager Loading
 export interface Product {
   id: number;
   name: string;
   price: number;
 }
 
-// 🚀 زِدنا الـ Interface متع الـ Table باش الـ HTML يقرأ table_number
+// 🚀 Interface متع الـ Table باش الـ HTML يقرأ table_number
 export interface Table {
   id: number;
   shop_id: number;
@@ -21,21 +22,21 @@ export interface Table {
 
 export interface OrderItem {
   id?: number;
-  product_id: number;   // 🚀 زدناها باش يمشي معاها الـ track في الـ HTML
-  quantity: number;     // 🚀 بدلناها من qty لـ quantity باش تطابق الـ Laravel داتابيز
+  product_id: number;   // 🚀 track في الـ HTML
+  quantity: number;     // 🚀 مطابقة لـ Laravel داتابيز
   price: number;
-  product?: Product;    // 🚀 الحقل الجديد اللي فيه اسم المنتج الحقيقي
+  product?: Product;    // 🚀 فيه اسم المنتج الحقيقي
 }
 
 export interface Order {
   id: number;
-  shop_id: number;      // 🚀 أضفنا الحقول متع الـ الباكند
+  shop_id: number;      // 🚀 حقول الباكند
   table_id: number;
   customer?: string;
-  table?: Table;        // 🚀 حولناها من string لـ Object Table كامل
+  table?: Table;        // 🚀 Object Table كامل
   items: OrderItem[];
   total_price: number;  // 🚀 الحقل الحقيقي المبعوث مالـ الباكند
-  total?: number;       // 🚀 خليناه اختياري للامان بما أن الـ Controller يعملو في transform
+  total?: number;       // 🚀 اختياري للآمان
   status: OrderStatus;
   created_at: string;
   updated_at: string;
@@ -48,17 +49,8 @@ export interface Order {
 export class OrderService {
   private http = inject(HttpClient);
 
-  /**
-   * Utilise un chemin relatif /api/orders.
-   *
-   * En développement, Angular CLI utilise le proxy (proxy.conf.json)
-   * pour rediriger /api/* vers le backend Laravel (http://127.0.0.1:8000).
-   *
-   * En production, un même domaine ou un sous-domaine partagé permet
-   * au navigateur d'envoyer automatiquement les cookies de session Sanctum
-   * (withCredentials: true).
-   */
-  private apiUrl = '/api/orders';
+  // 🚀 ربط المسار بـ environment.apiUrl للتواصل المباشر مع Railway
+  private apiUrl = `${environment.apiUrl}/orders`;
 
   /** GET /api/orders */
   getOrders(): Observable<Order[]> {

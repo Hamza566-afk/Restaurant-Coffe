@@ -3,11 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval, of } from 'rxjs';
 import { switchMap, catchError, tap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class OrderNotificationService {
   private http = inject(HttpClient);
   private destroyRef = inject(DestroyRef);
+  private apiUrl = environment.apiUrl;
 
   /**
    * Signal holding the number of unread / new (pending) orders.
@@ -30,15 +32,13 @@ export class OrderNotificationService {
   /**
    * Start polling the backend for the pending-orders count.
    * Called once from the Dashboard component's ngOnInit.
-   *
-   * @param apiBaseUrl  e.g. '/api' (proxied) or 'http://shop.localhost:8000/api'
    */
-  startPolling(apiBaseUrl: string = ''): void {
+  startPolling(): void {
     // Poll every 10 seconds for pending order count
     interval(10000)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        switchMap(() => this.fetchPendingOrdersCount(apiBaseUrl)),
+        switchMap(() => this.fetchPendingOrdersCount()),
         catchError(() => of(0)),               // treat network errors as 0
       )
       .subscribe((count) => {
@@ -62,17 +62,13 @@ export class OrderNotificationService {
   // ─── Private helpers ────────────────────────────────────────
 
   /**
-   * Calls the backend to get the count of 'pending' orders for the current shop.
-   * The Laravel OrderController@index already filters by shop_id via
-   * IdentifyShop middleware.
+   * Calls the backend to get the count of 'pending' orders for the current shop via Railway.
    */
-  private fetchPendingOrdersCount(apiBaseUrl: string): Promise<number> {
-    // We reuse the existing GET /api/orders endpoint and count pending ones.
-    // If you'd prefer a dedicated lightweight endpoint, create one.
+  private fetchPendingOrdersCount(): Promise<number> {
     return new Promise((resolve) => {
-      this.http.get<any[]>(`${apiBaseUrl}/api/orders`, { withCredentials: true }).subscribe({
+      this.http.get<any[]>(`${this.apiUrl}/orders`, { withCredentials: true }).subscribe({
         next: (orders) => {
-          const pendingCount = orders.filter(o => o.status === 'pending').length;
+          const pendingCount = Array.isArray(orders) ? orders.filter(o => o.status === 'pending').length : 0;
           resolve(pendingCount);
         },
         error: () => resolve(0),
@@ -88,9 +84,10 @@ export class OrderNotificationService {
     // Play audio notification using Web Audio API (no external files needed)
     this.playNotificationSound();
 
-    // Fetch the latest pending order details for the popup
-    this.http.get<any[]>('/api/orders', { withCredentials: true }).subscribe({
+    // Fetch the latest pending order details for the popup from Railway
+    this.http.get<any[]>(`${this.apiUrl}/orders`, { withCredentials: true }).subscribe({
       next: (orders) => {
+        if (!Array.isArray(orders)) return;
         const pending = orders.filter(o => o.status === 'pending');
         // Sort by id descending to get the most recent one
         pending.sort((a, b) => b.id - a.id);
@@ -135,4 +132,3 @@ export class OrderNotificationService {
     }
   }
 }
-

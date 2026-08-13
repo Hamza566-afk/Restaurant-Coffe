@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 // ─── Interfaces métier pour le tableau de bord ─────────────────
 
@@ -41,7 +42,8 @@ export interface DashboardStats {
 })
 export class DashboardService {
   private http = inject(HttpClient);
-  private apiUrl = '/api/dashboard/stats';
+  // 🚀 ربط المسار بـ Railway عبر environment.apiUrl
+  private apiUrl = `${environment.apiUrl}/dashboard/stats`;
 
   /**
    * GET /api/dashboard/stats

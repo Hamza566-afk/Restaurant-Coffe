@@ -3,12 +3,15 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { catchError, switchMap, tap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  // Use relative URLs so ng serve proxy keeps requests same-origin (required for CSRF cookies)
-  private baseUrl = '';
+  // 🚀 استخدام رابط Railway API مباشرة من بيئة العمل environment.ts
+  private apiUrl = environment.apiUrl; 
+  // 🚀 استخراج الرابط الأساسي للسيرفر (Sanctum CSRF Cookie)
+  private serverUrl = environment.apiUrl.replace(/\/api\/?$/, '');
 
   /**
    * 🆕 Reactive signal holding the currently authenticated user payload
@@ -26,6 +29,10 @@ export class AuthService {
     return this.currentUser();
   }
 
+  getProducts(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/products`);
+  }
+
   /**
    * 🆕 Get the owner's display name from the stored user payload.
    */
@@ -38,7 +45,7 @@ export class AuthService {
    * 1. طلب الـ CSRF Cookie من Laravel
    */
   getCsrfCookie(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/sanctum/csrf-cookie`, { withCredentials: true });
+    return this.http.get(`${this.serverUrl}/sanctum/csrf-cookie`, { withCredentials: true });
   }
 
   /**
@@ -46,8 +53,8 @@ export class AuthService {
    */
   login(credentials: any): Observable<any> {
     return this.getCsrfCookie().pipe(
-      switchMap(() => this.http.post(`${this.baseUrl}/api/login`, credentials, { withCredentials: true })),
-      switchMap(() => this.http.get(`${this.baseUrl}/api/user`, { withCredentials: true })),
+      switchMap(() => this.http.post(`${this.apiUrl}/login`, credentials, { withCredentials: true })),
+      switchMap(() => this.http.get(`${this.apiUrl}/user`, { withCredentials: true })),
     );
   }
 
@@ -57,9 +64,9 @@ export class AuthService {
   loginOwner(credentials: any): Observable<any> {
     return this.getCsrfCookie().pipe(
       // 1. نعملوا الـ Post login
-      switchMap(() => this.http.post(`${this.baseUrl}/api/login-owner`, credentials, { withCredentials: true })),
-      // 2. 🚀 السطر السحري الجديد: نمشيو نجيبوا الـ User Profile بالـ Shop والـ Subscriptions متاعو ديريكت
-      switchMap(() => this.http.get(`${this.baseUrl}/api/user`, { withCredentials: true })),
+      switchMap(() => this.http.post(`${this.apiUrl}/login-owner`, credentials, { withCredentials: true })),
+      // 2. نمشيو نجيبوا الـ User Profile بالـ Shop والـ Subscriptions متاعو ديريكت
+      switchMap(() => this.http.get(`${this.apiUrl}/user`, { withCredentials: true })),
       // 🆕 Store the user payload into the reactive signal so the sidebar
       //    can display the real owner name without a reload.
       tap((res: any) => {
@@ -74,7 +81,7 @@ export class AuthService {
    */
   register(userData: any): Observable<any> {
     return this.getCsrfCookie().pipe(
-      switchMap(() => this.http.post(`${this.baseUrl}/api/register`, userData, { withCredentials: true }))
+      switchMap(() => this.http.post(`${this.apiUrl}/register`, userData, { withCredentials: true }))
     );
   }
 
@@ -82,7 +89,7 @@ export class AuthService {
    * 3. التحقق من حالة المستخدم (User Profile)
    */
   checkAuth(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/api/user`, { withCredentials: true }).pipe(
+    return this.http.get(`${this.apiUrl}/user`, { withCredentials: true }).pipe(
       tap((res: any) => {
         const user = res?.user ?? res;
         this.currentUser.set(user);
@@ -98,7 +105,7 @@ export class AuthService {
    * 3b. التثبت من حالة الـ Owner والـ Shop متاعو
    */
   checkCurrentUserStatus(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/api/user`, { withCredentials: true }).pipe(
+    return this.http.get(`${this.apiUrl}/user`, { withCredentials: true }).pipe(
       // 🆕 Keep the reactive user state fresh on every polling cycle
       tap((res: any) => {
         const user = res?.user ?? res;
@@ -111,7 +118,7 @@ export class AuthService {
    * 4. عملية الخروج (Admin logout endpoint)
    */
   logout(): Observable<any> {
-    return this.http.post(`${this.baseUrl}/api/logout`, {}, { withCredentials: true });
+    return this.http.post(`${this.apiUrl}/logout`, {}, { withCredentials: true });
   }
 
   /**
@@ -150,4 +157,3 @@ export class AuthService {
     } catch {}
   }
 }
-

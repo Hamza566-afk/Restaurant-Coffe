@@ -1,46 +1,50 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ClientMenuService {
   private http = inject(HttpClient);
+  private apiUrl = environment.apiUrl;
 
-  // 🚀 ميثود ديناميكية ومحمية تجيب الـ Subdomain الحالي مالـ URL متاع الـ Browser
+  // 🚀 ميثود ديناميكية تجيب الـ Subdomain الحالي مالـ URL متاع الـ Browser
   getSubdomain(): string {
-    const hostname = window.location.hostname; // تعطينا مثلاً: hamza-shop.localhost
+    const hostname = window.location.hostname; // تعطينا مثلاً: hamza-shop.localhost أو hamza.mydomain.com
     const parts = hostname.split('.');
     
-    // إذا كان فما Subdomain (طول الـ array أكبر من 1 في الـ local)
+    // إذا كان فما Subdomain
     if (parts.length > 1 && parts[0] !== 'www') {
-      return parts[0]; // ترجع "hamza-shop"
+      return parts[0];
     }
     return '';
   }
 
-  // ميثود تطلب المنيو مالـ باكند بناءً على الـ Subdomain
+  // ميثود تطلب المنيو مالـ باكند بناءً على الـ Subdomain أو الـ Query parameter
   getMenu(): Observable<any> {
     const subdomain = this.getSubdomain();
-    const url = `http://${subdomain}.localhost:8000/api/client/menu`;
+    const url = subdomain 
+      ? `${this.apiUrl}/client/menu?subdomain=${subdomain}` 
+      : `${this.apiUrl}/client/menu`;
     
-    console.log('📡 Fetching Menu from:', url); // 📝 للـ Debugging
+    console.log('📡 Fetching Menu from Railway:', url);
     return this.http.get(url);
   }
 
-// ميثود إرسال الطلب للـ باكند
+  // ميثود إرسال الطلب للـ باكند
   sendOrder(orderData: any): Observable<any> {
     const subdomain = this.getSubdomain();
-    const url = `http://${subdomain}.localhost:8000/api/client/orders`;
+    const url = `${this.apiUrl}/client/orders`;
+    const payload = subdomain ? { ...orderData, subdomain } : orderData;
     
-    // 🔥 هذا الـ Log باش يوريك الـ URL الحقيقي في الـ Console قبل ما يبعث
-    console.log('🚀 Sending Order to:', url, 'with data:', orderData); 
+    console.log('🚀 Sending Order to Railway:', url, 'with data:', payload); 
     
-    return this.http.post(url, orderData);
+    return this.http.post(url, payload);
   }
 
-  // ─── Live Active Users (Card 3) ──────────────────────────────
+  // ─── Live Active Users ──────────────────────────────
 
   /**
    * Génère (ou réutilise) un identifiant de session stable pour ce navigateur.
@@ -65,7 +69,6 @@ export class ClientMenuService {
     if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
       return crypto.randomUUID();
     }
-    // Fallback simple
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
       const r = (Math.random() * 16) | 0;
       const v = c === 'x' ? r : (r & 0x3) | 0x8;
@@ -73,37 +76,31 @@ export class ClientMenuService {
     });
   }
 
-  /** Construction de l'URL de base du shop (même subdomain, port 8000). */
-  private getShopBaseUrl(): string {
-    const subdomain = this.getSubdomain();
-    return `http://${subdomain}.localhost:8000`;
-  }
-
   /**
    * 🟢 Signale au backend que ce visiteur est sur la page menu (heartbeat).
-   * Appelé à l'ouverture puis périodiquement pour garder la session active.
    */
   enterMenu(): Observable<any> {
-    const url = `${this.getShopBaseUrl()}/api/client/menu/enter`;
+    const url = `${this.apiUrl}/client/menu/enter`;
     const session_id = this.getSessionId();
-    return this.http.post(url, { session_id });
+    const subdomain = this.getSubdomain();
+    return this.http.post(url, { session_id, subdomain });
   }
 
   /**
    * 🔴 Signale au backend que ce visiteur quitte la page menu.
-   * Appelé sur `beforeunload` / ngOnDestroy pour décrémenter le compteur.
    */
   leaveMenu(): void {
     const session_id = this.getSessionId();
-    const url = `${this.getShopBaseUrl()}/api/client/menu/leave`;
-    // sendBeacon : fiable même pendant la fermeture de l'onglet
-    const body = new Blob([JSON.stringify({ session_id })], {
+    const subdomain = this.getSubdomain();
+    const url = `${this.apiUrl}/client/menu/leave`;
+    
+    const body = new Blob([JSON.stringify({ session_id, subdomain })], {
       type: 'application/json',
     });
     if (navigator.sendBeacon) {
       navigator.sendBeacon(url, body);
     } else {
-      this.http.post(url, { session_id }).subscribe();
+      this.http.post(url, { session_id, subdomain }).subscribe();
     }
   }
 }

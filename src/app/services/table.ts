@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Table {
   id: number;
@@ -15,16 +16,12 @@ export interface Table {
 
 /**
  * 🪑 TableService — CRUD for café tables (owner dashboard).
- *
- * Uses the RELATIVE `/api/admin/tables` path so the Angular dev proxy
- * (proxy.conf.json) forwards it to Laravel, keeping requests SAME-ORIGIN.
- * This is required for Sanctum SESSION (cookie) auth: the auth interceptor
- * already forces `withCredentials: true`, so we never need a Bearer token.
  */
 @Injectable({ providedIn: 'root' })
 export class TableService {
   private http = inject(HttpClient);
-  private apiUrl = '/api/admin/tables';
+  // 🚀 ربط المسار بـ environment.apiUrl للتواصل المباشر مع Railway
+  private apiUrl = `${environment.apiUrl}/admin/tables`;
 
   /** GET /api/admin/tables */
   getTables(): Observable<{ success: boolean; data: Table[] }> {

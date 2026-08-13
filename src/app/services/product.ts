@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 // ─── Product Size Variant Interface ────────────────────────
 export interface ProductSize {
@@ -21,7 +22,7 @@ export interface Product {
   is_featured?: boolean;  // ⭐ Star toggle — featured/most-requested items
   is_hero?: boolean;      // 👑 Crown toggle — single hero banner product
   image_path?: string | null;
-  image_url?: string | null; // 🚀 التعديل الأهم: زدت الـ Property هذي باش الـ TS يقرا الـ URL الديناميكي الجاي م الـ API
+  image_url?: string | null; // 🚀 الـ URL الديناميكي الجاي م الـ API
   description?: string | null;
   sizes?: ProductSize[]; // 🆕 Size variants (multi-price)
 }
@@ -32,7 +33,8 @@ export interface Product {
 })
 export class ProductService {
   private http = inject(HttpClient);
-  private apiUrl = '/api/admin/products';
+  // 🚀 ربط المسار بـ environment.apiUrl للتواصل المباشر مع Railway
+  private apiUrl = `${environment.apiUrl}/admin/products`;
 
   /** GET  /api/admin/products */
   getProducts(): Observable<Product[]> {
@@ -48,15 +50,13 @@ export class ProductService {
    * POST /api/admin/products/{id}  (multipart + _method=PUT)
    */
   updateProduct(id: number, formData: FormData): Observable<Product> {
-    // الـ Component متاعك قاعد يبعث في الـ _method ديريكت، 
-    // السطر هذا باهي يقعد حماية (Fallback) في حالة نسيت ما زدتهاش في بلاصة أخرى
     if (!formData.has('_method')) {
       formData.append('_method', 'PUT');
     }
     return this.http.post<Product>(`${this.apiUrl}/${id}`, formData, { withCredentials: true });
   }
 
-/** DELETE /api/admin/products/{id} */
+  /** DELETE /api/admin/products/{id} */
   deleteProduct(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`, { withCredentials: true });
   }
