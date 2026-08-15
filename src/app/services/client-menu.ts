@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -8,48 +8,56 @@ import { environment } from '../../environments/environment';
 })
 export class ClientMenuService {
   private http = inject(HttpClient);
-  private apiUrl = environment.apiUrl;
+  private apiUrl = environment.apiUrl; // e.g., https://restaurant-coffe-backend-production.up.railway.app/api
 
-  // 🚀 ميثود ديناميكية تجيب الـ Subdomain الحالي مالـ URL متاع الـ Browser
-  getSubdomain(): string {
-    const hostname = window.location.hostname; // تعطينا مثلاً: hamza-shop.localhost أو hamza.mydomain.com
+  /**
+   * 🚀 استخراج الـ Subdomain أو قراءته من الـ Query Parameter `?shop=xxx`
+   */
+  getShopIdentifier(customShop?: string | null): string {
+    if (customShop) return customShop;
+
+    // 1. البحث في Query Parameter من الرابط
+    const urlParams = new URLSearchParams(window.location.search);
+    const shopParam = urlParams.get('shop') || urlParams.get('subdomain');
+    if (shopParam) return shopParam;
+
+    // 2. Fallback: استخراج الـ Subdomain من الـ Hostname
+    const hostname = window.location.hostname;
     const parts = hostname.split('.');
-    
-    // إذا كان فما Subdomain
-    if (parts.length > 1 && parts[0] !== 'www') {
+    if (parts.length > 1 && parts[0] !== 'www' && parts[0] !== 'localhost') {
       return parts[0];
     }
+
     return '';
   }
 
-  // ميثود تطلب المنيو مالـ باكند بناءً على الـ Subdomain أو الـ Query parameter
-  getMenu(): Observable<any> {
-    const subdomain = this.getSubdomain();
-    const url = subdomain 
-      ? `${this.apiUrl}/client/menu?subdomain=${subdomain}` 
-      : `${this.apiUrl}/client/menu`;
-    
-    console.log('📡 Fetching Menu from Railway:', url);
-    return this.http.get(url);
+  /**
+   * جلب المنيو بالـ shop الممرر أو المستخرج تلقائياً
+   */
+  getMenu(shopSlug?: string | null): Observable<any> {
+    const shop = this.getShopIdentifier(shopSlug);
+    let params = new HttpParams();
+    if (shop) {
+      params = params.set('shop', shop).set('subdomain', shop);
+    }
+
+    const url = `${this.apiUrl}/client/menu`;
+    return this.http.get(url, { params, withCredentials: true });
   }
 
-  // ميثود إرسال الطلب للـ باكند
-  sendOrder(orderData: any): Observable<any> {
-    const subdomain = this.getSubdomain();
+  /**
+   * إرسال الطلب (Order)
+   */
+  sendOrder(orderData: any, shopSlug?: string | null): Observable<any> {
+    const shop = this.getShopIdentifier(shopSlug);
     const url = `${this.apiUrl}/client/orders`;
-    const payload = subdomain ? { ...orderData, subdomain } : orderData;
-    
-    console.log('🚀 Sending Order to Railway:', url, 'with data:', payload); 
-    
-    return this.http.post(url, payload);
+    const payload = shop ? { ...orderData, shop, subdomain: shop } : orderData;
+
+    return this.http.post(url, payload, { withCredentials: true });
   }
 
   // ─── Live Active Users ──────────────────────────────
 
-  /**
-   * Génère (ou réutilise) un identifiant de session stable pour ce navigateur.
-   * Persisté dans sessionStorage pour survivre aux rechargements de page.
-   */
   getSessionId(): string {
     const KEY = 'cafe_menu_session_id';
     try {
@@ -64,7 +72,6 @@ export class ClientMenuService {
     }
   }
 
-  /** Génère un UUID v4 (crypto.randomUUID avec fallback). */
   private generateUuid(): string {
     if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
       return crypto.randomUUID();
@@ -77,30 +84,30 @@ export class ClientMenuService {
   }
 
   /**
-   * 🟢 Signale au backend que ce visiteur est sur la page menu (heartbeat).
+   * 🟢 Signale au backend que ce visiteur est sur la page menu
    */
-  enterMenu(): Observable<any> {
+  enterMenu(shopSlug?: string | null): Observable<any> {
     const url = `${this.apiUrl}/client/menu/enter`;
     const session_id = this.getSessionId();
-    const subdomain = this.getSubdomain();
-    return this.http.post(url, { session_id, subdomain });
+    const shop = this.getShopIdentifier(shopSlug);
+    return this.http.post(url, { session_id, shop, subdomain: shop }, { withCredentials: true });
   }
 
   /**
-   * 🔴 Signale au backend que ce visiteur quitte la page menu.
+   * 🔴 Signale au backend que ce visiteur quitte la page menu
    */
-  leaveMenu(): void {
+  leaveMenu(shopSlug?: string | null): void {
     const session_id = this.getSessionId();
-    const subdomain = this.getSubdomain();
+    const shop = this.getShopIdentifier(shopSlug);
     const url = `${this.apiUrl}/client/menu/leave`;
-    
-    const body = new Blob([JSON.stringify({ session_id, subdomain })], {
+
+    const body = new Blob([JSON.stringify({ session_id, shop, subdomain: shop })], {
       type: 'application/json',
     });
     if (navigator.sendBeacon) {
       navigator.sendBeacon(url, body);
     } else {
-      this.http.post(url, { session_id, subdomain }).subscribe();
+      this.http.post(url, { session_id, shop, subdomain: shop }, { withCredentials: true }).subscribe();
     }
   }
 }
