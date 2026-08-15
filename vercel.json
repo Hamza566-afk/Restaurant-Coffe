@@ -1,8 +1,12 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/api/:path*",
+      "destination": "https://restaurant-coffe-backend-production.up.railway.app/api/:path*"
+    },
+    {
+      "source": "/sanctum/:path*",
+      "destination": "https://restaurant-coffe-backend-production.up.railway.app/sanctum/:path*"
     }
   ]
 }
