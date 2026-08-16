@@ -20,9 +20,6 @@ export class QrCode implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly tableService = inject(TableService);
 
-  /** المسار العمومي للمنيو (موجود في AppRoutes: { path: 'menu' }) */
-  private readonly menuPath = '/menu';
-
   tables = signal<Table[]>([]);
 
   // متغيّرات الـ Form
@@ -89,36 +86,30 @@ export class QrCode implements OnInit {
   }
 
   /**
-   * 🌐 يُرجع الـ Base URL الخاص بالـ Shop بناءً على:
-   *  - Subdomain المالك المُسجّل دخوله عبر AuthService
-   *  - البيئة الحالية: Dev (localhost) vs Production (cafesaas.com)
+   * 🌐 يُرجع الـ Base URL الحالي للفرونتاند
    */
-  private getShopBaseUrl(): string {
+  private getAppBaseUrl(): string {
+    const origin = this.document.location.origin; // يرجع ديريكت https://restaurant-coffe-two.vercel.app أو localhost
+    return origin;
+  }
+
+  /** 🎯 الرابط الديناميكي للـ QR (عميل أو سرفور) القادم من الباكاند أو المولّد ديناميكياً */
+  generateDynamicQrUrl(table: Table, target: 'client' | 'server'): string {
     const subdomain = this.auth.getUser()?.shop?.subdomain ?? '';
 
-    const hostname = this.document.location.hostname;
-    const isLocalhost =
-      hostname === 'localhost' ||
-      hostname.endsWith('.localhost') ||
-      hostname === '127.0.0.1';
-
-    return isLocalhost
-      ? `http://${subdomain}.localhost:4200`
-      : `https://${subdomain}.cafesaas.com`;
-  }
-
-  /** 🎯 رابط المنيو الخاص بالحريف: `{shop_base_url}/menu?table_id={tableNumber}` */
-  getCustomerMenuUrl(tableNumber: number | string): string {
-    const table = encodeURIComponent(String(tableNumber));
-    return `${this.getShopBaseUrl()}${this.menuPath}?table_id=${table}`;
-  }
-
-  /** 🎯 الرابط الديناميكي للـ QR (عميل أو سرفور) */
-  generateDynamicQrUrl(table: Table, target: 'client' | 'server'): string {
     if (target === 'client') {
-      return this.getCustomerMenuUrl(table.table_number);
+      // 1. إذا الباكاند بعث qr_code_url جاهز نستعملوه مباشرة
+      if (table.qr_code_url) {
+        return table.qr_code_url;
+      }
+      // 2. Fallback ديناميكي يتكيف مع Vercel و Localhost
+      return `${this.getAppBaseUrl()}/menu?shop=${subdomain}&table_id=${table.table_number}`;
+    } else {
+      if (table.server_qr_code_url) {
+        return table.server_qr_code_url;
+      }
+      return `${this.getAppBaseUrl()}/server/table/${table.table_number}`;
     }
-    return `${this.getShopBaseUrl()}/server/table/${table.table_number}`;
   }
 
   /**
@@ -156,13 +147,9 @@ export class QrCode implements OnInit {
   }
 
   /**
-   * 🗑️ حذف طاولة:
-   *  - تأكيد قبل الحذف (مترجم باللغة الحالية)
-   *  - حذف عبر TableService (نفس الأصل + Sanctum cookie auth)
-   *  - إزالة الكارت ديناميكياً من الـ Signal فور النجاح (بدون إعادة تحميل)
-   *  - معالجة الأخطاء برسالة واضحة (مثلاً: الطاولة عليها طلبات نشطة)
+   * 🗑️ حذف طاولة
    */
-deleteTable(id: number): void {
+  deleteTable(id: number): void {
     console.log('🗑️ Deleting table:', id);
     console.log('📡 Sending DELETE request for table:', id);
 
@@ -170,12 +157,10 @@ deleteTable(id: number): void {
       next: (res) => {
         if (res.success) {
           this.successMessage.set(res.message);
-          // 🆕 إزالة الكارت فوراً من الـ Signal دون طلب الـ API من جديد
           this.tables.update(list => list.filter(t => t.id !== id));
         }
       },
       error: (err) => {
-        // رسالة من الباكند (مثل: يوجد طلبات نشطة) أو رسالة عامة
         const message = err?.error?.message;
         this.errorMessage.set(message ?? this.t('qr.errorDeleteTables'));
       },
