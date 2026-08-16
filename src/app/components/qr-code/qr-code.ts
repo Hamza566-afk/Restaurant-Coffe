@@ -86,33 +86,28 @@ export class QrCode implements OnInit {
   }
 
   /**
-   * 🌐 يُرجع الـ Base URL الحالي للفرونتاند (Vercel أو Localhost تلقائياً)
+   * 🌐 يُرجع الـ Base URL الحالي للفرونتاند
    */
   private getAppBaseUrl(): string {
     return this.document.location.origin;
   }
 
-  /** 🎯 توليد رابط الـ QR ديناميكياً اعتماداً على الدومين الحالي للفرونتاند */
+  /** 🎯 توليد الرابط الصحيح 100% الخاص بالمنيو والسيرفر */
   generateDynamicQrUrl(table: Table, target: 'client' | 'server'): string {
     const baseUrl = this.getAppBaseUrl();
     const shopId = table.shop_id || this.auth.getUser()?.shop?.id || 1;
 
-    // إذا كان الـ DB أرجعت رابط يحتوي على Vercel أستعمله، وإلا ولد الرابط ديناميكياً باستخدام Origin المحلي/المنشور
     if (target === 'client') {
-      if (table.qr_code_url && table.qr_code_url.includes('vercel.app')) {
-        return table.qr_code_url;
-      }
+      // يولد الرابط الصحيح: /menu?shop_id=5&table=1
       return `${baseUrl}/menu?shop_id=${shopId}&table=${table.table_number}`;
     } else {
-      if (table.server_qr_code_url && table.server_qr_code_url.includes('vercel.app')) {
-        return table.server_qr_code_url;
-      }
+      // يولد رابط السيرفر: /server/table/5/1/checkout
       return `${baseUrl}/server/table/${shopId}/${table.table_number}/checkout`;
     }
   }
 
   /**
-   * ⬇️ تحميل صورة الـ QR بدقة عالية (512px) مع تعطيل التنعيم
+   * ⬇️ تحميل صورة الـ QR
    */
   downloadQr(table: Table, target: 'client' | 'server'): void {
     const type = target === 'client' ? 'menu' : 'server';
@@ -140,7 +135,6 @@ export class QrCode implements OnInit {
       }
     }
 
-    // Fallback: مولّد خارجي بجودة عالية
     const url = `https://api.qrserver.com/v1/create-qr-code/?size=512x512&data=${encodeURIComponent(this.generateDynamicQrUrl(table, target))}`;
     window.open(url, '_blank');
   }
@@ -149,9 +143,6 @@ export class QrCode implements OnInit {
    * 🗑️ حذف طاولة
    */
   deleteTable(id: number): void {
-    console.log('🗑️ Deleting table:', id);
-    console.log('📡 Sending DELETE request for table:', id);
-
     this.tableService.deleteTable(id).subscribe({
       next: (res) => {
         if (res.success) {
