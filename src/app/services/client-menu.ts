@@ -8,37 +8,38 @@ import { environment } from '../../environments/environment';
 })
 export class ClientMenuService {
   private http = inject(HttpClient);
-  private apiUrl = environment.apiUrl; // e.g., https://restaurant-coffe-backend-production.up.railway.app/api
+  private apiUrl = environment.apiUrl;
 
   /**
-   * 🚀 استخراج الـ Subdomain أو قراءته من الـ Query Parameter `?shop=xxx`
+   * 🚀 استخراج الـ Query Parameters الصحيحة من الرابط (?shop_id=X&table=Y)
    */
-  getShopIdentifier(customShop?: string | null): string {
-    if (customShop) return customShop;
-
-    // 1. البحث في Query Parameter من الرابط
+  getShopParams() {
     const urlParams = new URLSearchParams(window.location.search);
-    const shopParam = urlParams.get('shop') || urlParams.get('subdomain');
-    if (shopParam) return shopParam;
+    
+    // يقرأ shop_id أو shop
+    const shopId = urlParams.get('shop_id') || urlParams.get('shop') || urlParams.get('subdomain');
+    // يقرأ table أو table_id
+    const table = urlParams.get('table') || urlParams.get('table_id');
 
-    // 2. Fallback: استخراج الـ Subdomain من الـ Hostname
-    const hostname = window.location.hostname;
-    const parts = hostname.split('.');
-    if (parts.length > 1 && parts[0] !== 'www' && parts[0] !== 'localhost') {
-      return parts[0];
-    }
-
-    return '';
+    return {
+      shop_id: shopId || '',
+      table: table || ''
+    };
   }
 
   /**
-   * جلب المنيو بالـ shop الممرر أو المستخرج تلقائياً
+   * جلب المنيو بالـ shop_id و table الصحيحين
    */
-  getMenu(shopSlug?: string | null): Observable<any> {
-    const shop = this.getShopIdentifier(shopSlug);
+  getMenu(customShop?: string | null): Observable<any> {
+    const paramsData = this.getShopParams();
     let params = new HttpParams();
-    if (shop) {
-      params = params.set('shop', shop).set('subdomain', shop);
+
+    const shopId = customShop || paramsData.shop_id;
+    if (shopId) {
+      params = params.set('shop_id', shopId);
+    }
+    if (paramsData.table) {
+      params = params.set('table', paramsData.table);
     }
 
     const url = `${this.apiUrl}/client/menu`;
@@ -48,10 +49,16 @@ export class ClientMenuService {
   /**
    * إرسال الطلب (Order)
    */
-  sendOrder(orderData: any, shopSlug?: string | null): Observable<any> {
-    const shop = this.getShopIdentifier(shopSlug);
+  sendOrder(orderData: any, customShop?: string | null): Observable<any> {
+    const paramsData = this.getShopParams();
+    const shopId = customShop || paramsData.shop_id;
+
     const url = `${this.apiUrl}/client/orders`;
-    const payload = shop ? { ...orderData, shop, subdomain: shop } : orderData;
+    const payload = {
+      ...orderData,
+      shop_id: shopId,
+      table: paramsData.table
+    };
 
     return this.http.post(url, payload, { withCredentials: true });
   }
@@ -86,28 +93,37 @@ export class ClientMenuService {
   /**
    * 🟢 Signale au backend que ce visiteur est sur la page menu
    */
-  enterMenu(shopSlug?: string | null): Observable<any> {
+  enterMenu(customShop?: string | null): Observable<any> {
     const url = `${this.apiUrl}/client/menu/enter`;
     const session_id = this.getSessionId();
-    const shop = this.getShopIdentifier(shopSlug);
-    return this.http.post(url, { session_id, shop, subdomain: shop }, { withCredentials: true });
+    const paramsData = this.getShopParams();
+    const shopId = customShop || paramsData.shop_id;
+
+    return this.http.post(
+      url, 
+      { session_id, shop_id: shopId, table: paramsData.table }, 
+      { withCredentials: true }
+    );
   }
 
   /**
    * 🔴 Signale au backend que ce visiteur quitte la page menu
    */
-  leaveMenu(shopSlug?: string | null): void {
+  leaveMenu(customShop?: string | null): void {
     const session_id = this.getSessionId();
-    const shop = this.getShopIdentifier(shopSlug);
+    const paramsData = this.getShopParams();
+    const shopId = customShop || paramsData.shop_id;
     const url = `${this.apiUrl}/client/menu/leave`;
 
-    const body = new Blob([JSON.stringify({ session_id, shop, subdomain: shop })], {
+    const payload = { session_id, shop_id: shopId, table: paramsData.table };
+
+    const body = new Blob([JSON.stringify(payload)], {
       type: 'application/json',
     });
     if (navigator.sendBeacon) {
       navigator.sendBeacon(url, body);
     } else {
-      this.http.post(url, { session_id, shop, subdomain: shop }, { withCredentials: true }).subscribe();
+      this.http.post(url, payload, { withCredentials: true }).subscribe();
     }
   }
 }
