@@ -86,29 +86,28 @@ export class QrCode implements OnInit {
   }
 
   /**
-   * 🌐 يُرجع الـ Base URL الحالي للفرونتاند
+   * 🌐 يُرجع الـ Base URL الحالي للفرونتاند (Vercel أو Localhost تلقائياً)
    */
   private getAppBaseUrl(): string {
-    const origin = this.document.location.origin; // يرجع ديريكت https://restaurant-coffe-two.vercel.app أو localhost
-    return origin;
+    return this.document.location.origin;
   }
 
-  /** 🎯 الرابط الديناميكي للـ QR (عميل أو سرفور) القادم من الباكاند أو المولّد ديناميكياً */
+  /** 🎯 توليد رابط الـ QR ديناميكياً اعتماداً على الدومين الحالي للفرونتاند */
   generateDynamicQrUrl(table: Table, target: 'client' | 'server'): string {
-    const subdomain = this.auth.getUser()?.shop?.subdomain ?? '';
+    const baseUrl = this.getAppBaseUrl();
+    const shopId = table.shop_id || this.auth.getUser()?.shop?.id || 1;
 
+    // إذا كان الـ DB أرجعت رابط يحتوي على Vercel أستعمله، وإلا ولد الرابط ديناميكياً باستخدام Origin المحلي/المنشور
     if (target === 'client') {
-      // 1. إذا الباكاند بعث qr_code_url جاهز نستعملوه مباشرة
-      if (table.qr_code_url) {
+      if (table.qr_code_url && table.qr_code_url.includes('vercel.app')) {
         return table.qr_code_url;
       }
-      // 2. Fallback ديناميكي يتكيف مع Vercel و Localhost
-      return `${this.getAppBaseUrl()}/menu?shop=${subdomain}&table_id=${table.table_number}`;
+      return `${baseUrl}/menu?shop_id=${shopId}&table=${table.table_number}`;
     } else {
-      if (table.server_qr_code_url) {
+      if (table.server_qr_code_url && table.server_qr_code_url.includes('vercel.app')) {
         return table.server_qr_code_url;
       }
-      return `${this.getAppBaseUrl()}/server/table/${table.table_number}`;
+      return `${baseUrl}/server/table/${shopId}/${table.table_number}/checkout`;
     }
   }
 
