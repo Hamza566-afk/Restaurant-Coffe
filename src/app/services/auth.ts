@@ -19,7 +19,39 @@ export class AuthService {
    */
   readonly currentUser = signal<any>(null);
 
+  /** In-memory CSRF token for cross-origin requests (vercel.app → railway.app). */
+  private xsrfToken: string | null = null;
+
   constructor(private http: HttpClient, private router: Router) {}
+
+  getXsrfToken(): string | null {
+    return this.xsrfToken;
+  }
+
+  /**
+   * 1. Establish Sanctum session cookie, then fetch CSRF token as JSON.
+   *    Required because document.cookie cannot read railway.app cookies from vercel.app.
+   */
+  prepareCsrf(): Observable<string> {
+    return this.http
+      .get(`${this.serverUrl}/sanctum/csrf-cookie`, { withCredentials: true })
+      .pipe(
+        switchMap(() =>
+          this.http.get<{ csrf_token: string }>(`${this.apiUrl}/csrf-token`, {
+            withCredentials: true,
+          })
+        ),
+        tap((res) => {
+          this.xsrfToken = res.csrf_token;
+        }),
+        switchMap((res) => of(res.csrf_token))
+      );
+  }
+
+  /** @deprecated Use prepareCsrf() */
+  getCsrfCookie(): Observable<any> {
+    return this.prepareCsrf();
+  }
 
   /**
    * 🆕 Synchronous helper: returns the owner's name (or a fallback).
@@ -42,18 +74,12 @@ export class AuthService {
   }
 
   /**
-   * 1. طلب الـ CSRF Cookie من Laravel
-   */
-  getCsrfCookie(): Observable<any> {
-    return this.http.get(`${this.serverUrl}/sanctum/csrf-cookie`, { withCredentials: true });
-  }
-
-  /**
    * 2. عملية تسجيل دخول الـ Admin
    */
   login(credentials: any): Observable<any> {
-    return this.getCsrfCookie().pipe(
+    return this.prepareCsrf().pipe(
       switchMap(() => this.http.post(`${this.apiUrl}/login`, credentials, { withCredentials: true })),
+      switchMap(() => this.prepareCsrf()),
       switchMap(() => this.http.get(`${this.apiUrl}/user`, { withCredentials: true })),
     );
   }
@@ -62,13 +88,10 @@ export class AuthService {
    * 2b. عملية تسجيل دخول الـ Owner (🚀 محدثة لجلب بيانات الـ Shop والاشتراكات فوراً)
    */
   loginOwner(credentials: any): Observable<any> {
-    return this.getCsrfCookie().pipe(
-      // 1. نعملوا الـ Post login
+    return this.prepareCsrf().pipe(
       switchMap(() => this.http.post(`${this.apiUrl}/login-owner`, credentials, { withCredentials: true })),
-      // 2. نمشيو نجيبوا الـ User Profile بالـ Shop والـ Subscriptions متاعو ديريكت
+      switchMap(() => this.prepareCsrf()),
       switchMap(() => this.http.get(`${this.apiUrl}/user`, { withCredentials: true })),
-      // 🆕 Store the user payload into the reactive signal so the sidebar
-      //    can display the real owner name without a reload.
       tap((res: any) => {
         const user = res?.user ?? res;
         this.currentUser.set(user);
@@ -80,7 +103,7 @@ export class AuthService {
    * 2c. عملية تسجيل حساب جديد للـ Owner
    */
   register(userData: any): Observable<any> {
-    return this.getCsrfCookie().pipe(
+    return this.prepareCsrf().pipe(
       switchMap(() => this.http.post(`${this.apiUrl}/register`, userData, { withCredentials: true }))
     );
   }
@@ -132,7 +155,8 @@ export class AuthService {
    * 5. دالة الخروج
    */
   performLogout(role: 'admin' | 'owner'): void {
-    this.currentUser.set(null); // 🆕 Clear the reactive user state on logout
+    this.currentUser.set(null);
+    this.xsrfToken = null;
     this.clearLocalAuthState();
 
     const request$ = role === 'owner' ? this.logoutOwner() : this.logout();
