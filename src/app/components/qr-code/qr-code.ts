@@ -92,18 +92,28 @@ export class QrCode implements OnInit {
     return this.document.location.origin;
   }
 
-  /** 🎯 توليد الرابط الصحيح 100% الخاص بالمنيو والسيرفر */
+  /** 🎯 توليد الرابط الصحيح الخاص بالمنيو والسيرفر */
   generateDynamicQrUrl(table: Table, target: 'client' | 'server'): string {
     const baseUrl = this.getAppBaseUrl();
-    const shopId = table.shop_id || this.auth.getUser()?.shop?.id || 1;
+    const shopSubdomain = this.auth.getUser()?.shop?.subdomain;
+    const shopId = table.shop_id || this.auth.getUser()?.shop?.id;
 
     if (target === 'client') {
-      // يولد الرابط الصحيح: /menu?shop_id=5&table=1
-      return `${baseUrl}/menu?shop_id=${shopId}&table=${table.table_number}`;
-    } else {
-      // يولد رابط السيرفر: /server/table/5/1/checkout
+      // Prefer subdomain slug (?shop=) — backend resolves tenant from it.
+      if (shopSubdomain) {
+        return `${baseUrl}/menu?shop=${encodeURIComponent(shopSubdomain)}&table=${table.table_number}`;
+      }
+      if (shopId) {
+        return `${baseUrl}/menu?shop_id=${shopId}&table=${table.table_number}`;
+      }
+      return `${baseUrl}/menu?table=${table.table_number}`;
+    }
+
+    if (shopId) {
       return `${baseUrl}/server/table/${shopId}/${table.table_number}/checkout`;
     }
+
+    return `${baseUrl}/server/table/${table.table_number}/checkout`;
   }
 
   /**

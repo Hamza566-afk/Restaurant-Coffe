@@ -30,7 +30,7 @@ export class AuthService {
   }
 
   getProducts(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/products`);
+    return this.http.get(`${this.apiUrl}/products`, { withCredentials: true });
   }
 
   /**

@@ -52,22 +52,31 @@ export class MenuComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // 🚀 قراءة البرامترات من الـ URL (مثال: ?shop=nabil-shop&table_id=1)
     this.route.queryParams.subscribe(params => {
-      if (params['table_id']) {
-        this.tableNumber = +params['table_id'];
+      const tableRaw = params['table'] ?? params['table_id'];
+      this.tableNumber = tableRaw ? +tableRaw : null;
+      if (this.tableNumber !== null && Number.isNaN(this.tableNumber)) {
+        this.tableNumber = null;
       }
-      if (params['shop']) {
-        this.shopSlug = params['shop'];
-      }
+
+      this.shopSlug =
+        params['shop'] ??
+        params['subdomain'] ??
+        params['shop_id'] ??
+        null;
+
+      this.loadMenuData();
+      this.startPresenceTracking();
     });
+  }
 
-    this.loadMenuData();
-
-    // 🟢 تسجيل دخول الزائر لـ Presence System
+  private startPresenceTracking(): void {
     this.menuService.enterMenu(this.shopSlug).subscribe();
 
-    // 🔄 Heartbeat كل 30 ثانية
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+    }
+
     this.heartbeatTimer = setInterval(() => {
       this.menuService.enterMenu(this.shopSlug).subscribe();
     }, 30000);

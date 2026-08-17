@@ -11,24 +11,41 @@ export class ClientMenuService {
   private apiUrl = environment.apiUrl; // e.g., https://restaurant-coffe-backend-production.up.railway.app/api
 
   /**
+   * 🚀 Read shop slug / id and table number from the current route query string.
+   */
+  getRouteContext(customShop?: string | null): { shop: string; tableNumber: number | null } {
+    const urlParams = new URLSearchParams(window.location.search);
+    const shop =
+      customShop ||
+      urlParams.get('shop') ||
+      urlParams.get('subdomain') ||
+      urlParams.get('shop_id') ||
+      '';
+
+    const tableRaw = urlParams.get('table') || urlParams.get('table_id');
+    const tableNumber = tableRaw ? +tableRaw : null;
+
+    return { shop, tableNumber: tableNumber && !Number.isNaN(tableNumber) ? tableNumber : null };
+  }
+
+  /**
    * 🚀 استخراج الـ Subdomain أو قراءته من الـ Query Parameter `?shop=xxx`
    */
   getShopIdentifier(customShop?: string | null): string {
-    if (customShop) return customShop;
+    return this.getRouteContext(customShop).shop;
+  }
 
-    // 1. البحث في Query Parameter من الرابط
-    const urlParams = new URLSearchParams(window.location.search);
-    const shopParam = urlParams.get('shop') || urlParams.get('subdomain');
-    if (shopParam) return shopParam;
-
-    // 2. Fallback: استخراج الـ Subdomain من الـ Hostname
-    const hostname = window.location.hostname;
-    const parts = hostname.split('.');
-    if (parts.length > 1 && parts[0] !== 'www' && parts[0] !== 'localhost') {
-      return parts[0];
+  private buildShopParams(shop: string): HttpParams {
+    let params = new HttpParams();
+    if (!shop) {
+      return params;
     }
 
-    return '';
+    if (/^\d+$/.test(shop)) {
+      return params.set('shop_id', shop);
+    }
+
+    return params.set('shop', shop).set('subdomain', shop);
   }
 
   /**
@@ -36,10 +53,7 @@ export class ClientMenuService {
    */
   getMenu(shopSlug?: string | null): Observable<any> {
     const shop = this.getShopIdentifier(shopSlug);
-    let params = new HttpParams();
-    if (shop) {
-      params = params.set('shop', shop).set('subdomain', shop);
-    }
+    const params = this.buildShopParams(shop);
 
     const url = `${this.apiUrl}/client/menu`;
     return this.http.get(url, { params, withCredentials: true });
@@ -51,7 +65,12 @@ export class ClientMenuService {
   sendOrder(orderData: any, shopSlug?: string | null): Observable<any> {
     const shop = this.getShopIdentifier(shopSlug);
     const url = `${this.apiUrl}/client/orders`;
-    const payload = shop ? { ...orderData, shop, subdomain: shop } : orderData;
+    const shopFields = /^\d+$/.test(shop)
+      ? { shop_id: +shop }
+      : shop
+        ? { shop, subdomain: shop }
+        : {};
+    const payload = { ...orderData, ...shopFields };
 
     return this.http.post(url, payload, { withCredentials: true });
   }
@@ -90,7 +109,11 @@ export class ClientMenuService {
     const url = `${this.apiUrl}/client/menu/enter`;
     const session_id = this.getSessionId();
     const shop = this.getShopIdentifier(shopSlug);
-    return this.http.post(url, { session_id, shop, subdomain: shop }, { withCredentials: true });
+    const shopFields = /^\d+$/.test(shop)
+      ? { shop_id: +shop }
+      : { shop, subdomain: shop };
+
+    return this.http.post(url, { session_id, ...shopFields }, { withCredentials: true });
   }
 
   /**
@@ -99,15 +122,18 @@ export class ClientMenuService {
   leaveMenu(shopSlug?: string | null): void {
     const session_id = this.getSessionId();
     const shop = this.getShopIdentifier(shopSlug);
+    const shopFields = /^\d+$/.test(shop)
+      ? { shop_id: +shop }
+      : { shop, subdomain: shop };
     const url = `${this.apiUrl}/client/menu/leave`;
 
-    const body = new Blob([JSON.stringify({ session_id, shop, subdomain: shop })], {
+    const body = new Blob([JSON.stringify({ session_id, ...shopFields })], {
       type: 'application/json',
     });
     if (navigator.sendBeacon) {
       navigator.sendBeacon(url, body);
     } else {
-      this.http.post(url, { session_id, shop, subdomain: shop }, { withCredentials: true }).subscribe();
+      this.http.post(url, { session_id, ...shopFields }, { withCredentials: true }).subscribe();
     }
   }
 }
