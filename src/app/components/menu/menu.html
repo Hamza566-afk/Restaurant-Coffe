@@ -2,11 +2,9 @@
 
   <!-- 🛑 1. VIEW: MAIN MENU -->
   <div class="view-panel main-view" *ngIf="currentView === 'main' && !loading && !errorMessage">
-<!-- Header: Shop Logo + Name strictly TOP-LEFT (LTR), no cart icon -->
     <header class="app-header">
       <div class="shop-brand">
         <div class="shop-logo">
-          <!-- Custom logo if present, else default green coffee cup logo asset -->
           <img [src]="getLogoUrl()" alt="logo" class="shop-logo-img" (error)="onLogoError()" *ngIf="!logoError" />
           <div *ngIf="logoError" class="shop-logo-fallback">
             <i class="fas fa-mug-saucer"></i>
@@ -33,9 +31,9 @@
       </button>
     </div>
 
-    <!-- Hero Featured Banner (Top Product) — shown only in the full menu view -->
+    <!-- Hero Featured Banner -->
     <div class="hero-banner" *ngIf="!showFavorites && getFeaturedProduct()">
-      <div class="hero-badge"><i class="fas fa-crown"></i> </div>
+      <div class="hero-badge"><i class="fas fa-crown"></i></div>
       <div class="hero-img-wrap">
         <img [src]="getImageUrl(getFeaturedProduct().image_path)" [alt]="getFeaturedProduct().name" class="hero-img">
       </div>
@@ -65,11 +63,10 @@
         </div>
         <div class="card-info">
           <h4>{{ product.name }}</h4>
-          <!-- Description ONLY if present (no placeholder) -->
           <p class="short-desc" *ngIf="product.description && product.description.trim() !== ''">{{ product.description }}</p>
           <div class="card-footer">
             <span class="price">DT {{ product.price }}</span>
-            <button class="add-btn">+</button>
+            <button class="add-btn" (click)="$event.stopPropagation(); quickAddToCart(product)">+</button>
           </div>
         </div>
       </div>
@@ -90,17 +87,15 @@
       <div class="details-header">
         <div>
           <h2>{{ selectedProduct.name }}</h2>
-          <!-- No hardcoded sub-text: only show rating -->
           <div class="details-rating">⭐ 4.5</div>
         </div>
       </div>
 
-      <!-- Description ONLY if present (no placeholder) -->
       <p class="full-description" *ngIf="selectedProduct.description && selectedProduct.description.trim() !== ''">
         {{ selectedProduct.description }}
       </p>
 
-      <!-- Sizes Selection (only when the product has size variants) -->
+      <!-- Sizes Selection -->
       <div class="size-section" *ngIf="hasSizes">
         <h4>الحجم (Size)</h4>
         <div class="size-options">
@@ -152,6 +147,9 @@
           <button (click)="updateCartQuantity(i, -1)">-</button>
           <span>{{ item.quantity }}</span>
           <button (click)="updateCartQuantity(i, 1)">+</button>
+          <button class="delete-btn" (click)="removeFromCart(i)" title="حذف">
+            <i class="fas fa-trash-can"></i>
+          </button>
         </div>
       </div>
 
@@ -170,36 +168,84 @@
 
     <div class="empty-cart-state" *ngIf="cart.length === 0">
       <p>سلتك فارغة حالياً 🛒</p>
-      <button class="primary-btn" (click)="currentView = 'main'">تصفح المنيو</button>
+      <button class="primary-btn" (click)="goHome()">تصفح المنيو</button>
     </div>
   </div>
 
-  <!-- 🛑 4. VIEW: SUCCESS PAGE -->
-  <div class="view-panel success-view" *ngIf="currentView === 'success'">
-    <div class="success-animation-content">
-      <div class="success-icon-wrap">☕🎉</div>
-      <h2>شكراً لك!</h2>
-      <p>تم إرسال طلبك إلى الكاونتر بنجاح.</p>
-      <span class="sub-info">الرجاء الانتظار على طاولتك، سيصلك طلبك في أقرب وقت.</span>
-      <button class="white-btn" (click)="currentView = 'main'">العودة للمنيو الرئيسي</button>
+  <!-- 🛑 4. VIEW: LIVE ORDER TRACKING -->
+  <div class="view-panel tracking-view" *ngIf="currentView === 'tracking'">
+    <div class="back-nav" (click)="currentView = 'main'">⟨ العودة للمنيو</div>
+
+    <div class="tracking-card" *ngIf="activeOrder">
+      <div class="tracking-header">
+        <h3>متابعة الطلب رقم #{{ activeOrder.id }}</h3>
+        <span class="table-badge">طاولة رقم {{ activeOrder.table_id }}</span>
+      </div>
+
+      <!-- Stepper / Status Progress Bar -->
+      <div class="status-stepper">
+        <div class="step" [class.completed]="getStatusProgressStep() >= 1" [class.active]="getStatusProgressStep() === 1">
+          <div class="step-icon"><i class="fas fa-clock"></i></div>
+          <span>قيد الإنتظار</span>
+        </div>
+        <div class="step" [class.completed]="getStatusProgressStep() >= 2" [class.active]="getStatusProgressStep() === 2">
+          <div class="step-icon"><i class="fas fa-fire"></i></div>
+          <span>قيد التحضير</span>
+        </div>
+        <div class="step" [class.completed]="getStatusProgressStep() >= 3" [class.active]="getStatusProgressStep() === 3">
+          <div class="step-icon"><i class="fas fa-mug-hot"></i></div>
+          <span>جاهز</span>
+        </div>
+        <div class="step" [class.completed]="getStatusProgressStep() >= 4" [class.active]="getStatusProgressStep() === 4">
+          <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+          <span>تم الخلاص</span>
+        </div>
+      </div>
+
+      <!-- Items List Summary -->
+      <div class="tracking-items">
+        <h4>محتوى الطلب:</h4>
+        <div class="track-item" *ngFor="let item of activeOrder.items">
+          <span>{{ item.quantity }} × {{ item.product?.name || 'منتج' }} <small *ngIf="item.size_name">({{ item.size_name }})</small></span>
+          <strong>DT {{ (item.price * item.quantity) | number:'1.2-2' }}</strong>
+        </div>
+        <hr>
+        <div class="track-total">
+          <span>المجموع الكلي:</span>
+          <strong>DT {{ activeOrder.total_price | number:'1.2-2' }}</strong>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="tracking-actions" *ngIf="activeOrder.status === 'pending'">
+        <button class="danger-btn" (click)="cancelActiveOrder()">
+          <i class="fas fa-trash-can"></i> إلغاء الطلب
+        </button>
+      </div>
+    </div>
+
+    <div class="empty-cart-state" *ngIf="!activeOrder">
+      <p>لا يوجد طلب نشط حالياً.</p>
+      <button class="primary-btn" (click)="goHome()">العودة للمنيو</button>
     </div>
   </div>
 
 </div>
 
-<!-- 🛑 5. FIXED BOTTOM NAVIGATION BAR (Star | Home | Cart — Home centered) -->
+<!-- 🛑 5. FIXED BOTTOM NAVIGATION BAR -->
 <nav class="bottom-nav">
   <button class="nav-btn" [class.active]="showFavorites" (click)="toggleFavorites()">
     <i class="fas fa-star"></i>
-    <span>favoit</span>
+    <span>favoris</span>
   </button>
   <button class="nav-btn home-btn" [class.active]="!showFavorites && currentView === 'main'" (click)="goHome()">
     <i class="fas fa-house"></i>
     <span>Home</span>
   </button>
-  <button class="nav-btn" [class.has-items]="cart.length > 0" (click)="openCart()">
+  <button class="nav-btn" [class.has-items]="cart.length > 0 || activeOrder" (click)="openCart()">
     <i class="fas fa-cart-shopping"></i>
     <span class="nav-badge" *ngIf="cart.length > 0">{{ cart.length }}</span>
+    <span class="nav-badge live-badge" *ngIf="cart.length === 0 && activeOrder">🔴</span>
     <span>Orders</span>
   </button>
 </nav>

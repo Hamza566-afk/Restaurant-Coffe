@@ -50,28 +50,19 @@ export class OrderService {
 
   private apiUrl = `${environment.apiUrl}/orders`;
 
-  /** GET /api/orders */
   getOrders(): Observable<Order[]> {
     return this.http.get<Order[]>(this.apiUrl, { withCredentials: true });
   }
 
-  /** PUT /api/orders/{id}/status */
   updateOrderStatus(id: number, status: OrderStatus): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}/status`, { status }, { withCredentials: true });
   }
 
-  /**
-   * 🗓️ Clôture de journée — Archive toutes les commandes actives du shop courant.
-   * POST /api/orders/cloturer
-   */
   cloturerJournee(): Observable<any> {
     return this.http.post(`${this.apiUrl}/cloturer`, {}, { withCredentials: true });
   }
 
-  /**
-   * 🚀 GET /api/client/orders/{id}/track (Real-time SSE Stream)
-   * Suivi en temps réel de la commande côté client.
-   */
+  /** 🚀 Real-time SSE Stream */
   trackOrder(orderId: number, shopQueryParam: string = ''): Observable<any> {
     return new Observable(observer => {
       const baseUrl = environment.apiUrl.replace(/\/orders\/?$/, '');
@@ -95,5 +86,12 @@ export class OrderService {
 
       return () => eventSource.close();
     });
+  }
+
+  /** ❌ إلغاء الطلب من طرف الكليون */
+  cancelClientOrder(orderId: number, shopQueryParam: string = ''): Observable<any> {
+    const baseUrl = environment.apiUrl.replace(/\/orders\/?$/, '');
+    const url = `${baseUrl}/client/orders/${orderId}${shopQueryParam ? '?shop=' + shopQueryParam : ''}`;
+    return this.http.delete(url);
   }
 }

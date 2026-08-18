@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { ClientMenuService } from '../../services/client-menu';
+import { ClientMenuService, ActiveOrderResponse } from '../../services/client-menu';
 
 interface CartItem {
   product: any;
@@ -24,7 +24,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   loading: boolean = true;
   errorMessage: string = '';
 
-  currentView: 'main' | 'details' | 'cart' | 'success' = 'main';
+  currentView: 'main' | 'details' | 'cart' | 'tracking' = 'main';
 
   selectedCategoryId: number | null = null;
   searchQuery: string = '';
@@ -41,14 +41,17 @@ export class MenuComponent implements OnInit, OnDestroy {
   tableNumber: number | null = null;
   shopSlug: string | null = null;
 
-  // 🚀 الباكاند URL الفعلي للصور والـ Storage
-  backendUrl: string = 'https://restaurant-coffe-backend-production.up.railway.app';
+  // Active Order Live Tracking
+  activeOrder: ActiveOrderResponse | null = null;
+  private eventSource: EventSource | null = null;
 
+  backendUrl: string = 'https://restaurant-coffe-backend-production.up.railway.app';
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     private menuService: ClientMenuService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private cd: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -67,6 +70,7 @@ export class MenuComponent implements OnInit, OnDestroy {
 
       this.loadMenuData();
       this.startPresenceTracking();
+      this.restoreActiveOrder();
     });
   }
 
@@ -121,7 +125,99 @@ export class MenuComponent implements OnInit, OnDestroy {
       clearInterval(this.heartbeatTimer);
       this.heartbeatTimer = null;
     }
+    this.closeSseConnection();
     this.menuService.leaveMenu(this.shopSlug);
+  }
+
+  // ─── Live Tracking (SSE) ───────────────────────────────────
+
+  restoreActiveOrder(): void {
+    const savedOrderId = localStorage.getItem('active_order_id');
+    if (savedOrderId) {
+      const orderId = +savedOrderId;
+      this.menuService.getActiveOrder(orderId).subscribe({
+        next: (order) => {
+          if (order && order.status !== 'paid' && order.status !== 'cancelled') {
+            this.activeOrder = order;
+            this.startOrderStream(order.id);
+          } else {
+            localStorage.removeItem('active_order_id');
+          }
+        },
+        error: () => {
+          localStorage.removeItem('active_order_id');
+        }
+      });
+    }
+  }
+
+  startOrderStream(orderId: number): void {
+    this.closeSseConnection();
+    const url = this.menuService.getOrderSseUrl(orderId);
+    this.eventSource = new EventSource(url);
+
+    this.eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data && data.status) {
+          if (this.activeOrder) {
+            this.activeOrder.status = data.status;
+          }
+          this.cd.detectChanges();
+
+          if (data.status === 'paid' || data.status === 'cancelled') {
+            localStorage.removeItem('active_order_id');
+            this.closeSseConnection();
+          }
+        }
+      } catch (err) {
+        console.error('Error parsing SSE data', err);
+      }
+    };
+
+    this.eventSource.onerror = (err) => {
+      console.error('SSE Connection error:', err);
+      this.closeSseConnection();
+    };
+  }
+
+  closeSseConnection(): void {
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.eventSource = null;
+    }
+  }
+
+  cancelActiveOrder(): void {
+    if (!this.activeOrder) return;
+    if (confirm('هل أنت متأكد من إلغاء الطلب؟')) {
+      this.loading = true;
+      this.menuService.cancelOrder(this.activeOrder.id).subscribe({
+        next: () => {
+          this.loading = false;
+          alert('تم إلغاء الطلب بنجاح');
+          this.activeOrder = null;
+          localStorage.removeItem('active_order_id');
+          this.closeSseConnection();
+          this.currentView = 'main';
+        },
+        error: (err) => {
+          this.loading = false;
+          alert(err.error?.message || 'تعذر إلغاء الطلب حالياً.');
+        }
+      });
+    }
+  }
+
+  getStatusProgressStep(): number {
+    if (!this.activeOrder) return 1;
+    switch (this.activeOrder.status) {
+      case 'pending': return 1;
+      case 'confirmed': return 2;
+      case 'ready': return 3;
+      case 'paid': return 4;
+      default: return 1;
+    }
   }
 
   // ─── Shop helpers ───────────────────────────────────────────
@@ -209,7 +305,11 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   openCart(): void {
-    this.currentView = 'cart';
+    if (this.activeOrder && this.cart.length === 0) {
+      this.currentView = 'tracking';
+    } else {
+      this.currentView = 'cart';
+    }
   }
 
   // ─── Product size helpers ───────────────────────────────────
@@ -316,6 +416,10 @@ export class MenuComponent implements OnInit, OnDestroy {
     }
   }
 
+  removeFromCart(index: number) {
+    this.cart.splice(index, 1);
+  }
+
   getCartTotal(): number {
     return this.cart.reduce((sum, item) => sum + item.totalPrice, 0);
   }
@@ -342,10 +446,15 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.loading = true;
 
     this.menuService.sendOrder(orderPayload, this.shopSlug).subscribe({
-      next: () => {
+      next: (res) => {
         this.cart = [];
         this.loading = false;
-        this.currentView = 'success';
+        if (res && res.order) {
+          this.activeOrder = res.order;
+          localStorage.setItem('active_order_id', res.order.id.toString());
+          this.startOrderStream(res.order.id);
+        }
+        this.currentView = 'tracking';
       },
       error: (err) => {
         console.error('Order submission failed', err);

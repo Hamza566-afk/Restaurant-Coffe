@@ -3,6 +3,40 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+export interface OrderItemPayload {
+  product_id: number;
+  quantity: number;
+  price: number;
+  size_name?: string | null;
+}
+
+export interface OrderPayload {
+  table_number: number;
+  items: OrderItemPayload[];
+  total_price: number;
+  note?: string;
+}
+
+export interface ActiveOrderResponse {
+  id: number;
+  table_id: number;
+  status: 'pending' | 'confirmed' | 'ready' | 'paid' | 'cancelled';
+  total_price: number;
+  note?: string;
+  created_at: string;
+  items: Array<{
+    id: number;
+    product_id: number;
+    quantity: number;
+    price: number;
+    size_name?: string | null;
+    product?: {
+      name: string;
+      image_path?: string;
+    };
+  }>;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -73,6 +107,29 @@ export class ClientMenuService {
     const payload = { ...orderData, ...shopFields };
 
     return this.http.post(url, payload, { withCredentials: true });
+  }
+
+  /**
+   * 🛑 إلغاء الطلب من طرف الحريف (عندما تكون الحالة pending)
+   */
+  cancelOrder(orderId: number): Observable<any> {
+    const url = `${this.apiUrl}/client/orders/${orderId}/cancel`;
+    return this.http.post(url, {}, { withCredentials: true });
+  }
+
+  /**
+   * 🔄 جلب معلومات الطلب النشط
+   */
+  getActiveOrder(orderId: number): Observable<ActiveOrderResponse> {
+    const url = `${this.apiUrl}/client/orders/${orderId}`;
+    return this.http.get<ActiveOrderResponse>(url, { withCredentials: true });
+  }
+
+  /**
+   * 📡 رابط الـ SSE Stream لتحديث حالة الطلب
+   */
+  getOrderSseUrl(orderId: number): string {
+    return `${this.apiUrl}/client/orders/${orderId}/stream`;
   }
 
   // ─── Live Active Users ──────────────────────────────
