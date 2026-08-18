@@ -1,18 +1,16 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export type OrderStatus = 'pending' | 'confirmed' | 'ready' | 'paid' | 'cancelled';
 
-// 🚀 Interface متع الـ Product اللي جاي مع الـ Eager Loading
 export interface Product {
   id: number;
   name: string;
   price: number;
 }
 
-// 🚀 Interface متع الـ Table باش الـ HTML يقرأ table_number
 export interface Table {
   id: number;
   shop_id: number;
@@ -22,21 +20,21 @@ export interface Table {
 
 export interface OrderItem {
   id?: number;
-  product_id: number;   // 🚀 track في الـ HTML
-  quantity: number;     // 🚀 مطابقة لـ Laravel داتابيز
+  product_id: number;
+  quantity: number;
   price: number;
-  product?: Product;    // 🚀 فيه اسم المنتج الحقيقي
+  product?: Product;
 }
 
 export interface Order {
   id: number;
-  shop_id: number;      // 🚀 حقول الباكند
+  shop_id: number;
   table_id: number;
   customer?: string;
-  table?: Table;        // 🚀 Object Table كامل
+  table?: Table;
   items: OrderItem[];
-  total_price: number;  // 🚀 الحقل الحقيقي المبعوث مالـ الباكند
-  total?: number;       // 🚀 اختياري للآمان
+  total_price: number;
+  total?: number;
   status: OrderStatus;
   created_at: string;
   updated_at: string;
@@ -48,8 +46,8 @@ export interface Order {
 })
 export class OrderService {
   private http = inject(HttpClient);
+  private zone = inject(NgZone);
 
-  // 🚀 ربط المسار بـ environment.apiUrl للتواصل المباشر مع Railway
   private apiUrl = `${environment.apiUrl}/orders`;
 
   /** GET /api/orders */
@@ -68,5 +66,34 @@ export class OrderService {
    */
   cloturerJournee(): Observable<any> {
     return this.http.post(`${this.apiUrl}/cloturer`, {}, { withCredentials: true });
+  }
+
+  /**
+   * 🚀 GET /api/client/orders/{id}/track (Real-time SSE Stream)
+   * Suivi en temps réel de la commande côté client.
+   */
+  trackOrder(orderId: number, shopQueryParam: string = ''): Observable<any> {
+    return new Observable(observer => {
+      const baseUrl = environment.apiUrl.replace(/\/orders\/?$/, '');
+      const url = `${baseUrl}/client/orders/${orderId}/track${shopQueryParam ? '?shop=' + shopQueryParam : ''}`;
+      
+      const eventSource = new EventSource(url);
+
+      eventSource.onmessage = (event) => {
+        this.zone.run(() => {
+          const data = JSON.parse(event.data);
+          observer.next(data);
+        });
+      };
+
+      eventSource.onerror = (error) => {
+        this.zone.run(() => {
+          observer.error(error);
+          eventSource.close();
+        });
+      };
+
+      return () => eventSource.close();
+    });
   }
 }
