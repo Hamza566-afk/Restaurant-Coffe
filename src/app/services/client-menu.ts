@@ -28,6 +28,12 @@ export interface ActiveOrderResponse {
   total_price: number;
   note?: string;
   created_at: string;
+  
+  // 🚀 الخصائص الجديدة للترقيم اليومي وموقع الطلب في طابور الانتظار
+  display_number?: string | number;
+  daily_order_number?: number;
+  queue_position?: number;
+
   items: Array<{
     id: number;
     product_id: number;

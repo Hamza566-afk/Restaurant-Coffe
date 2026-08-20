@@ -178,9 +178,26 @@
 
     <div *ngIf="activeOrders && activeOrders.length > 0">
       <div class="tracking-card" *ngFor="let order of activeOrders" style="margin-bottom: 20px;">
+        
+        <!-- Header مع الترقيم اليومي للطلب -->
         <div class="tracking-header">
-          <h3>متابعة الطلب رقم #{{ order.id }}</h3>
-          <span class="table-badge">طاولة رقم {{ order.table?.table_number || order.table_id }}</span>
+          <div>
+            <h3>طلب رقم #{{ order.display_number || order.daily_order_number || order.id }}</h3>
+            <span class="table-badge">طاولة رقم {{ order.table?.table_number || order.table_id }}</span>
+          </div>
+        </div>
+
+        <!-- 🚀 Queue Position Box: الترتيب الحيني في طابور الانتظار -->
+        <div class="queue-info-card" *ngIf="order.queue_position !== undefined && order.queue_position !== null" style="background: #fff8e7; border: 1px solid #ffe0b2; border-radius: 12px; padding: 12px; margin: 15px 0; text-align: center;">
+          <div *ngIf="order.queue_position === 0" style="color: #2e7d32; font-weight: bold; font-size: 15px;">
+            🎉 طلبك قيد التحضير الآن!
+          </div>
+          <div *ngIf="order.queue_position === 1" style="color: #d84315; font-weight: bold; font-size: 15px;">
+            🔥 أنت التالي في طابور الانتظار!
+          </div>
+          <div *ngIf="order.queue_position > 1" style="color: #e65100; font-size: 14px;">
+            ⏳ ترتيبك في الانتظار: <strong style="font-size: 18px; color: #d84315;">#{{ order.queue_position }}</strong> (قبلك {{ order.queue_position - 1 }} طلبات)
+          </div>
         </div>
 
         <!-- Stepper / Status Progress Bar -->

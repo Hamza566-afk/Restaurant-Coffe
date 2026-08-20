@@ -17,7 +17,7 @@ interface CartItem {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './menu.html',
-  styleUrls: ['./menu.css']
+  styleUrl: './menu.css'
 })
 export class MenuComponent implements OnInit, OnDestroy {
   menuData: any = null;
@@ -41,7 +41,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   tableNumber: number | null = null;
   shopSlug: string | null = null;
 
-  // Active Orders Live Tracking (دعم طلبات متعددة لنفس الطاولة)
+  // Active Orders Live Tracking (دعم طلبات متعددة لنفس الطاولة مع التحديث الحيني للنوبة)
   activeOrders: ActiveOrderResponse[] = [];
   private eventSources: { [orderId: number]: EventSource } = {};
   private orderPollers: { [orderId: number]: any } = {};
@@ -161,7 +161,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         this.menuService.getActiveOrder(id).subscribe({
           next: (res: any) => {
             const order = res?.order || res;
-            if (order && !['paid', 'paye', 'cancelled', 'annule'].includes(order.status)) {
+            if (order && !['paid', 'paye', 'cancelled', 'annule'].includes(String(order.status).toLowerCase())) {
               if (!this.activeOrders.some(o => o.id === order.id)) {
                 this.activeOrders.push(order);
                 this.startOrderStream(order.id);
@@ -209,8 +209,8 @@ export class MenuComponent implements OnInit, OnDestroy {
     es.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data && data.status) {
-          this.updateOrderStatusInState(orderId, data.status);
+        if (data) {
+          this.updateOrderDataInState(orderId, data);
         }
       } catch (err) {
         console.error('Error parsing SSE data', err);
@@ -218,7 +218,6 @@ export class MenuComponent implements OnInit, OnDestroy {
     };
 
     es.onerror = () => {
-      // عند حدوث أي خطأ في الاتصال بالسيرفر، نغلق الـ SSE ونشغل الـ Polling تلقائياً
       this.closeSseConnection(orderId);
       this.startPollingFallback(orderId);
     };
@@ -231,23 +230,30 @@ export class MenuComponent implements OnInit, OnDestroy {
       this.menuService.getActiveOrder(orderId).subscribe({
         next: (res: any) => {
           const order = res?.order || res;
-          if (order && order.status) {
-            this.updateOrderStatusInState(orderId, order.status);
+          if (order) {
+            this.updateOrderDataInState(orderId, order);
           }
         },
         error: () => this.stopPolling(orderId)
       });
-    }, 4000);
+    }, 3000);
   }
 
-  private updateOrderStatusInState(orderId: number, status: string): void {
+  /**
+   * 🚀 التحديث الفوري لحالة الكوماند، الترقيم اليومي، والمرتبة الحالية في طابور الانتظار
+   */
+  private updateOrderDataInState(orderId: number, data: any): void {
     const target = this.activeOrders.find(o => o.id === orderId);
     if (target) {
-      target.status = status as any;
+      if (data.status) target.status = data.status;
+      if (data.display_number) (target as any).display_number = data.display_number;
+      if (data.daily_order_number) (target as any).daily_order_number = data.daily_order_number;
+      if (data.queue_position !== undefined) (target as any).queue_position = data.queue_position;
     }
     this.cd.detectChanges();
 
-    if (['paid', 'paye', 'cancelled', 'annule'].includes(status)) {
+    const statusClean = String(data.status).toLowerCase();
+    if (['paid', 'paye', 'cancelled', 'annule'].includes(statusClean)) {
       this.activeOrders = this.activeOrders.filter(o => o.id !== orderId);
       this.removeOrderIdFromStorage(orderId);
       this.closeSseConnection(orderId);
@@ -307,7 +313,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ✏️ تعديل الطلب (إرجاع العناصر للـ Cart وتسترجع الحالة)
+  // ✏️ تعديل الطلب (إرجاع العناصر للـ Cart واسترجاع الحالة)
   editOrder(order: any): void {
     if (confirm('سيتم إلغاء الطلب الحالي وإرجاع محتوياته للسلة للتعديل. هل تريد الاستمرار؟')) {
       this.loading = true;
@@ -346,7 +352,7 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   getStatusProgressStep(status?: string): number {
     const currentStatus = status || (this.activeOrders[0]?.status);
-    switch (currentStatus) {
+    switch (String(currentStatus).toLowerCase()) {
       case 'pending':
       case 'en_attente': return 1;
       case 'confirmed':

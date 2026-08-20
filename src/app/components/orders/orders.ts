@@ -34,9 +34,6 @@ export class Orders implements OnInit {
 
   /**
    * 🆕 Track order ids that have an in-flight status PUT.
-   * Prevents double-clicks AND prevents the 10s polling from
-   * re-fetching stale server data that would "revert" an optimistically
-   * updated card back to 'pending' (the perceived few-second delay).
    */
   inFlight = signal<Record<number, boolean>>({});
 
@@ -60,11 +57,15 @@ export class Orders implements OnInit {
   /** Reactive filtered orders list for the template */
   filteredOrders = computed(() => {
     const filter = this.selectedFilter();
-    const currentOrders = this.orders();
+    // تصفية الطلبات النشطة فقط (تستبعد المكتملة والملغاة فوراً)
+    const activeOrders = this.orders().filter(o => 
+      !['paid', 'paye', 'cancelled', 'annule'].includes(o.status?.toLowerCase())
+    );
+
     if (filter === 'all') {
-      return currentOrders;
+      return activeOrders;
     }
-    return currentOrders.filter(o => o.status === filter);
+    return activeOrders.filter(o => o.status === filter);
   });
 
   // ─── Lifecycle ────────────────────────────────────────
@@ -73,11 +74,11 @@ export class Orders implements OnInit {
     // التحميل الأولي للطلبات
     this.loadOrders(true);
 
-    // 🔄 Polling: تحديث تلقائي كل 10 ثواني في الخلفية ليظهر طلب الحريف ديريكت!
-    interval(10000)
+    // ⚡ Real-Time Polling: تحديث تلقائي وسريع كل 3 ثواني للتحيين الفوري للطلبات والنوبة!
+    interval(3000)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
-        this.loadOrders(false); // false باش ما يظهرش الـ Loader المزعج كل 10 ثواني
+        this.loadOrders(false);
       });
   }
 
@@ -88,19 +89,21 @@ export class Orders implements OnInit {
 
     this.orderService.getOrders().subscribe({
       next: (data) => {
-        // 🆕 HARDENING: merge server data with any optimistically-updated
-        //    in-flight orders so a poll can NEVER revert a card that the
-        //    user just confirmed (fixes the "few-second delay" + flicker).
+        // فلترة الطلبات المكتملة فوراً لمنع ظهورها في الواجهة
+        const activeOnly = data.filter(order => 
+          !['paid', 'paye', 'cancelled', 'annule'].includes(order.status?.toLowerCase())
+        );
+
         const active = this.inFlight();
         const hasActive = Object.keys(active).length > 0;
-        const merged = hasActive ? data.map(serverOrder => {
+        
+        const merged = hasActive ? activeOnly.map(serverOrder => {
           const local = this.orders().find(o => o.id === serverOrder.id);
           if (local && active[serverOrder.id]) {
-            // Keep the optimistic status while the PUT is still pending.
             return { ...serverOrder, status: local.status };
           }
           return serverOrder;
-        }) : data;
+        }) : activeOnly;
 
         this.orders.set(merged);
         if (showLoader) this.loading.set(false);
@@ -112,22 +115,23 @@ export class Orders implements OnInit {
     });
   }
 
-  // ─── Helpers for template (Optimized with Signals) ──
+  // ─── Helpers for template ──────────────────
 
-  /** Return count of orders with a given status key, or total if 'all' */
   getOrderCountByStatus(statusKey: string): number {
+    const active = this.orders().filter(o => 
+      !['paid', 'paye', 'cancelled', 'annule'].includes(o.status?.toLowerCase())
+    );
+
     if (statusKey === 'all') {
-      return this.orders().length;
+      return active.length;
     }
-    return this.orders().filter(o => o.status === statusKey).length;
+    return active.filter(o => o.status === statusKey).length;
   }
 
-  /** Whether the order status can be progressed further */
   canProgress(status: OrderStatus): boolean {
     return !!this.nextStatus[status];
   }
 
-  /** Label for the "next status" button */
   getNextStatusLabel(status: OrderStatus): string {
     const next = this.nextStatus[status];
     if (!next) return '';
@@ -135,33 +139,23 @@ export class Orders implements OnInit {
     return found ? found.label : '';
   }
 
-  /** Return display info for a given status: { key, label, icon, color } */
   getStatusInfo(status: OrderStatus): StatusFlowItem {
     const found = this.statusFlow.find(s => s.key === status);
     if (found) return found;
     return { key: 'cancelled', label: 'dash.cancelled', icon: 'fas fa-ban', color: '#ef4444' };
   }
 
-  /** Detect RTL direction for arrow icon */
   isRtl(): boolean {
     return document.dir === 'rtl';
   }
-
-  // ─── Filter setter ────────────────────────────────────
 
   setFilter(filter: string): void {
     this.selectedFilter.set(filter);
   }
 
-  // ─── Status progression ───────────────────────────────
+  // ─── Actions ───────────────────────────────
 
-  /**
-   * 🗓️ Clôture de journée — Archive toutes les commandes actives.
-   * Appelle POST /api/orders/cloturer puis recharge la liste (vide).
-   */
-cloturerJournee(): void {
-    console.log('🗓️ Clôture de journée clicked');
-    console.log('📡 Sending POST /api/orders/cloturer request');
+  cloturerJournee(): void {
     this.orderService.cloturerJournee().subscribe({
       next: (res) => {
         alert(res?.message ?? this.t('orders.cloturerSuccess'));
@@ -178,32 +172,36 @@ cloturerJournee(): void {
     const current = order.status;
     const next = this.nextStatus[current];
     if (!next) return;
-    if (this.inFlight()[order.id]) return; // 🆕 prevent double-clicks
+    if (this.inFlight()[order.id]) return;
 
-    // 🆕 Mark as in-flight (protects against poll-revert + double-click)
     this.inFlight.update(state => ({ ...state, [order.id]: true }));
 
-    // Optimistic update (تحديث فوري للواجهة قبل رد السيرفر لسرعة الاستجابة)
-    this.orders.update(list =>
-      list.map(o => (o.id === order.id ? { ...o, status: next } : o))
-    );
+    // 🚀 إذا أصبحت الحالة 'paid' قم بحذف الطلب فوراً من الواجهة بتحديث آلي
+    if (next === 'paid') {
+      this.orders.update(list => list.filter(o => o.id !== order.id));
+    } else {
+      this.orders.update(list =>
+        list.map(o => (o.id === order.id ? { ...o, status: next } : o))
+      );
+    }
 
     this.orderService.updateOrderStatus(order.id, next).subscribe({
       next: (res) => {
-        // Success → clear in-flight flag and sync the authoritative server order
         this.inFlight.update(({ [order.id]: _, ...rest }) => rest);
-        if (res?.order) {
+        
+        // إذا كان الطلب اكتمل (paid)، نتأكد من حذفه من القائمة المحلية
+        if (next === 'paid') {
+          this.orders.update(list => list.filter(o => o.id !== order.id));
+        } else if (res?.order) {
           this.orders.update(list =>
             list.map(o => (o.id === order.id ? { ...o, ...res.order } : o))
           );
         }
       },
       error: () => {
-        // Rollback on failure (إلغاء التحديث في حال فشل السيرفر)
         this.inFlight.update(({ [order.id]: _, ...rest }) => rest);
-        this.orders.update(list =>
-          list.map(o => (o.id === order.id ? { ...o, status: current } : o))
-        );
+        // إعادة الطلب للواجهة في حالة وجود خطأ في السيرفر
+        this.loadOrders(false);
       },
     });
   }
