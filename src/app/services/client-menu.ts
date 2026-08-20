@@ -20,7 +20,11 @@ export interface OrderPayload {
 export interface ActiveOrderResponse {
   id: number;
   table_id: number;
-  status: 'pending' | 'confirmed' | 'ready' | 'paid' | 'cancelled';
+  table?: {
+    id: number;
+    table_number: number | string;
+  };
+  status: 'pending' | 'en_attente' | 'confirmed' | 'en_preparation' | 'ready' | 'prete' | 'paid' | 'paye' | 'cancelled' | 'annule';
   total_price: number;
   note?: string;
   created_at: string;
@@ -31,6 +35,7 @@ export interface ActiveOrderResponse {
     price: number;
     size_name?: string | null;
     product?: {
+      id: number;
       name: string;
       image_path?: string;
     };
@@ -118,11 +123,22 @@ export class ClientMenuService {
   }
 
   /**
-   * 🔄 جلب معلومات الطلب النشط
+   * 🔄 جلب معلومات طلب نشط معين
    */
   getActiveOrder(orderId: number): Observable<ActiveOrderResponse> {
     const url = `${this.apiUrl}/client/orders/${orderId}`;
     return this.http.get<ActiveOrderResponse>(url, { withCredentials: true });
+  }
+
+  /**
+   * 📋 جلب كافة الطلبات النشطة الخاصة بطاولة معينة
+   */
+  getActiveOrdersForTable(tableNumber: number, shopSlug?: string | null): Observable<ActiveOrderResponse[]> {
+    const shop = this.getShopIdentifier(shopSlug);
+    let params = this.buildShopParams(shop).set('table_number', tableNumber.toString());
+
+    const url = `${this.apiUrl}/client/orders/active-by-table`;
+    return this.http.get<ActiveOrderResponse[]>(url, { params, withCredentials: true });
   }
 
   /**

@@ -41,9 +41,9 @@ export class MenuComponent implements OnInit, OnDestroy {
   tableNumber: number | null = null;
   shopSlug: string | null = null;
 
-  // Active Order Live Tracking
-  activeOrder: ActiveOrderResponse | null = null;
-  private eventSource: EventSource | null = null;
+  // Active Orders Live Tracking (دعم طلبات متعددة لنفس الطاولة)
+  activeOrders: ActiveOrderResponse[] = [];
+  private eventSources: { [orderId: number]: EventSource } = {};
 
   backendUrl: string = 'https://restaurant-coffe-backend-production.up.railway.app';
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
@@ -70,7 +70,7 @@ export class MenuComponent implements OnInit, OnDestroy {
 
       this.loadMenuData();
       this.startPresenceTracking();
-      this.restoreActiveOrder();
+      this.restoreActiveOrders();
     });
   }
 
@@ -125,49 +125,99 @@ export class MenuComponent implements OnInit, OnDestroy {
       clearInterval(this.heartbeatTimer);
       this.heartbeatTimer = null;
     }
-    this.closeSseConnection();
+    this.closeAllSseConnections();
     this.menuService.leaveMenu(this.shopSlug);
   }
 
-  // ─── Live Tracking (SSE) ───────────────────────────────────
+  // ─── Live Tracking (SSE) & LocalStorage ──────────────────────
 
-  restoreActiveOrder(): void {
-    const savedOrderId = localStorage.getItem('active_order_id');
-    if (savedOrderId) {
-      const orderId = +savedOrderId;
-      this.menuService.getActiveOrder(orderId).subscribe({
-        next: (order) => {
-          if (order && order.status !== 'paid' && order.status !== 'cancelled') {
-            this.activeOrder = order;
-            this.startOrderStream(order.id);
+  restoreActiveOrders(): void {
+    // 1. جلب الطلبات النشطة من الـ Server للطاولة
+    if (this.tableNumber) {
+      this.menuService.getActiveOrdersForTable(this.tableNumber, this.shopSlug).subscribe({
+        next: (orders) => {
+          if (orders && orders.length > 0) {
+            this.activeOrders = orders;
+            this.syncLocalStorageOrderIds();
+            this.activeOrders.forEach(o => this.startOrderStream(o.id));
           } else {
-            localStorage.removeItem('active_order_id');
+            this.checkLocalStorageOrders();
           }
         },
-        error: () => {
-          localStorage.removeItem('active_order_id');
-        }
+        error: () => this.checkLocalStorageOrders()
+      });
+    } else {
+      this.checkLocalStorageOrders();
+    }
+  }
+
+  private checkLocalStorageOrders(): void {
+    const savedIdsRaw = localStorage.getItem('active_order_ids');
+    const orderIds: number[] = savedIdsRaw ? JSON.parse(savedIdsRaw) : [];
+
+    if (orderIds.length > 0) {
+      orderIds.forEach(id => {
+        this.menuService.getActiveOrder(id).subscribe({
+          next: (order) => {
+            if (order && !['paid', 'cancelled'].includes(order.status)) {
+              if (!this.activeOrders.some(o => o.id === order.id)) {
+                this.activeOrders.push(order);
+                this.startOrderStream(order.id);
+              }
+            } else {
+              this.removeOrderIdFromStorage(id);
+            }
+          },
+          error: () => this.removeOrderIdFromStorage(id)
+        });
       });
     }
   }
 
-  startOrderStream(orderId: number): void {
-    this.closeSseConnection();
-    const url = this.menuService.getOrderSseUrl(orderId);
-    this.eventSource = new EventSource(url);
+  private syncLocalStorageOrderIds(): void {
+    const ids = this.activeOrders.map(o => o.id);
+    localStorage.setItem('active_order_ids', JSON.stringify(ids));
+  }
 
-    this.eventSource.onmessage = (event) => {
+  private addOrderIdToStorage(id: number): void {
+    const savedIdsRaw = localStorage.getItem('active_order_ids');
+    const orderIds: number[] = savedIdsRaw ? JSON.parse(savedIdsRaw) : [];
+    if (!orderIds.includes(id)) {
+      orderIds.push(id);
+      localStorage.setItem('active_order_ids', JSON.stringify(orderIds));
+    }
+  }
+
+  private removeOrderIdFromStorage(id: number): void {
+    const savedIdsRaw = localStorage.getItem('active_order_ids');
+    let orderIds: number[] = savedIdsRaw ? JSON.parse(savedIdsRaw) : [];
+    orderIds = orderIds.filter(i => i !== id);
+    localStorage.setItem('active_order_ids', JSON.stringify(orderIds));
+  }
+
+  startOrderStream(orderId: number): void {
+    if (this.eventSources[orderId]) {
+      this.eventSources[orderId].close();
+    }
+
+    const url = this.menuService.getOrderSseUrl(orderId);
+    const es = new EventSource(url);
+    this.eventSources[orderId] = es;
+
+    es.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         if (data && data.status) {
-          if (this.activeOrder) {
-            this.activeOrder.status = data.status;
+          const target = this.activeOrders.find(o => o.id === orderId);
+          if (target) {
+            target.status = data.status;
           }
           this.cd.detectChanges();
 
-          if (data.status === 'paid' || data.status === 'cancelled') {
-            localStorage.removeItem('active_order_id');
-            this.closeSseConnection();
+          if (['paid', 'cancelled'].includes(data.status)) {
+            this.activeOrders = this.activeOrders.filter(o => o.id !== orderId);
+            this.removeOrderIdFromStorage(orderId);
+            this.closeSseConnection(orderId);
           }
         }
       } catch (err) {
@@ -175,31 +225,38 @@ export class MenuComponent implements OnInit, OnDestroy {
       }
     };
 
-    this.eventSource.onerror = (err) => {
-      console.error('SSE Connection error:', err);
-      this.closeSseConnection();
+    es.onerror = (err) => {
+      console.error(`SSE Connection error for order #${orderId}:`, err);
+      this.closeSseConnection(orderId);
     };
   }
 
-  closeSseConnection(): void {
-    if (this.eventSource) {
-      this.eventSource.close();
-      this.eventSource = null;
+  closeSseConnection(orderId: number): void {
+    if (this.eventSources[orderId]) {
+      this.eventSources[orderId].close();
+      delete this.eventSources[orderId];
     }
   }
 
-  cancelActiveOrder(): void {
-    if (!this.activeOrder) return;
-    if (confirm('هل أنت متأكد من إلغاء الطلب؟')) {
+  closeAllSseConnections(): void {
+    Object.keys(this.eventSources).forEach(id => {
+      this.closeSseConnection(+id);
+    });
+  }
+
+  cancelActiveOrder(orderId: number): void {
+    if (confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
       this.loading = true;
-      this.menuService.cancelOrder(this.activeOrder.id).subscribe({
+      this.menuService.cancelOrder(orderId).subscribe({
         next: () => {
           this.loading = false;
           alert('تم إلغاء الطلب بنجاح');
-          this.activeOrder = null;
-          localStorage.removeItem('active_order_id');
-          this.closeSseConnection();
-          this.currentView = 'main';
+          this.activeOrders = this.activeOrders.filter(o => o.id !== orderId);
+          this.removeOrderIdFromStorage(orderId);
+          this.closeSseConnection(orderId);
+          if (this.activeOrders.length === 0) {
+            this.currentView = 'main';
+          }
         },
         error: (err) => {
           this.loading = false;
@@ -209,13 +266,54 @@ export class MenuComponent implements OnInit, OnDestroy {
     }
   }
 
-  getStatusProgressStep(): number {
-    if (!this.activeOrder) return 1;
-    switch (this.activeOrder.status) {
-      case 'pending': return 1;
-      case 'confirmed': return 2;
-      case 'ready': return 3;
-      case 'paid': return 4;
+  // ✏️ تعديل الطلب (إرجاع العناصر للـ Cart وتسترجع الحالة)
+  editOrder(order: any): void {
+    if (confirm('سيتم إلغاء الطلب الحالي وإرجاع محتوياته للسلة للتعديل. هل تريد الاستمرار؟')) {
+      this.loading = true;
+      this.menuService.cancelOrder(order.id).subscribe({
+        next: () => {
+          this.loading = false;
+          
+          // إرجاع المنتجات للسلة
+          if (order.items && Array.isArray(order.items)) {
+            order.items.forEach((item: any) => {
+              const productObj = item.product || { id: item.product_id, name: 'منتج', image_path: '' };
+              this.cart.push({
+                product: productObj,
+                quantity: item.quantity,
+                size: item.size_name || null,
+                unitPrice: Number(item.price) || 0,
+                totalPrice: (Number(item.price) || 0) * item.quantity
+              });
+            });
+          }
+
+          this.activeOrders = this.activeOrders.filter(o => o.id !== order.id);
+          this.removeOrderIdFromStorage(order.id);
+          this.closeSseConnection(order.id);
+          
+          this.currentView = 'cart';
+          this.cd.detectChanges();
+        },
+        error: (err) => {
+          this.loading = false;
+          alert(err.error?.message || 'تعذر تعديل الطلب حالياً.');
+        }
+      });
+    }
+  }
+
+  getStatusProgressStep(status?: string): number {
+    const currentStatus = status || (this.activeOrders[0]?.status);
+    switch (currentStatus) {
+      case 'pending':
+      case 'en_attente': return 1;
+      case 'confirmed':
+      case 'en_preparation': return 2;
+      case 'ready':
+      case 'prete': return 3;
+      case 'paid':
+      case 'paye': return 4;
       default: return 1;
     }
   }
@@ -305,7 +403,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   openCart(): void {
-    if (this.activeOrder && this.cart.length === 0) {
+    if (this.activeOrders.length > 0 && this.cart.length === 0) {
       this.currentView = 'tracking';
     } else {
       this.currentView = 'cart';
@@ -450,8 +548,8 @@ export class MenuComponent implements OnInit, OnDestroy {
         this.cart = [];
         this.loading = false;
         if (res && res.order) {
-          this.activeOrder = res.order;
-          localStorage.setItem('active_order_id', res.order.id.toString());
+          this.activeOrders.unshift(res.order);
+          this.addOrderIdToStorage(res.order.id);
           this.startOrderStream(res.order.id);
         }
         this.currentView = 'tracking';
