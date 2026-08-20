@@ -44,6 +44,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   // Active Orders Live Tracking (دعم طلبات متعددة لنفس الطاولة)
   activeOrders: ActiveOrderResponse[] = [];
   private eventSources: { [orderId: number]: EventSource } = {};
+  private orderPollers: { [orderId: number]: any } = {};
 
   backendUrl: string = 'https://restaurant-coffe-backend-production.up.railway.app';
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
@@ -126,13 +127,13 @@ export class MenuComponent implements OnInit, OnDestroy {
       this.heartbeatTimer = null;
     }
     this.closeAllSseConnections();
+    this.stopAllPollers();
     this.menuService.leaveMenu(this.shopSlug);
   }
 
   // ─── Live Tracking (SSE) & LocalStorage ──────────────────────
 
   restoreActiveOrders(): void {
-    // 1. جلب الطلبات النشطة من الـ Server للطاولة
     if (this.tableNumber) {
       this.menuService.getActiveOrdersForTable(this.tableNumber, this.shopSlug).subscribe({
         next: (orders) => {
@@ -158,8 +159,9 @@ export class MenuComponent implements OnInit, OnDestroy {
     if (orderIds.length > 0) {
       orderIds.forEach(id => {
         this.menuService.getActiveOrder(id).subscribe({
-          next: (order) => {
-            if (order && !['paid', 'cancelled'].includes(order.status)) {
+          next: (res: any) => {
+            const order = res?.order || res;
+            if (order && !['paid', 'paye', 'cancelled', 'annule'].includes(order.status)) {
               if (!this.activeOrders.some(o => o.id === order.id)) {
                 this.activeOrders.push(order);
                 this.startOrderStream(order.id);
@@ -208,27 +210,52 @@ export class MenuComponent implements OnInit, OnDestroy {
       try {
         const data = JSON.parse(event.data);
         if (data && data.status) {
-          const target = this.activeOrders.find(o => o.id === orderId);
-          if (target) {
-            target.status = data.status;
-          }
-          this.cd.detectChanges();
-
-          if (['paid', 'cancelled'].includes(data.status)) {
-            this.activeOrders = this.activeOrders.filter(o => o.id !== orderId);
-            this.removeOrderIdFromStorage(orderId);
-            this.closeSseConnection(orderId);
-          }
+          this.updateOrderStatusInState(orderId, data.status);
         }
       } catch (err) {
         console.error('Error parsing SSE data', err);
       }
     };
 
-    es.onerror = (err) => {
-      console.error(`SSE Connection error for order #${orderId}:`, err);
+    es.onerror = () => {
+      // عند حدوث أي خطأ في الاتصال بالسيرفر، نغلق الـ SSE ونشغل الـ Polling تلقائياً
       this.closeSseConnection(orderId);
+      this.startPollingFallback(orderId);
     };
+  }
+
+  private startPollingFallback(orderId: number): void {
+    if (this.orderPollers[orderId]) return;
+
+    this.orderPollers[orderId] = setInterval(() => {
+      this.menuService.getActiveOrder(orderId).subscribe({
+        next: (res: any) => {
+          const order = res?.order || res;
+          if (order && order.status) {
+            this.updateOrderStatusInState(orderId, order.status);
+          }
+        },
+        error: () => this.stopPolling(orderId)
+      });
+    }, 4000);
+  }
+
+  private updateOrderStatusInState(orderId: number, status: string): void {
+    const target = this.activeOrders.find(o => o.id === orderId);
+    if (target) {
+      target.status = status as any;
+    }
+    this.cd.detectChanges();
+
+    if (['paid', 'paye', 'cancelled', 'annule'].includes(status)) {
+      this.activeOrders = this.activeOrders.filter(o => o.id !== orderId);
+      this.removeOrderIdFromStorage(orderId);
+      this.closeSseConnection(orderId);
+      this.stopPolling(orderId);
+      if (this.activeOrders.length === 0 && this.currentView === 'tracking') {
+        this.currentView = 'main';
+      }
+    }
   }
 
   closeSseConnection(orderId: number): void {
@@ -244,6 +271,19 @@ export class MenuComponent implements OnInit, OnDestroy {
     });
   }
 
+  private stopPolling(orderId: number): void {
+    if (this.orderPollers[orderId]) {
+      clearInterval(this.orderPollers[orderId]);
+      delete this.orderPollers[orderId];
+    }
+  }
+
+  private stopAllPollers(): void {
+    Object.keys(this.orderPollers).forEach(id => {
+      this.stopPolling(+id);
+    });
+  }
+
   cancelActiveOrder(orderId: number): void {
     if (confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
       this.loading = true;
@@ -254,6 +294,7 @@ export class MenuComponent implements OnInit, OnDestroy {
           this.activeOrders = this.activeOrders.filter(o => o.id !== orderId);
           this.removeOrderIdFromStorage(orderId);
           this.closeSseConnection(orderId);
+          this.stopPolling(orderId);
           if (this.activeOrders.length === 0) {
             this.currentView = 'main';
           }
@@ -274,7 +315,6 @@ export class MenuComponent implements OnInit, OnDestroy {
         next: () => {
           this.loading = false;
           
-          // إرجاع المنتجات للسلة
           if (order.items && Array.isArray(order.items)) {
             order.items.forEach((item: any) => {
               const productObj = item.product || { id: item.product_id, name: 'منتج', image_path: '' };
@@ -291,6 +331,7 @@ export class MenuComponent implements OnInit, OnDestroy {
           this.activeOrders = this.activeOrders.filter(o => o.id !== order.id);
           this.removeOrderIdFromStorage(order.id);
           this.closeSseConnection(order.id);
+          this.stopPolling(order.id);
           
           this.currentView = 'cart';
           this.cd.detectChanges();

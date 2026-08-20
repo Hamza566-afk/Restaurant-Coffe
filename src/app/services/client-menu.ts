@@ -24,7 +24,7 @@ export interface ActiveOrderResponse {
     id: number;
     table_number: number | string;
   };
-  status: 'pending' | 'en_attente' | 'confirmed' | 'en_preparation' | 'ready' | 'prete' | 'paid' | 'paye' | 'cancelled' | 'annule';
+  status: 'pending' | 'en_attente' | 'confirmed' | 'en_preparation' | 'ready' | 'prete' | 'paid' | 'paye' | 'cancelled' | 'annule' | string;
   total_price: number;
   note?: string;
   created_at: string;
