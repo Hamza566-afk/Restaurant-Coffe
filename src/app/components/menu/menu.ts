@@ -1,8 +1,9 @@
-import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ClientMenuService, ActiveOrderResponse } from '../../services/client-menu';
+import { LanguageService } from '../../services/language.service';
 
 interface CartItem {
   product: any;
@@ -20,6 +21,12 @@ interface CartItem {
   styleUrl: './menu.css'
 })
 export class MenuComponent implements OnInit, OnDestroy {
+  private menuService = inject(ClientMenuService);
+  private route = inject(ActivatedRoute);
+  private cd = inject(ChangeDetectorRef);
+  protected languageService = inject(LanguageService);
+  protected t = (key: string): string => this.languageService.t(key);
+
   menuData: any = null;
   loading: boolean = true;
   errorMessage: string = '';
@@ -48,12 +55,6 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   backendUrl: string = 'https://restaurant-coffe-backend-production.up.railway.app';
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
-
-  constructor(
-    private menuService: ClientMenuService,
-    private route: ActivatedRoute,
-    private cd: ChangeDetectorRef
-  ) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
@@ -96,7 +97,7 @@ export class MenuComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Failed to load menu', err);
-        this.errorMessage = 'المحل غير موجود أو تم إيقافه حالياً.';
+        this.errorMessage = this.t('menu.notFoundError') || 'المحل غير موجود أو تم إيقافه حالياً.';
         this.loading = false;
       }
     });
@@ -240,7 +241,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * 🚀 التحديث الفوري لحالة الكوماند، الترقيم اليومي، والمرتبة الحالية في طابور الانتظار
+   * 🚀 التحديث الفوري لحالة الطلب، الترقيم اليومي، والمرتبة الحالية في طابور الانتظار
    */
   private updateOrderDataInState(orderId: number, data: any): void {
     const target = this.activeOrders.find(o => o.id === orderId);
@@ -291,12 +292,12 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   cancelActiveOrder(orderId: number): void {
-    if (confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
+    if (confirm(this.t('menu.confirmCancelOrder') || 'هل أنت متأكد من إلغاء هذا الطلب؟')) {
       this.loading = true;
       this.menuService.cancelOrder(orderId).subscribe({
         next: () => {
           this.loading = false;
-          alert('تم إلغاء الطلب بنجاح');
+          alert(this.t('menu.orderCancelledSuccess') || 'تم إلغاء الطلب بنجاح');
           this.activeOrders = this.activeOrders.filter(o => o.id !== orderId);
           this.removeOrderIdFromStorage(orderId);
           this.closeSseConnection(orderId);
@@ -313,9 +314,9 @@ export class MenuComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ✏️ تعديل الطلب (إرجاع العناصر للـ Cart واسترجاع الحالة)
+  // ✏️ تعديل الطلب (إرجاع العناصر للسلة وإلغاء الطلب السابق)
   editOrder(order: any): void {
-    if (confirm('سيتم إلغاء الطلب الحالي وإرجاع محتوياته للسلة للتعديل. هل تريد الاستمرار؟')) {
+    if (confirm(this.t('menu.confirmEditOrder') || 'سيتم إلغاء الطلب الحالي وإرجاع محتوياته للسلة للتعديل. هل تريد الاستمرار؟')) {
       this.loading = true;
       this.menuService.cancelOrder(order.id).subscribe({
         next: () => {
@@ -573,7 +574,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     if (this.cart.length === 0) return;
 
     if (!this.tableNumber) {
-      alert('الرجاء مسح رمز الـ QR Code الخاص بالطاولة أولاً لإتمام الطلب!');
+      alert(this.t('menu.scanQrError') || 'الرجاء مسح رمز الـ QR Code الخاص بالطاولة أولاً لإتمام الطلب!');
       return;
     }
 
@@ -604,7 +605,7 @@ export class MenuComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Order submission failed', err);
         this.loading = false;
-        alert('حدث خطأ أثناء إرسال الطلب، الرجاء المحاولة مرة أخرى.');
+        alert(this.t('menu.orderSendError') || 'حدث خطأ أثناء إرسال الطلب، الرجاء المحاولة مرة أخرى.');
       }
     });
   }

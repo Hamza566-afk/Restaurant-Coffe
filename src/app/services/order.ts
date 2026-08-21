@@ -9,6 +9,7 @@ export interface Product {
   id: number;
   name: string;
   price: number;
+  image_path?: string;
 }
 
 export interface Table {
@@ -23,6 +24,7 @@ export interface OrderItem {
   product_id: number;
   quantity: number;
   price: number;
+  size_name?: string | null;
   product?: Product;
 }
 
@@ -31,6 +33,9 @@ export interface Order {
   shop_id: number;
   table_id: number;
   customer?: string;
+  display_number?: string;
+  daily_order_number?: number;
+  queue_position?: number;
   table?: Table;
   items: OrderItem[];
   total_price: number;
@@ -50,19 +55,55 @@ export class OrderService {
 
   private apiUrl = `${environment.apiUrl}/orders`;
 
+  /** 📋 جلب الطلبات النشطة الحالية للأدمن */
   getOrders(): Observable<Order[]> {
     return this.http.get<Order[]>(this.apiUrl, { withCredentials: true });
   }
 
+  /** 📜 جلب سجل الطلبات السابقة (Historique) */
+  getOrdersHistory(): Observable<Order[]> {
+    return this.http.get<Order[]>(`${this.apiUrl}/history`, { withCredentials: true });
+  }
+
+  /** 🔄 تحديث حالة الطلب من طرف الأدمن */
   updateOrderStatus(id: number, status: OrderStatus): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}/status`, { status }, { withCredentials: true });
   }
 
+  /** 🔒 إغلاق اليومية (Clôturer la journée) */
   cloturerJournee(): Observable<any> {
     return this.http.post(`${this.apiUrl}/cloturer`, {}, { withCredentials: true });
   }
 
-  /** 🚀 Real-time SSE Stream */
+  /** 📡 Stream حيني للـ Admin Dashboard لمتابعة جميع الطلبات المباشرة */
+  getOrdersStream(): Observable<Order[]> {
+    return new Observable(observer => {
+      const url = `${this.apiUrl}/stream`;
+      const eventSource = new EventSource(url, { withCredentials: true });
+
+      eventSource.onmessage = (event) => {
+        this.zone.run(() => {
+          try {
+            const data = JSON.parse(event.data);
+            observer.next(data);
+          } catch (err) {
+            console.error('Error parsing admin orders SSE stream', err);
+          }
+        });
+      };
+
+      eventSource.onerror = (error) => {
+        this.zone.run(() => {
+          observer.error(error);
+          eventSource.close();
+        });
+      };
+
+      return () => eventSource.close();
+    });
+  }
+
+  /** 🚀 Real-time SSE Stream لمتابعة طلب واحد (خاص بالكليون) */
   trackOrder(orderId: number, shopQueryParam: string = ''): Observable<any> {
     return new Observable(observer => {
       const baseUrl = environment.apiUrl.replace(/\/orders\/?$/, '');
@@ -72,8 +113,12 @@ export class OrderService {
 
       eventSource.onmessage = (event) => {
         this.zone.run(() => {
-          const data = JSON.parse(event.data);
-          observer.next(data);
+          try {
+            const data = JSON.parse(event.data);
+            observer.next(data);
+          } catch (err) {
+            console.error('Error parsing client tracking SSE stream', err);
+          }
         });
       };
 

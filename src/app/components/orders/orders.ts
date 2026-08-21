@@ -21,20 +21,20 @@ export interface StatusFlowItem {
 })
 export class Orders implements OnInit {
   private orderService = inject(OrderService);
-  private destroyRef = inject(DestroyRef); // 🔄 لإيقاف الـ Polling تلقائياً عند تدمير الـ Component
+  private destroyRef = inject(DestroyRef);
   protected languageService = inject(LanguageService);
   protected t = (key: string): string => this.languageService.t(key);
 
-  /** Core reactive list */
+  /** Core reactive lists */
   orders = signal<Order[]>([]);
+  historyOrders = signal<Order[]>([]); // 📜 قائمة سجل الطلبات المكتملة/الملغاة
 
   /** UI flags */
+  activeTab = signal<'active' | 'history'>('active'); // 👈 التحكم بين الطلبات الحالية والسجل
   selectedFilter = signal<string>('all');
   loading = signal(false);
 
-  /**
-   * 🆕 Track order ids that have an in-flight status PUT.
-   */
+  /** Track order ids that have an in-flight status PUT */
   inFlight = signal<Record<number, boolean>>({});
 
   /** Status flow definition */
@@ -52,12 +52,11 @@ export class Orders implements OnInit {
     ready:     'paid',
   };
 
-  // ─── Computed Signals (أداء أسرع وأقوى للفلترة) ───────────────────
+  // ─── Computed Signals ──────────────────────────────────────────
 
-  /** Reactive filtered orders list for the template */
+  /** Reactive filtered active orders */
   filteredOrders = computed(() => {
     const filter = this.selectedFilter();
-    // تصفية الطلبات النشطة فقط (تستبعد المكتملة والملغاة فوراً)
     const activeOrders = this.orders().filter(o => 
       !['paid', 'paye', 'cancelled', 'annule'].includes(o.status?.toLowerCase())
     );
@@ -71,10 +70,10 @@ export class Orders implements OnInit {
   // ─── Lifecycle ────────────────────────────────────────
 
   ngOnInit(): void {
-    // التحميل الأولي للطلبات
     this.loadOrders(true);
+    this.loadHistoryOrders();
 
-    // ⚡ Real-Time Polling: تحديث تلقائي وسريع كل 3 ثواني للتحيين الفوري للطلبات والنوبة!
+    // ⚡ Real-Time Polling كل 3 ثواني للطلبات النشطة
     interval(3000)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
@@ -89,7 +88,6 @@ export class Orders implements OnInit {
 
     this.orderService.getOrders().subscribe({
       next: (data) => {
-        // فلترة الطلبات المكتملة فوراً لمنع ظهورها في الواجهة
         const activeOnly = data.filter(order => 
           !['paid', 'paye', 'cancelled', 'annule'].includes(order.status?.toLowerCase())
         );
@@ -112,6 +110,19 @@ export class Orders implements OnInit {
         this.orders.set([]);
         if (showLoader) this.loading.set(false);
       },
+    });
+  }
+
+  /** 📜 جلب سجل الطلبات السابقة من الـ API */
+  loadHistoryOrders(): void {
+    this.orderService.getOrders().subscribe({
+      next: (data) => {
+        const history = data.filter(order =>
+          ['paid', 'paye', 'cancelled', 'annule'].includes(order.status?.toLowerCase())
+        );
+        this.historyOrders.set(history);
+      },
+      error: () => this.historyOrders.set([])
     });
   }
 
@@ -153,6 +164,13 @@ export class Orders implements OnInit {
     this.selectedFilter.set(filter);
   }
 
+  switchTab(tab: 'active' | 'history'): void {
+    this.activeTab.set(tab);
+    if (tab === 'history') {
+      this.loadHistoryOrders();
+    }
+  }
+
   // ─── Actions ───────────────────────────────
 
   cloturerJournee(): void {
@@ -160,6 +178,7 @@ export class Orders implements OnInit {
       next: (res) => {
         alert(res?.message ?? this.t('orders.cloturerSuccess'));
         this.loadOrders(true);
+        this.loadHistoryOrders();
       },
       error: () => {
         alert(this.t('orders.cloturerError'));
@@ -167,7 +186,7 @@ export class Orders implements OnInit {
     });
   }
 
-  /** Progress the order to its next status via API with optimistic UI */
+  /** Progress the order with automatic refresh for history */
   progressOrder(order: Order): void {
     const current = order.status;
     const next = this.nextStatus[current];
@@ -176,7 +195,6 @@ export class Orders implements OnInit {
 
     this.inFlight.update(state => ({ ...state, [order.id]: true }));
 
-    // 🚀 إذا أصبحت الحالة 'paid' قم بحذف الطلب فوراً من الواجهة بتحديث آلي
     if (next === 'paid') {
       this.orders.update(list => list.filter(o => o.id !== order.id));
     } else {
@@ -189,9 +207,9 @@ export class Orders implements OnInit {
       next: (res) => {
         this.inFlight.update(({ [order.id]: _, ...rest }) => rest);
         
-        // إذا كان الطلب اكتمل (paid)، نتأكد من حذفه من القائمة المحلية
         if (next === 'paid') {
           this.orders.update(list => list.filter(o => o.id !== order.id));
+          this.loadHistoryOrders(); // 👈 إعادة تحيين الـ History فور الخلاص
         } else if (res?.order) {
           this.orders.update(list =>
             list.map(o => (o.id === order.id ? { ...o, ...res.order } : o))
@@ -200,7 +218,6 @@ export class Orders implements OnInit {
       },
       error: () => {
         this.inFlight.update(({ [order.id]: _, ...rest }) => rest);
-        // إعادة الطلب للواجهة في حالة وجود خطأ في السيرفر
         this.loadOrders(false);
       },
     });
