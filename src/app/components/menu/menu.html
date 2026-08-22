@@ -187,16 +187,27 @@
           </div>
         </div>
 
-        <!-- 🚀 Queue Position Box: الترتيب الحيني في طابور الانتظار -->
-        <div class="queue-info-card" *ngIf="order.queue_position !== undefined && order.queue_position !== null" style="background: #fff8e7; border: 1px solid #ffe0b2; border-radius: 12px; padding: 12px; margin: 15px 0; text-align: center;">
-          <div *ngIf="order.queue_position === 0" style="color: #2e7d32; font-weight: bold; font-size: 15px;">
-            🎉 طلبك قيد التحضير الآن!
+        <!-- 🚀 Dynamic Status & Queue Position Alert Box -->
+        <div class="queue-info-card" style="background: #fff8e7; border: 1px solid #ffe0b2; border-radius: 12px; padding: 12px; margin: 15px 0; text-align: center;">
+          <!-- 1. حالة الطلب قيد التحضير أو جاهز -->
+          <div *ngIf="order.status === 'confirmed' || order.status === 'en_preparation'" style="color: #2e7d32; font-weight: bold; font-size: 15px;">
+            🔥 {{ getClientStatusAlert(order.status) }}
           </div>
-          <div *ngIf="order.queue_position === 1" style="color: #d84315; font-weight: bold; font-size: 15px;">
-            🔥 أنت التالي في طابور الانتظار!
+          <div *ngIf="order.status === 'ready' || order.status === 'prete'" style="color: #1565c0; font-weight: bold; font-size: 15px;">
+            ☕ {{ getClientStatusAlert(order.status) }}
           </div>
-          <div *ngIf="order.queue_position > 1" style="color: #e65100; font-size: 14px;">
-            ⏳ ترتيبك في الانتظار: <strong style="font-size: 18px; color: #d84315;">#{{ order.queue_position }}</strong> (قبلك {{ order.queue_position - 1 }} طلبات)
+
+          <!-- 2. حالة الطلب قيد الانتظار مع عرض طابور الانتظار -->
+          <div *ngIf="order.status === 'pending' || order.status === 'en_attente'">
+            <div *ngIf="order.queue_position === 0 || order.queue_position === 1" style="color: #d84315; font-weight: bold; font-size: 15px;">
+              ⏳ أنت التالي في طابور الانتظار!
+            </div>
+            <div *ngIf="order.queue_position && order.queue_position > 1" style="color: #e65100; font-size: 14px;">
+              ⏳ ترتيبك في الانتظار: <strong style="font-size: 18px; color: #d84315;">#{{ order.queue_position }}</strong> (قبلك {{ order.queue_position - 1 }} طلبات)
+            </div>
+            <div *ngIf="!order.queue_position" style="color: #e65100; font-weight: bold; font-size: 14px;">
+              ⏳ {{ getClientStatusAlert(order.status) }}
+            </div>
           </div>
         </div>
 

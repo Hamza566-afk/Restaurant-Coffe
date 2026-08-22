@@ -48,7 +48,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   tableNumber: number | null = null;
   shopSlug: string | null = null;
 
-  // Active Orders Live Tracking (دعم طلبات متعددة لنفس الطاولة مع التحديث الحيني للنوبة)
+  // Active Orders Live Tracking
   activeOrders: ActiveOrderResponse[] = [];
   private eventSources: { [orderId: number]: EventSource } = {};
   private orderPollers: { [orderId: number]: any } = {};
@@ -240,9 +240,6 @@ export class MenuComponent implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  /**
-   * 🚀 التحديث الفوري لحالة الطلب، الترقيم اليومي، والمرتبة الحالية في طابور الانتظار
-   */
   private updateOrderDataInState(orderId: number, data: any): void {
     const target = this.activeOrders.find(o => o.id === orderId);
     if (target) {
@@ -314,7 +311,6 @@ export class MenuComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ✏️ تعديل الطلب (إرجاع العناصر للسلة وإلغاء الطلب السابق)
   editOrder(order: any): void {
     if (confirm(this.t('menu.confirmEditOrder') || 'سيتم إلغاء الطلب الحالي وإرجاع محتوياته للسلة للتعديل. هل تريد الاستمرار؟')) {
       this.loading = true;
@@ -363,6 +359,30 @@ export class MenuComponent implements OnInit, OnDestroy {
       case 'paid':
       case 'paye': return 4;
       default: return 1;
+    }
+  }
+
+  /** ⚡ دالة تحديد رسالة التنبيه المحدثة للحريف */
+  getClientStatusAlert(status?: string): string {
+    const s = String(status || '').toLowerCase();
+    switch (s) {
+      case 'pending':
+      case 'en_attente':
+        return 'طلبك قيد الانتظار ⏳';
+      case 'confirmed':
+      case 'en_preparation':
+        return 'طلبك قيد التحضير الآن 👨‍🍳';
+      case 'ready':
+      case 'prete':
+        return 'طلبك جاهز! يمكنك الاستلام الآن ☕🎉';
+      case 'paid':
+      case 'paye':
+        return 'تم خلاص الطلب، شكراً لزيارتكم! ❤️';
+      case 'cancelled':
+      case 'annule':
+        return 'تم إلغاء الطلب ❌';
+      default:
+        return 'طلبك قيد المتابعة...';
     }
   }
 

@@ -27,10 +27,10 @@ export class Orders implements OnInit {
 
   /** Core reactive lists */
   orders = signal<Order[]>([]);
-  historyOrders = signal<Order[]>([]); // 📜 قائمة سجل الطلبات المكتملة/الملغاة
+  historyOrders = signal<Order[]>([]);
 
   /** UI flags */
-  activeTab = signal<'active' | 'history'>('active'); // 👈 التحكم بين الطلبات الحالية والسجل
+  activeTab = signal<'active' | 'history'>('active');
   selectedFilter = signal<string>('all');
   loading = signal(false);
 
@@ -54,7 +54,6 @@ export class Orders implements OnInit {
 
   // ─── Computed Signals ──────────────────────────────────────────
 
-  /** Reactive filtered active orders */
   filteredOrders = computed(() => {
     const filter = this.selectedFilter();
     const activeOrders = this.orders().filter(o => 
@@ -113,14 +112,11 @@ export class Orders implements OnInit {
     });
   }
 
-  /** 📜 جلب سجل الطلبات السابقة من الـ API */
+  /** 📜 جلب سجل الطلبات السابقة بالـ API المخصصة للسجل */
   loadHistoryOrders(): void {
-    this.orderService.getOrders().subscribe({
+    this.orderService.getOrdersHistory().subscribe({
       next: (data) => {
-        const history = data.filter(order =>
-          ['paid', 'paye', 'cancelled', 'annule'].includes(order.status?.toLowerCase())
-        );
-        this.historyOrders.set(history);
+        this.historyOrders.set(data);
       },
       error: () => this.historyOrders.set([])
     });
@@ -186,7 +182,6 @@ export class Orders implements OnInit {
     });
   }
 
-  /** Progress the order with automatic refresh for history */
   progressOrder(order: Order): void {
     const current = order.status;
     const next = this.nextStatus[current];
@@ -209,7 +204,7 @@ export class Orders implements OnInit {
         
         if (next === 'paid') {
           this.orders.update(list => list.filter(o => o.id !== order.id));
-          this.loadHistoryOrders(); // 👈 إعادة تحيين الـ History فور الخلاص
+          this.loadHistoryOrders();
         } else if (res?.order) {
           this.orders.update(list =>
             list.map(o => (o.id === order.id ? { ...o, ...res.order } : o))
