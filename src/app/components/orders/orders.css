@@ -1,5 +1,9 @@
 .orders-page {
   font-family: system-ui, -apple-system, sans-serif;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* مسافة موحدة بين أقسام الصفحة الرئيسية */
 }
 
 /* Header & Action Buttons */
@@ -7,6 +11,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 0.5rem; /* إبعاد الهيدر قليلاً عن الأزرار */
 }
 
 .btn-action {
@@ -33,17 +38,18 @@
   color: #ffffff;
 }
 
-/* Tabs */
+/* Tabs (Commandes Actives / Historique) */
 .main-tabs {
   display: flex;
   gap: 0.75rem;
+  margin-bottom: 0.5rem; /* فصل التابات الرئيسية عن سطر الفلاتر */
 }
 
 .tab-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.25rem;
   border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 600;
@@ -51,6 +57,7 @@
   background-color: #f1f5f9;
   border: none;
   cursor: pointer;
+  transition: all 0.2s ease-in-out;
 }
 
 .tab-btn.active {
@@ -69,12 +76,19 @@
 .tab-btn.active .badge-amber,
 .tab-btn.active .badge-gray { background-color: rgba(255, 255, 255, 0.25); color: #ffffff; }
 
-/* Filter Chips */
+/* Filter Chips Container & Chips */
+.filter-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem; /* مسافة واضحة بين الفلاتر الفرعية والمحتوى السفلي */
+}
+
 .filter-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.375rem 0.75rem;
+  padding: 0.4rem 0.85rem;
   border-radius: 0.5rem;
   font-size: 0.8125rem;
   font-weight: 500;
@@ -82,6 +96,7 @@
   border: 1px solid #e2e8f0;
   color: #475569;
   cursor: pointer;
+  transition: all 0.15s ease-in-out;
 }
 
 .filter-chip.active {
@@ -104,6 +119,8 @@
   border-radius: 0.75rem;
   border: 1px solid #e2e8f0;
   overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  margin-top: 0.5rem; /* فصل بين الفلاتر والجدول */
 }
 
 .orders-table {
@@ -191,10 +208,20 @@
   font-weight: 700;
   border: none;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
+.btn-next-status:hover {
+  background-color: #4338ca;
+}
+
+/* Empty State Card */
 .empty-card {
   background-color: #ffffff;
-  padding: 3rem;
+  padding: 3.5rem 1.5rem;
   text-align: center;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  margin-top: 0.5rem; /* إبعاد المساحة الفارغة عن الفلاتر */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
