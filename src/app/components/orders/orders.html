@@ -90,19 +90,19 @@
                   </td>
                   <td>
                     <div class="items-list">
-                      @for (item of order.items; track item.product_id) {
+                      @for (item of order.items; track (item.id || item.product_id)) {
                         <div class="item-row-wrapper">
-                          <div class="item-row">
-                            <span class="qty">{{ item.quantity }}x</span>
-                            <span class="name">{{ item.product?.name }}</span>
+                          <div class="item-row flex items-center gap-1.5">
+                            <span class="qty font-bold text-indigo-600">{{ item.quantity }}x</span>
+                            <span class="name font-medium">{{ item.product?.name || item.product_name }}</span>
                             <!-- 🍕 عرض الحجم إذا وجد -->
                             @if (item.size_name) {
-                              <span class="size-badge">{{ item.size_name }}</span>
+                              <span class="size-badge text-[11px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">{{ item.size_name }}</span>
                             }
                           </div>
                           <!-- 📝 عرض ملاحظة المنتج الخاصة -->
                           @if (item.notes) {
-                            <div class="item-note">
+                            <div class="item-note text-xs text-amber-600 italic mt-0.5">
                               <i class="fas fa-pen-alt text-[10px]"></i> {{ item.notes }}
                             </div>
                           }
@@ -111,8 +111,8 @@
 
                       <!-- 💬 عرض الملاحظة العامة للطلب -->
                       @if (order.note) {
-                        <div class="order-note-tag mt-1">
-                          <i class="fas fa-comment-alt"></i> {{ order.note }}
+                        <div class="order-note-tag mt-2 p-1.5 bg-amber-50 text-amber-800 text-xs rounded border border-amber-200">
+                          <i class="fas fa-comment-alt text-amber-500"></i> {{ order.note }}
                         </div>
                       }
                     </div>
@@ -183,25 +183,25 @@
                 </td>
                 <td>
                   <div class="items-list">
-                    @for (item of order.items; track item.product_id) {
+                    @for (item of order.items; track (item.id || item.product_id)) {
                       <div class="item-row-wrapper">
-                        <div class="item-row">
-                          <span class="qty">{{ item.quantity }}x</span>
-                          <span class="name">{{ item.product?.name }}</span>
+                        <div class="item-row flex items-center gap-1.5">
+                          <span class="qty font-bold text-indigo-600">{{ item.quantity }}x</span>
+                          <span class="name font-medium">{{ item.product?.name || item.product_name }}</span>
                           @if (item.size_name) {
-                            <span class="size-badge">{{ item.size_name }}</span>
+                            <span class="size-badge text-[11px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">{{ item.size_name }}</span>
                           }
                         </div>
                         @if (item.notes) {
-                          <div class="item-note">
+                          <div class="item-note text-xs text-amber-600 italic mt-0.5">
                             <i class="fas fa-pen-alt text-[10px]"></i> {{ item.notes }}
                           </div>
                         }
                       </div>
                     }
                     @if (order.note) {
-                      <div class="order-note-tag mt-1">
-                        <i class="fas fa-comment-alt"></i> {{ order.note }}
+                      <div class="order-note-tag mt-2 p-1.5 bg-amber-50 text-amber-800 text-xs rounded border border-amber-200">
+                        <i class="fas fa-comment-alt text-amber-500"></i> {{ order.note }}
                       </div>
                     }
                   </div>

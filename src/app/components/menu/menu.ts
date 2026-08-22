@@ -9,6 +9,8 @@ interface CartItem {
   product: any;
   quantity: number;
   size?: string | null;
+  size_name?: string | null;
+  note?: string | null;
   unitPrice: number;
   totalPrice: number;
 }
@@ -45,6 +47,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   detailQuantity: number = 1;
 
   cart: CartItem[] = [];
+  orderNote: string = ''; // 💬 ملاحظات الحريف الخاصة بالطلب
   tableNumber: number | null = null;
   shopSlug: string | null = null;
 
@@ -325,6 +328,7 @@ export class MenuComponent implements OnInit, OnDestroy {
                 product: productObj,
                 quantity: item.quantity,
                 size: item.size_name || null,
+                size_name: item.size_name || null,
                 unitPrice: Number(item.price) || 0,
                 totalPrice: (Number(item.price) || 0) * item.quantity
               });
@@ -362,7 +366,6 @@ export class MenuComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** ⚡ دالة تحديد رسالة التنبيه المحدثة للحريف */
   getClientStatusAlert(status?: string): string {
     const s = String(status || '').toLowerCase();
     switch (s) {
@@ -531,7 +534,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     const sizeName = sizes.length > 0 ? (sizes[0].size_name ?? null) : null;
 
     const existingItem = this.cart.find(
-      item => item.product.id === product.id && item.size === sizeName
+      item => item.product.id === product.id && (item.size === sizeName || item.size_name === sizeName)
     );
 
     if (existingItem) {
@@ -543,6 +546,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         product: product,
         quantity: 1,
         size: sizeName,
+        size_name: sizeName,
         unitPrice: unitPrice,
         totalPrice: unitPrice
       });
@@ -553,7 +557,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     const unitPrice = this.getSelectedUnitPrice();
 
     const existingItem = this.cart.find(
-      item => item.product.id === this.selectedProduct.id && item.size === this.selectedSize
+      item => item.product.id === this.selectedProduct.id && (item.size === this.selectedSize || item.size_name === this.selectedSize)
     );
 
     if (existingItem) {
@@ -565,6 +569,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         product: this.selectedProduct,
         quantity: this.detailQuantity,
         size: this.selectedSize,
+        size_name: this.selectedSize,
         unitPrice: unitPrice,
         totalPrice: this.detailQuantity * unitPrice
       });
@@ -600,11 +605,12 @@ export class MenuComponent implements OnInit, OnDestroy {
 
     const orderPayload = {
       table_number: this.tableNumber,
+      note: this.orderNote,
       items: this.cart.map(item => ({
         product_id: item.product.id,
         quantity: item.quantity,
         price: item.unitPrice,
-        size_name: item.size ?? null
+        size_name: item.size ?? item.size_name ?? null
       })),
       total_price: this.getCartTotal()
     };
@@ -614,6 +620,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.menuService.sendOrder(orderPayload, this.shopSlug).subscribe({
       next: (res) => {
         this.cart = [];
+        this.orderNote = '';
         this.loading = false;
         if (res && res.order) {
           this.activeOrders.unshift(res.order);

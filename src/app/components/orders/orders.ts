@@ -2,7 +2,7 @@ import { Component, OnInit, signal, inject, computed, DestroyRef } from '@angula
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval } from 'rxjs';
-import { OrderService, Order, OrderStatus } from '../../services/order';
+import { OrderService, OrderStatus } from '../../services/order';
 import { LanguageService } from '../../services/language.service';
 
 export interface StatusFlowItem {
@@ -10,6 +10,37 @@ export interface StatusFlowItem {
   label: string;
   icon: string;
   color: string;
+}
+
+export interface OrderItem {
+  id?: number;
+  product_id?: number;
+  product_name?: string;
+  quantity: number;
+  price: number;
+  size_name?: string | null;
+  notes?: string | null;
+  product?: {
+    id: number;
+    name: string;
+    image_path?: string;
+  };
+}
+
+export interface Order {
+  id: number;
+  status: OrderStatus | string;
+  table_id?: number;
+  total_price: number;
+  items?: OrderItem[];
+  daily_order_number?: number;
+  display_number?: string | number | null;
+  note?: string | null;
+  created_at?: string;
+  table?: {
+    id: number;
+    table_number: number;
+  };
 }
 
 @Component({
@@ -86,7 +117,7 @@ export class Orders implements OnInit {
     if (showLoader) this.loading.set(true);
 
     this.orderService.getOrders().subscribe({
-      next: (data) => {
+      next: (data: any[]) => {
         const activeOnly = data.filter(order => 
           !this.isPaid(order.status) && !this.isCancelled(order.status)
         );
@@ -102,7 +133,7 @@ export class Orders implements OnInit {
           return serverOrder;
         }) : activeOnly;
 
-        this.orders.set(merged);
+        this.orders.set(merged as Order[]);
         if (showLoader) this.loading.set(false);
       },
       error: () => {
@@ -114,8 +145,8 @@ export class Orders implements OnInit {
 
   loadHistoryOrders(): void {
     this.orderService.getOrdersHistory().subscribe({
-      next: (data) => {
-        this.historyOrders.set(data);
+      next: (data: any[]) => {
+        this.historyOrders.set(data as Order[]);
       },
       error: () => this.historyOrders.set([])
     });
@@ -146,21 +177,21 @@ export class Orders implements OnInit {
     return active.filter(o => o.status === statusKey).length;
   }
 
-  canProgress(status: OrderStatus): boolean {
+  canProgress(status: string): boolean {
     return !!this.nextStatus[status];
   }
 
-  getNextStatusLabel(status: OrderStatus): string {
+  getNextStatusLabel(status: string): string {
     const next = this.nextStatus[status];
     if (!next) return '';
     const found = this.statusFlow.find(s => s.key === next);
     return found ? found.label : '';
   }
 
-  getStatusInfo(status: OrderStatus): StatusFlowItem {
+  getStatusInfo(status: string): StatusFlowItem {
     const found = this.statusFlow.find(s => s.key === status);
     if (found) return found;
-    return { key: 'cancelled', label: 'dash.cancelled', icon: 'fas fa-ban', color: '#ef4444' };
+    return { key: 'cancelled' as OrderStatus, label: 'dash.cancelled', icon: 'fas fa-ban', color: '#ef4444' };
   }
 
   isRtl(): boolean {
@@ -194,7 +225,7 @@ export class Orders implements OnInit {
   }
 
   progressOrder(order: Order): void {
-    const current = order.status;
+    const current = String(order.status);
     const next = this.nextStatus[current];
     if (!next) return;
     if (this.inFlight()[order.id]) return;
