@@ -35,7 +35,12 @@ export class RegisterComponent {
     }
   }
 
-  onRegister() {
+  onRegister(): void {
+    if (this.userData.password !== this.userData.password_confirmation) {
+      alert('كلمة السر وتأكيد كلمة السر غير متطابقين');
+      return;
+    }
+
     this.authService.getCsrfCookie().subscribe({
       next: () => {
         // ✅ Build a FormData payload so File objects are sent as multipart
