@@ -57,7 +57,7 @@ export class Orders implements OnInit {
   filteredOrders = computed(() => {
     const filter = this.selectedFilter();
     const activeOrders = this.orders().filter(o => 
-      !['paid', 'paye', 'cancelled', 'annule'].includes(o.status?.toLowerCase())
+      !this.isPaid(o.status) && !this.isCancelled(o.status)
     );
 
     if (filter === 'all') {
@@ -72,7 +72,7 @@ export class Orders implements OnInit {
     this.loadOrders(true);
     this.loadHistoryOrders();
 
-    // ⚡ Real-Time Polling كل 3 ثواني للطلبات النشطة
+    // Real-Time Polling كل 3 ثواني للطلبات النشطة
     interval(3000)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
@@ -88,7 +88,7 @@ export class Orders implements OnInit {
     this.orderService.getOrders().subscribe({
       next: (data) => {
         const activeOnly = data.filter(order => 
-          !['paid', 'paye', 'cancelled', 'annule'].includes(order.status?.toLowerCase())
+          !this.isPaid(order.status) && !this.isCancelled(order.status)
         );
 
         const active = this.inFlight();
@@ -112,7 +112,6 @@ export class Orders implements OnInit {
     });
   }
 
-  /** 📜 جلب سجل الطلبات السابقة بالـ API المخصصة للسجل */
   loadHistoryOrders(): void {
     this.orderService.getOrdersHistory().subscribe({
       next: (data) => {
@@ -122,11 +121,23 @@ export class Orders implements OnInit {
     });
   }
 
-  // ─── Helpers for template ──────────────────
+  // ─── Helpers for template & Type Safety ──────────────────
+
+  isPaid(status: string | undefined): boolean {
+    if (!status) return false;
+    const s = status.toLowerCase();
+    return s === 'paid' || s === 'paye';
+  }
+
+  isCancelled(status: string | undefined): boolean {
+    if (!status) return false;
+    const s = status.toLowerCase();
+    return s === 'cancelled' || s === 'annule';
+  }
 
   getOrderCountByStatus(statusKey: string): number {
     const active = this.orders().filter(o => 
-      !['paid', 'paye', 'cancelled', 'annule'].includes(o.status?.toLowerCase())
+      !this.isPaid(o.status) && !this.isCancelled(o.status)
     );
 
     if (statusKey === 'all') {
