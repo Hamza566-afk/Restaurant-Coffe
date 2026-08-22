@@ -165,7 +165,13 @@
 .items-list {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.35rem;
+}
+
+.item-row-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
 }
 
 .item-row {
@@ -177,6 +183,46 @@
 .item-row .qty {
   font-weight: 700;
   color: #4f46e5;
+}
+
+/* 🍕 Size Badge Styling */
+.size-badge {
+  background-color: #e0e7ff;
+  color: #4338ca;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.05rem 0.4rem;
+  border-radius: 0.25rem;
+  text-transform: uppercase;
+}
+
+/* 📝 Item Notes Styling */
+.item-note {
+  font-size: 0.75rem;
+  color: #d97706;
+  background-color: #fffbeb;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  border-left: 2px solid #f59e0b;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  width: fit-content;
+}
+
+/* 💬 Order Global Note Tag */
+.order-note-tag {
+  font-size: 0.75rem;
+  color: #0369a1;
+  background-color: #f0f9ff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  border-left: 2px solid #0284c7;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 500;
+  width: fit-content;
 }
 
 .status-badge {

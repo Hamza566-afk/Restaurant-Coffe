@@ -8,13 +8,14 @@ export interface OrderItemPayload {
   quantity: number;
   price: number;
   size_name?: string | null;
+  notes?: string | null; // 📝 تم إضافة دعم ملاحظة المنتج (مثلاً: sans sucre)
 }
 
 export interface OrderPayload {
   table_number: number;
   items: OrderItemPayload[];
   total_price: number;
-  note?: string;
+  note?: string; // ملاحظة الطلب العامة
 }
 
 export interface ActiveOrderResponse {
@@ -40,6 +41,7 @@ export interface ActiveOrderResponse {
     quantity: number;
     price: number;
     size_name?: string | null;
+    notes?: string | null; // 📝 ملاحظة المنتج
     product?: {
       id: number;
       name: string;
@@ -107,7 +109,7 @@ export class ClientMenuService {
   /**
    * إرسال الطلب (Order)
    */
-  sendOrder(orderData: any, shopSlug?: string | null): Observable<any> {
+  sendOrder(orderData: OrderPayload, shopSlug?: string | null): Observable<any> {
     const shop = this.getShopIdentifier(shopSlug);
     const url = `${this.apiUrl}/client/orders`;
     const shopFields = /^\d+$/.test(shop)

@@ -25,6 +25,7 @@ export interface OrderItem {
   quantity: number;
   price: number;
   size_name?: string | null;
+  notes?: string | null; // 📝 تم إضافة الملاحظة لحل أخطاء الـ Template
   product?: Product;
 }
 
