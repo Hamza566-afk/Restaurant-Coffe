@@ -1,11 +1,13 @@
 <div class="orders-page p-6 bg-slate-50 min-h-screen">
-  <!-- Header Section -->
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+  <!-- Header Section with Buttons on Right -->
+  <div class="header-container flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
     <div>
       <h2 class="text-2xl font-bold text-slate-800">{{ t('orders.title') || 'Gestion des Commandes' }}</h2>
       <p class="text-sm text-slate-500 mt-1">{{ t('orders.sub') || 'Suivi et mise à jour des statuts des commandes' }}</p>
     </div>
-    <div class="flex gap-3">
+    
+    <!-- Action Buttons (On the right) -->
+    <div class="flex items-center gap-3">
       <button class="btn-action btn-refresh" (click)="loadOrders()">
         <i class="fas fa-sync-alt"></i>
         <span>{{ t('orders.refresh') || 'Actualiser' }}</span>
@@ -17,8 +19,8 @@
     </div>
   </div>
 
-  <!-- Navigation Tabs -->
-  <div class="main-tabs mb-6 flex gap-3 border-b border-slate-200 pb-3">
+  <!-- Main Tabs (Commandes Actives + Historique Side by Side) -->
+  <div class="main-tabs mb-6 flex items-center gap-3 border-b border-slate-200 pb-3">
     <button class="tab-btn" [class.active]="activeTab() === 'active'" (click)="switchTab('active')">
       <i class="fas fa-fire"></i>
       <span>Commandes Actives</span>
@@ -34,7 +36,6 @@
 
   <!-- ACTIVE ORDERS VIEW -->
   @if (activeTab() === 'active') {
-    <!-- Filter Status Tabs -->
     <div class="filter-bar flex gap-2 overflow-x-auto pb-3 mb-6">
       <button class="filter-chip" [class.active]="selectedFilter() === 'all'" (click)="setFilter('all')">
         Toutes
@@ -66,19 +67,19 @@
           <table class="orders-table">
             <thead>
               <tr>
-                <th>N° Commande</th>
-                <th>Table</th>
-                <th>Contenu de la commande</th>
-                <th>Total</th>
-                <th>Statut</th>
-                <th>Heure</th>
-                <th class="text-center">Action</th>
+                <th>N° COMMANDE</th>
+                <th>TABLE</th>
+                <th>CONTENU</th>
+                <th>TOTAL</th>
+                <th>STATUT</th>
+                <th>DATE & HEURE</th>
+                <th class="text-center">ACTION</th>
               </tr>
             </thead>
             <tbody>
               @for (order of filteredOrders(); track order.id) {
                 <tr>
-                  <td class="font-bold text-indigo-600">
+                  <td class="font-bold text-slate-700">
                     {{ order.display_number || ('#' + order.id) }}
                   </td>
                   <td>
@@ -105,20 +106,19 @@
                       }
                     </div>
                   </td>
-                  <td class="font-black text-slate-900 text-base">
+                  <td class="font-bold text-slate-800">
                     {{ order.total_price }} DT
                   </td>
                   <td>
                     <span class="status-badge"
                           [style.background-color]="getStatusInfo(order.status).color + '15'"
-                          [style.color]="getStatusInfo(order.status).color"
-                          [style.border-color]="getStatusInfo(order.status).color + '30'">
+                          [style.color]="getStatusInfo(order.status).color">
                       <i [class]="getStatusInfo(order.status).icon"></i>
                       {{ t(getStatusInfo(order.status).label) || order.status }}
                     </span>
                   </td>
-                  <td class="text-slate-500 text-xs font-medium">
-                    {{ order.created_at | date:'HH:mm' }}
+                  <td class="text-slate-500 text-xs">
+                    {{ order.created_at | date:'dd/MM/yyyy - HH:mm' }}
                   </td>
                   <td class="text-center">
                     @if (canProgress(order.status)) {
@@ -150,18 +150,18 @@
         <table class="orders-table">
           <thead>
             <tr>
-              <th>N° Commande</th>
-              <th>Table</th>
-              <th>Contenu</th>
-              <th>Total</th>
-              <th>Statut Final</th>
-              <th>Date & Heure</th>
+              <th>N° COMMANDE</th>
+              <th>TABLE</th>
+              <th>CONTENU</th>
+              <th>TOTAL</th>
+              <th>STATUT FINAL</th>
+              <th>DATE & HEURE</th>
             </tr>
           </thead>
           <tbody>
             @for (order of historyOrders(); track order.id) {
               <tr>
-                <td class="font-bold text-indigo-600">
+                <td class="font-bold text-slate-700">
                   {{ order.display_number || ('#' + order.id) }}
                 </td>
                 <td>
@@ -180,7 +180,7 @@
                     }
                   </div>
                 </td>
-                <td class="font-black text-slate-900 text-base">
+                <td class="font-bold text-slate-800">
                   {{ order.total_price }} DT
                 </td>
                 <td>
@@ -193,7 +193,7 @@
                     {{ isPaid(order.status) ? 'Payé' : 'Annulé' }}
                   </span>
                 </td>
-                <td class="text-slate-500 text-xs font-medium">
+                <td class="text-slate-500 text-xs">
                   {{ order.created_at | date:'dd/MM/yyyy - HH:mm' }}
                 </td>
               </tr>
