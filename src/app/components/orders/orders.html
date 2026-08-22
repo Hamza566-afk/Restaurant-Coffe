@@ -1,262 +1,205 @@
-<div class="orders-page p-4 bg-gray-50 min-h-screen">
-  <!-- Header -->
-  <div class="section-header flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+<div class="orders-page p-6 bg-slate-50 min-h-screen">
+  <!-- Header Section -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
     <div>
-      <h2 class="text-2xl font-bold text-gray-800">{{ t('orders.title') || 'إدارة الطلبات' }}</h2>
-      <p class="text-sm text-gray-500 mb-0">{{ t('orders.sub') || 'متابعة وتحديث حالات الطلبات الحينية' }}</p>
+      <h2 class="text-2xl font-bold text-slate-800">{{ t('orders.title') || 'Gestion des Commandes' }}</h2>
+      <p class="text-sm text-slate-500 mt-1">{{ t('orders.sub') || 'Suivi et mise à jour des statuts des commandes' }}</p>
     </div>
-    <div class="header-actions flex gap-2">
-      <button class="btn border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 btn-sm flex items-center gap-2 px-3 py-2 rounded-lg text-sm shadow-sm transition-all" (click)="loadOrders()">
-        <i class="fas fa-rotate"></i>
-        {{ t('orders.refresh') || 'تحديث' }}
+    <div class="flex gap-3">
+      <button class="btn-action btn-refresh" (click)="loadOrders()">
+        <i class="fas fa-sync-alt"></i>
+        <span>{{ t('orders.refresh') || 'Actualiser' }}</span>
       </button>
-      <button class="btn bg-red-600 hover:bg-red-700 text-white btn-sm flex items-center gap-2 px-3 py-2 rounded-lg text-sm shadow-sm transition-all" (click)="cloturerJournee()">
-        <i class="fas fa-calendar-check"></i>
-        {{ t('orders.cloturer') || 'إغلاق اليومية' }}
+      <button class="btn-action btn-cloture" (click)="cloturerJournee()">
+        <i class="fas fa-lock"></i>
+        <span>{{ t('orders.cloturer') || 'Clôturer la journée' }}</span>
       </button>
     </div>
   </div>
 
-  <!-- Main View Tabs: Active Orders vs Order History -->
-  <div class="view-switch-tabs mb-6 flex gap-3 border-b border-gray-200 pb-2">
-    <button class="btn text-sm py-2.5 px-5 rounded-xl font-semibold transition-all flex items-center gap-2"
-            [class.bg-indigo-600]="activeTab() === 'active'"
-            [class.text-white]="activeTab() === 'active'"
-            [class.shadow-md]="activeTab() === 'active'"
-            [class.bg-white]="activeTab() !== 'active'"
-            [class.text-gray-600]="activeTab() !== 'active'"
-            [class.border]="activeTab() !== 'active'"
-            [class.border-gray-200]="activeTab() !== 'active'"
-            (click)="switchTab('active')">
+  <!-- Navigation Tabs -->
+  <div class="main-tabs mb-6 flex gap-3 border-b border-slate-200 pb-3">
+    <button class="tab-btn" [class.active]="activeTab() === 'active'" (click)="switchTab('active')">
       <i class="fas fa-fire"></i>
-      {{ t('orders.tabs.activeOrders') || 'الطلبات الحالية' }}
-      <span class="badge bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full ms-1 font-bold">{{ orders().length }}</span>
+      <span>Commandes Actives</span>
+      <span class="badge badge-amber">{{ orders().length }}</span>
     </button>
 
-    <button class="btn text-sm py-2.5 px-5 rounded-xl font-semibold transition-all flex items-center gap-2"
-            [class.bg-indigo-600]="activeTab() === 'history'"
-            [class.text-white]="activeTab() === 'history'"
-            [class.shadow-md]="activeTab() === 'history'"
-            [class.bg-white]="activeTab() !== 'history'"
-            [class.text-gray-600]="activeTab() !== 'history'"
-            [class.border]="activeTab() !== 'history'"
-            [class.border-gray-200]="activeTab() !== 'history'"
-            (click)="switchTab('history')">
+    <button class="tab-btn" [class.active]="activeTab() === 'history'" (click)="switchTab('history')">
       <i class="fas fa-history"></i>
-      {{ t('orders.tabs.history') || 'سجل الطلبات (Historique)' }}
-      <span class="badge bg-gray-500 text-white text-xs px-2 py-0.5 rounded-full ms-1 font-bold">{{ historyOrders().length }}</span>
+      <span>Historique</span>
+      <span class="badge badge-gray">{{ historyOrders().length }}</span>
     </button>
   </div>
 
-  <!-- SECTION 1: Active Orders View -->
+  <!-- ACTIVE ORDERS VIEW -->
   @if (activeTab() === 'active') {
     <!-- Filter Status Tabs -->
-    <div class="filter-tabs flex gap-2 overflow-x-auto pb-3 mb-6">
-      <button class="filter-tab px-4 py-2 rounded-lg text-sm font-medium border bg-white text-gray-600 transition-all flex items-center gap-2"
-              [class.bg-indigo-50]="selectedFilter() === 'all'"
-              [class.text-indigo-600]="selectedFilter() === 'all'"
-              [class.border-indigo-300]="selectedFilter() === 'all'"
-              (click)="setFilter('all')">
-        {{ t('orders.tabs.all') || 'الكل' }}
-        <span class="tab-count bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-full font-bold">{{ getOrderCountByStatus('all') }}</span>
+    <div class="filter-bar flex gap-2 overflow-x-auto pb-3 mb-6">
+      <button class="filter-chip" [class.active]="selectedFilter() === 'all'" (click)="setFilter('all')">
+        Toutes
+        <span class="chip-count">{{ getOrderCountByStatus('all') }}</span>
       </button>
       @for (status of statusFlow; track status.key) {
-        <button class="filter-tab px-4 py-2 rounded-lg text-sm font-medium border bg-white text-gray-600 transition-all flex items-center gap-2 whitespace-nowrap"
-                [class.bg-indigo-50]="selectedFilter() === status.key"
-                [class.text-indigo-600]="selectedFilter() === status.key"
-                [class.border-indigo-300]="selectedFilter() === status.key"
-                (click)="setFilter(status.key)">
+        <button class="filter-chip" [class.active]="selectedFilter() === status.key" (click)="setFilter(status.key)">
           <i [class]="status.icon"></i>
-          {{ t(status.label) || status.key }}
-          <span class="tab-count bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-full font-bold">{{ getOrderCountByStatus(status.key) }}</span>
+          <span>{{ t(status.label) || status.key }}</span>
+          <span class="chip-count">{{ getOrderCountByStatus(status.key) }}</span>
         </button>
       }
     </div>
 
-    <!-- Loading State -->
     @if (loading()) {
-      <div class="loading-state text-center py-12 text-gray-500">
-        <i class="fas fa-spinner fa-spin text-3xl mb-3 text-indigo-600"></i>
-        <div class="text-sm font-medium">{{ t('orders.loading') || 'جاري تحميل الطلبات...' }}</div>
+      <div class="loading-box py-16 text-center text-slate-500">
+        <i class="fas fa-circle-notch fa-spin text-4xl text-indigo-600 mb-3"></i>
+        <p class="font-medium">Chargement des commandes...</p>
       </div>
-    }
-
-    <!-- Orders Grid -->
-    @if (!loading()) {
+    } @else {
       @if (filteredOrders().length === 0) {
-        <div class="empty-state bg-white rounded-2xl p-12 text-center border border-gray-100 shadow-sm max-w-md mx-auto my-8">
-          <i class="fas fa-inbox text-5xl text-gray-300 mb-4"></i>
-          <h3 class="text-lg font-bold text-gray-700">{{ t('orders.empty') || 'لا توجد طلبات' }}</h3>
-          <p class="text-sm text-gray-400 mb-0">{{ t('orders.emptySub') || 'لا يوجد طلبات في هذه الحالة حالياً' }}</p>
+        <div class="empty-card">
+          <i class="fas fa-receipt text-5xl text-slate-300 mb-3"></i>
+          <h4 class="font-bold text-slate-700">Aucune commande active</h4>
+          <p class="text-xs text-slate-400">Les commandes en cours apparaîtront ici</p>
         </div>
       } @else {
-        <div class="orders-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          @for (order of filteredOrders(); track order.id) {
-            <div class="order-card bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-              <div>
-                <!-- Order Header -->
-                <div class="order-header flex justify-between items-center pb-3 mb-3 border-b border-gray-100">
-                  <div class="order-id flex items-center gap-2">
-                    <span class="id-label font-black text-xl text-indigo-600">
-                      {{ order.display_number || ('#' + order.id) }}
-                    </span>
-                    <span class="order-time text-xs text-gray-400 font-medium">
-                      {{ order.created_at | date:'shortTime' }}
-                    </span>
-                  </div>
-                  <span class="badge px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5"
-                        [style.background]="getStatusInfo(order.status).color + '18'"
-                        [style.color]="getStatusInfo(order.status).color"
-                        [style.borderColor]="getStatusInfo(order.status).color + '40'"
-                        style="border: 1px solid;">
-                    <i [class]="getStatusInfo(order.status).icon"></i>
-                    {{ t(getStatusInfo(order.status).label) || order.status }}
-                  </span>
-                </div>
-
-                <!-- Customer & Table Info -->
-                <div class="order-customer flex items-center gap-3 bg-gray-50 p-2.5 rounded-xl mb-3">
-                  <div class="customer-avatar bg-indigo-100 text-indigo-600 w-9 h-9 rounded-lg flex items-center justify-center font-bold">
-                    <i class="fas fa-chair"></i>
-                  </div>
-                  <div class="customer-details flex flex-col">
-                    <span class="customer-table font-bold text-gray-800 text-sm">
-                      {{ t('orders.card.tableNum') || 'طاولة' }} {{ order.table?.table_number || t('orders.tableUnknown') || '-' }}
-                    </span>
-                    @if (order.queue_position) {
-                      <span class="text-xs text-amber-600 font-semibold">
-                        الترتيب في النوبة: {{ order.queue_position }}
-                      </span>
-                    }
-                  </div>
-                </div>
-
-                <!-- Order Items -->
-                <div class="order-items space-y-2 mb-3 max-h-48 overflow-y-auto pr-1">
-                  @for (item of order.items; track item.product_id) {
-                    <div class="order-item flex justify-between items-center text-xs">
-                      <span class="item-name font-semibold text-gray-700">
-                        {{ item.quantity }}x {{ item.product?.name }}
-                        @if (item.size_name) {
-                          <small class="text-gray-400 font-normal">({{ item.size_name }})</small>
-                        }
-                      </span>
-                      <span class="item-detail font-bold text-gray-900">
-                        {{ item.price }} {{ t('orders.currency') || 'DT' }}
-                      </span>
-                    </div>
-                  }
-                </div>
-
-                <!-- Note -->
-                @if (order.note) {
-                  <div class="order-note bg-amber-50 text-amber-800 text-xs p-2.5 rounded-lg mb-3 flex items-start gap-2 border border-amber-100">
-                    <i class="fas fa-sticky-note mt-0.5 text-amber-500"></i>
-                    <span>{{ order.note }}</span>
-                  </div>
-                }
-              </div>
-
-              <!-- Total & Actions -->
-              <div class="order-footer pt-3 border-t border-gray-100 flex justify-between items-center mt-2">
-                <div class="order-total">
-                  <span class="total-label text-xs text-gray-400 block">{{ t('orders.card.total') || 'المجموع' }}</span>
-                  <span class="total-value font-black text-lg text-indigo-600">
-                    {{ order.total_price }} {{ t('orders.currency') || 'DT' }}
-                  </span>
-                </div>
-                <div class="order-actions">
-                  @if (canProgress(order.status)) {
-                    <button class="btn bg-indigo-600 hover:bg-indigo-700 text-white btn-sm px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all" (click)="progressOrder(order)">
-                      <i [class]="'fas fa-arrow-' + (isRtl() ? 'left' : 'right')"></i>
-                      {{ t(getNextStatusLabel(order.status)) || 'التالي' }}
-                    </button>
-                  }
-                  @if (isCancelled(order.status)) {
-                    <span class="cancelled-label bg-red-50 text-red-600 text-xs font-bold px-2.5 py-1 rounded-lg border border-red-100">
-                      {{ t('orders.cancelledLabel') || 'ملغى' }}
-                    </span>
-                  }
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-      }
-    }
-  }
-
-  <!-- SECTION 2: History Orders View -->
-  @if (activeTab() === 'history') {
-    <div class="history-container bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      @if (historyOrders().length === 0) {
-        <div class="empty-state py-12 text-center">
-          <i class="fas fa-history text-4xl text-gray-300 mb-3"></i>
-          <h3 class="text-gray-600 font-bold text-base">لا يوجد سجل طلبات حالياً</h3>
-          <p class="text-xs text-gray-400">جميع الطلبات التي يتم دفعها أو إلغاؤها ستظهر هنا</p>
-        </div>
-      } @else {
-        <div class="overflow-x-auto">
-          <table class="w-full text-right border-collapse text-sm">
+        <div class="table-container">
+          <table class="orders-table">
             <thead>
-              <tr class="border-b border-gray-100 text-gray-500 bg-gray-50/50 text-xs uppercase tracking-wider">
-                <th class="p-4 font-bold">رقم الطلب</th>
-                <th class="p-4 font-bold">الطاولة</th>
-                <th class="p-4 font-bold">المحتويات</th>
-                <th class="p-4 font-bold">المجموع</th>
-                <th class="p-4 font-bold">الحالة النهائيّة</th>
-                <th class="p-4 font-bold">التاريخ والوقت</th>
+              <tr>
+                <th>N° Commande</th>
+                <th>Table</th>
+                <th>Contenu de la commande</th>
+                <th>Total</th>
+                <th>Statut</th>
+                <th>Heure</th>
+                <th class="text-center">Action</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
-              @for (order of historyOrders(); track order.id) {
-                <tr class="hover:bg-gray-50/80 transition-all">
-                  <td class="p-4 font-black text-indigo-600">
+            <tbody>
+              @for (order of filteredOrders(); track order.id) {
+                <tr>
+                  <td class="font-bold text-indigo-600">
                     {{ order.display_number || ('#' + order.id) }}
                   </td>
-                  
-                  <td class="p-4 font-semibold text-gray-700">
-                    <span class="inline-flex items-center gap-1.5 bg-gray-100 px-2.5 py-1 rounded-lg text-xs font-bold">
-                      <i class="fas fa-chair text-gray-400"></i>
-                      طاولة {{ order.table?.table_number || '-' }}
+                  <td>
+                    <span class="table-pill">
+                      <i class="fas fa-chair text-slate-400"></i>
+                      Table {{ order.table?.table_number || '-' }}
                     </span>
                   </td>
-                  
-                  <td class="p-4 text-xs text-gray-600">
-                    <div class="space-y-1">
+                  <td>
+                    <div class="items-list">
                       @for (item of order.items; track item.product_id) {
-                        <div class="font-medium text-gray-800">
-                          <span class="font-bold text-indigo-600">{{ item.quantity }}x</span> {{ item.product?.name }}
+                        <div class="item-row">
+                          <span class="qty">{{ item.quantity }}x</span>
+                          <span class="name">{{ item.product?.name }}</span>
+                          @if (item.size_name) {
+                            <span class="size">({{ item.size_name }})</span>
+                          }
+                        </div>
+                      }
+                      @if (order.note) {
+                        <div class="order-note-tag">
+                          <i class="fas fa-comment-alt"></i> {{ order.note }}
                         </div>
                       }
                     </div>
                   </td>
-                  
-                  <td class="p-4 font-black text-gray-900 text-base">
-                    {{ order.total_price }} {{ t('orders.currency') || 'DT' }}
+                  <td class="font-black text-slate-900 text-base">
+                    {{ order.total_price }} DT
                   </td>
-                  
-                  <td class="p-4">
-                    <span class="px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1.5"
-                          [class.bg-emerald-100]="isPaid(order.status)"
-                          [class.text-emerald-700]="isPaid(order.status)"
-                          [class.bg-rose-100]="isCancelled(order.status)"
-                          [class.text-rose-700]="isCancelled(order.status)">
-                      <i class="fas" 
-                         [class.fa-check-circle]="isPaid(order.status)"
-                         [class.fa-times-circle]="isCancelled(order.status)"></i>
-                      {{ isPaid(order.status) ? 'خالص (Payé)' : 'ملغى (Annulé)' }}
+                  <td>
+                    <span class="status-badge"
+                          [style.background-color]="getStatusInfo(order.status).color + '15'"
+                          [style.color]="getStatusInfo(order.status).color"
+                          [style.border-color]="getStatusInfo(order.status).color + '30'">
+                      <i [class]="getStatusInfo(order.status).icon"></i>
+                      {{ t(getStatusInfo(order.status).label) || order.status }}
                     </span>
                   </td>
-                  
-                  <td class="p-4 text-gray-400 text-xs font-medium">
-                    {{ order.created_at | date:'dd/MM/yyyy - HH:mm' }}
+                  <td class="text-slate-500 text-xs font-medium">
+                    {{ order.created_at | date:'HH:mm' }}
+                  </td>
+                  <td class="text-center">
+                    @if (canProgress(order.status)) {
+                      <button class="btn-next-status" (click)="progressOrder(order)">
+                        <span>{{ t(getNextStatusLabel(order.status)) || 'Suivant' }}</span>
+                        <i [class]="'fas fa-chevron-' + (isRtl() ? 'left' : 'right')"></i>
+                      </button>
+                    }
                   </td>
                 </tr>
               }
             </tbody>
           </table>
         </div>
+      }
+    }
+  }
+
+  <!-- HISTORIQUE ORDERS VIEW -->
+  @if (activeTab() === 'history') {
+    <div class="table-container">
+      @if (historyOrders().length === 0) {
+        <div class="empty-card">
+          <i class="fas fa-history text-5xl text-slate-300 mb-3"></i>
+          <h4 class="font-bold text-slate-700">Aucun historique disponible</h4>
+          <p class="text-xs text-slate-400">Les commandes réglées ou annulées figureront ici</p>
+        </div>
+      } @else {
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>N° Commande</th>
+              <th>Table</th>
+              <th>Contenu</th>
+              <th>Total</th>
+              <th>Statut Final</th>
+              <th>Date & Heure</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (order of historyOrders(); track order.id) {
+              <tr>
+                <td class="font-bold text-indigo-600">
+                  {{ order.display_number || ('#' + order.id) }}
+                </td>
+                <td>
+                  <span class="table-pill">
+                    <i class="fas fa-chair text-slate-400"></i>
+                    Table {{ order.table?.table_number || '-' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="items-list">
+                    @for (item of order.items; track item.product_id) {
+                      <div class="item-row">
+                        <span class="qty">{{ item.quantity }}x</span>
+                        <span class="name">{{ item.product?.name }}</span>
+                      </div>
+                    }
+                  </div>
+                </td>
+                <td class="font-black text-slate-900 text-base">
+                  {{ order.total_price }} DT
+                </td>
+                <td>
+                  <span class="status-badge"
+                        [class.badge-paid]="isPaid(order.status)"
+                        [class.badge-cancelled]="isCancelled(order.status)">
+                    <i class="fas"
+                       [class.fa-check-circle]="isPaid(order.status)"
+                       [class.fa-times-circle]="isCancelled(order.status)"></i>
+                    {{ isPaid(order.status) ? 'Payé' : 'Annulé' }}
+                  </span>
+                </td>
+                <td class="text-slate-500 text-xs font-medium">
+                  {{ order.created_at | date:'dd/MM/yyyy - HH:mm' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
       }
     </div>
   }
