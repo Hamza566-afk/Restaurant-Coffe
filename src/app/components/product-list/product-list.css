@@ -107,6 +107,29 @@
   filter: brightness(1.05);
 }
 
+/* 🤖 زر مساعد الذكاء الاصطناعي المميز */
+.btn-ai-assistant {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: white;
+  border: none;
+  padding: 11px 18px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+  transition: all 0.2s;
+}
+
+.btn-ai-assistant:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.35);
+  filter: brightness(1.08);
+}
+
 /* ===== Filters Bar المطور والمنظف ===== */
 .filters-bar-modern {
   display: flex;
@@ -121,8 +144,8 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  flex: 1;        /* 🆕 take available width */
-  min-width: 0;   /* 🆕 allow inner horizontal scroll */
+  flex: 1;
+  min-width: 0;
 }
 .filter-label {
   font-size: 0.75rem;
@@ -132,15 +155,14 @@
   letter-spacing: 0.03em;
 }
 
-/* 🆕 Fixed horizontal scroll — new categories never push Search/Clear All down */
 .category-chips {
   display: flex;
   gap: 8px;
-  flex-wrap: nowrap;        /* single row, enforce horizontal scroll */
-  overflow-x: auto;         /* scroll when overflowing */
-  scrollbar-width: thin;    /* slim scrollbar (Firefox) */
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
   max-width: 100%;
-  padding-bottom: 4px;      /* breathing room for the scrollbar */
+  padding-bottom: 4px;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -186,7 +208,6 @@
   color: var(--color-emerald-600);
 }
 
-/* ===== 🆕 Category Chip with Inline Edit/Delete Actions ===== */
 .chip-actions {
   display: inline-flex;
   align-items: center;
@@ -194,7 +215,6 @@
   margin-left: 4px;
 }
 
-/* 🆕 Tiny icons matching a browser tab close (x) button */
 .chip-action {
   width: 14px;
   height: 14px;
@@ -204,7 +224,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 0.625rem; /* ~10px */
+  font-size: 0.625rem;
   background: transparent;
   box-shadow: none;
   color: var(--color-slate-400);
@@ -214,35 +234,34 @@
   line-height: 1;
 }
 .chip-action i {
-  font-size: 0.625rem; /* ~10px */
+  font-size: 0.625rem;
   line-height: 1;
-  stroke-width: 1.5;   /* lighter stroke impression */
+  stroke-width: 1.5;
 }
 .chip-action.edit:hover {
-  color: #10b981; /* emerald/primary */
+  color: #10b981;
   background: transparent;
   opacity: 1;
 }
 .chip-action.delete:hover {
-  color: #ef4444; /* subtle red */
+  color: #ef4444;
   background: transparent;
   opacity: 1;
 }
 
-/* ===== 🆕 Clear All Button (Modern Soft Danger) ===== */
 .btn-clear-all {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 40px;           /* 🆕 strictly matches the Search input height */
-  padding: 0 16px;        /* vertical centering via line-height, horizontal only */
+  height: 40px;
+  padding: 0 16px;
   box-sizing: border-box;
   font-size: 0.82rem;
   font-weight: 600;
-  border-radius: 8px;     /* 🆕 same radius as the search field */
+  border-radius: 8px;
   border: 1px solid #fecaca;
-  background: #fef2f2;    /* very soft red */
+  background: #fef2f2;
   color: #ef4444;
   cursor: pointer;
   transition: all 0.2s;
@@ -260,15 +279,14 @@
   color: #ef4444;
 }
 
-/* ===== 🆕 Filters Right (Clear All + Search) alignment ===== */
 .filter-right {
   display: flex;
-  align-items: center;     /* 🆕 vertical center → button & input line up perfectly */
+  align-items: center;
   gap: 12px;
   flex-shrink: 0;
 }
 
-/* ===== 🆕 Toast Notification ===== */
+/* ===== Toast Notification ===== */
 .toast-notification {
   position: fixed;
   top: 24px;
@@ -316,9 +334,9 @@
 }
 .filter-search input {
   padding-right: 36px;
-  height: 40px;            /* 🆕 match the Clear All button height */
+  height: 40px;
   box-sizing: border-box;
-  border-radius: 8px;      /* 🆕 same radius as the Clear All button */
+  border-radius: 8px;
 }
 
 /* ===== Table Card ===== */
@@ -371,7 +389,7 @@
   text-overflow: ellipsis;
 }
 
-/* ===== 🆕 Highlight Badges (Hero Crown + Featured Star) ===== */
+/* ===== Highlight Badges ===== */
 .product-name-row {
   display: flex;
   align-items: center;
@@ -417,7 +435,7 @@
   font-size: 0.95rem;
 }
 
-/* ===== 🆕 Product Sizes Cell (table display) ===== */
+/* ===== Product Sizes Cell ===== */
 .product-sizes-cell {
   display: flex;
   flex-direction: column;
@@ -436,7 +454,7 @@
   width: fit-content;
 }
 
-/* ===== 🆕 Sizes Editor (modal dynamic rows) ===== */
+/* ===== Sizes Editor ===== */
 .sizes-editor {
   display: flex;
   flex-direction: column;
@@ -461,7 +479,6 @@
   flex-shrink: 0;
 }
 
-/* 🆕 Add-size button */
 .btn-add-size {
   display: inline-flex;
   align-items: center;
@@ -596,6 +613,129 @@
   color: var(--color-slate-400) !important;
 }
 
+/* ===== 🤖 AI Image Generation in Product Modal ===== */
+.btn-ai-gen-img {
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  margin-top: 6px;
+}
+.btn-ai-gen-img:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+.btn-ai-gen-img:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== 🤖 AI Assistant Modal (OCR & Chat Tabs) ===== */
+.ai-modal-tabs {
+  display: flex;
+  gap: 10px;
+  border-bottom: 1px solid var(--color-slate-200);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+.ai-tab-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-slate-500);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.ai-tab-btn.active {
+  background: rgba(139, 92, 246, 0.1);
+  color: #7c3aed;
+}
+
+/* OCR Section Elements */
+.parsed-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 14px;
+}
+.parsed-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--color-slate-50);
+  border: 1px solid var(--color-slate-200);
+  border-radius: var(--radius-md);
+}
+.parsed-item-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.parsed-item-img {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
+/* AI Chat Section Elements */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 350px;
+}
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--color-slate-50);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-slate-200);
+}
+.chat-bubble {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.chat-bubble.ai {
+  align-self: flex-start;
+  background: white;
+  color: var(--color-slate-800);
+  border: 1px solid var(--color-slate-200);
+}
+.chat-bubble.user {
+  align-self: flex-end;
+  background: #6366f1;
+  color: white;
+}
+.chat-input-bar {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 /* ===== Loading ===== */
 .loading-state {
   display: flex;
@@ -606,14 +746,14 @@
   color: var(--color-slate-400);
 }
 
-/* ===== Responsive (التجاوب مع الشاشات المختلفة) ===== */
+/* ===== Responsive ===== */
 @media (max-width: 991px) {
   .section-header-modern { flex-direction: column; align-items: flex-start; }
   .header-actions-group { width: 100%; justify-content: flex-start; gap: 12px; }
   .add-category-inline-modern { flex-grow: 1; }
   .add-category-inline-modern .form-control-sm { width: 100%; }
   .filters-bar-modern { flex-direction: column; align-items: stretch; gap: 12px; }
-  .filter-group { flex: none; width: 100%; }  /* reset in stacked/mobile layout */
+  .filter-group { flex: none; width: 100%; }
   .filter-right { justify-content: flex-start; flex-wrap: wrap; }
   .filter-search { flex: 1; min-width: 200px; }
   .filter-search input { width: 100% !important; }

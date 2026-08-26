@@ -2,8 +2,14 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService, Product, ProductSize } from '../../services/product';
-import { CategoryService, Category } from '../../services/category'; // 🚀 تثبت من مسار الـ Service حسب الـ Terminal
+import { CategoryService, Category } from '../../services/category';
 import { LanguageService } from '../../services/language.service';
+import { AIService, ParsedProduct } from '../../services/ai.service';
+
+interface ChatMessage {
+  sender: 'user' | 'ai';
+  text: string;
+}
 
 @Component({
   selector: 'app-product-list',
@@ -15,6 +21,7 @@ import { LanguageService } from '../../services/language.service';
 export class ProductListComponent implements OnInit {
   private productService = inject(ProductService);
   private categoryService = inject(CategoryService);
+  private aiService = inject(AIService);
   protected languageService = inject(LanguageService);
   protected t = (key: string): string => this.languageService.t(key);
 
@@ -35,7 +42,7 @@ export class ProductListComponent implements OnInit {
   selectedFile = signal<File | null>(null);
   previewUrl = signal<string | null>(null);
 
-/** الـ Variable المرتبطة بحقل إضافة تصنيف جديد سريع م الواجهة */
+  /** الـ Variable المرتبطة بحقل إضافة تصنيف جديد سريع م الواجهة */
   newCategoryName = '';
 
   /** 🆕 الـ Modal الخاص بتعديل اسم التصنيف */
@@ -43,7 +50,19 @@ export class ProductListComponent implements OnInit {
   categoryIdToEdit = signal<number | null>(null);
   categoryNameEditing = signal<string>('');
 
-  /** 🆕 Toast bậc للتنبيهات (أخطاء 422 وغيرها) */
+  /** 🤖 AI State Signals & Properties */
+  isGeneratingImage = signal(false);
+  showAiModal = signal(false);
+  aiTab = signal<'ocr' | 'chat'>('ocr');
+  isParsingMenu = signal(false);
+  parsedProducts = signal<ParsedProduct[]>([]);
+  chatMessages = signal<ChatMessage[]>([
+    { sender: 'ai', text: 'أهلاً بك! أنا مساعدك الذكي. كيف أستطيع مساعدتك اليوم في إدارة مقهاك؟' }
+  ]);
+  chatInput = '';
+  isChatting = signal(false);
+
+  /** 🆕 Toast للتنبيهات */
   toastMessage = signal<string>('');
   toastType = signal<'success' | 'error'>('success');
   private toastTimeout: any = null;
@@ -52,8 +71,8 @@ export class ProductListComponent implements OnInit {
   formModel: Product = this.emptyFormModel();
 
   /** 🆕 Product Sizes / Variants state */
-  sizesEnabled = signal<boolean>(false);               // Toggle for variations on/off
-  formSizes = signal<ProductSize[]>([]);               // Dynamic size rows
+  sizesEnabled = signal<boolean>(false);
+  formSizes = signal<ProductSize[]>([]);
 
   // ─── Lifecycle ────────────────────────────────────────
 
@@ -68,8 +87,6 @@ export class ProductListComponent implements OnInit {
     this.categoryService.getCategories().subscribe({
       next: (data) => {
         this.categories.set(data);
-        
-        // حماية: إذا فما تصنيفات وجينا نصنعوا منتج جديد، نحطو الـ ID متاع أول تصنيف كقيمة افتراضية
         if (data.length > 0 && !this.editMode()) {
           this.formModel.category_id = data[0].id;
         }
@@ -94,36 +111,30 @@ export class ProductListComponent implements OnInit {
 
   // ─── Management of Categories ─────────────────────────
 
-  /** دالة لإرسال التصنيف الجديد للـ Backend وتحديث الواجهة فوراً */
   addNewCategory(): void {
     if (!this.newCategoryName.trim()) return;
 
     this.categoryService.addCategory(this.newCategoryName.trim()).subscribe({
       next: (newCat) => {
-        // تحديث الـ Signal متاع الـ categories ديناميكياً
         this.categories.update(current => [...current, newCat]);
-        
-        // إذا كان الـ Form Model مازال ما عندوش تصنيف (كان 0)، نعطوه الـ ID الجديد ديريكت
         if (this.formModel.category_id === 0) {
           this.formModel.category_id = newCat.id;
         }
-        
-        this.newCategoryName = ''; // تفريغ الحقل
+        this.newCategoryName = '';
+        this.showToast('Catégorie ajoutée avec succès', 'success');
       },
-error: () => {
-        alert('حدث خطأ أثناء إضافة التصنيف، يرجى التأكد من الـ Shop ID أو المحاولة لاحقاً.');
+      error: () => {
+        this.showToast('Erreur lors de l\'ajout de la catégorie', 'error');
       }
     });
   }
 
-  /** 🆕 فتح الـ Modal لتعديل اسم التصنيف (زر القلم) */
   openEditCategory(cat: Category): void {
     this.categoryIdToEdit.set(cat.id);
     this.categoryNameEditing.set(cat.name);
     this.showCategoryModal.set(true);
   }
 
-  /** 🆕 حفظ الاسم المعدّل للتصنيف (PUT) وتحديث الـ Signal */
   saveCategoryEdit(): void {
     const id = this.categoryIdToEdit();
     const name = this.categoryNameEditing()?.trim();
@@ -131,7 +142,6 @@ error: () => {
 
     this.categoryService.updateCategory(id, name).subscribe({
       next: (updated) => {
-        // تحديث التصنيف في الـ Signal
         this.categories.update(list => list.map(c => (c.id === updated.id ? { ...c, ...updated } : c)));
         this.showCategoryModal.set(false);
         this.showToast('Catégorie renommée avec succès', 'success');
@@ -143,38 +153,31 @@ error: () => {
     });
   }
 
-  /** 🆕 حذف تصنيف مع تأكيد ومعالجة خطأ 422 (إذا فيه منتجات) */
   deleteCategory(cat: Category): void {
     const confirmMsg = `Êtes-vous sûr de vouloir supprimer la catégorie '${cat.name}' ?`;
     if (!confirm(confirmMsg)) return;
 
     this.categoryService.deleteCategory(cat.id).subscribe({
       next: () => {
-        // إزالة التصنيف من الـ Signal
         this.categories.update(list => list.filter(c => c.id !== cat.id));
-        // إذا كنا نفلتر عليه، نرجع للكل
         if (this.selectedCategory() === this.toStr(cat.id)) {
           this.selectedCategory.set('all');
         }
         this.showToast('Catégorie supprimée avec succès', 'success');
       },
       error: (err) => {
-        // معالجة 422: التصنيف يحتوي منتجات
-        const msg = err?.error?.message
-          ?? 'Impossible de supprimer cette catégorie car elle contient des produits.';
+        const msg = err?.error?.message ?? 'Impossible de supprimer cette catégorie car elle contient des produits.';
         this.showToast(msg, 'error');
       }
     });
   }
 
-  /** 🆕 حذف جميع المنتجات (زر Clear All) مع تأكيد صارم */
   clearAllProducts(): void {
     const confirmMsg = 'Êtes-vous sûr de vouloir supprimer TOUS les produits ? Cette action est irréversible !';
     if (!confirm(confirmMsg)) return;
 
     this.productService.clearAllProducts().subscribe({
       next: () => {
-        // تفريغ الـ Signal فوراً
         this.products.set([]);
         this.showToast('Tous les produits ont été supprimés', 'success');
       },
@@ -185,7 +188,6 @@ error: () => {
     });
   }
 
-  /** 🆕 إظهار Toast مؤقت (نجاح/خطأ) */
   private showToast(message: string, type: 'success' | 'error'): void {
     this.toastMessage.set(message);
     this.toastType.set(type);
@@ -197,9 +199,152 @@ error: () => {
     }, 4000);
   }
 
+  // ─── AI Service Actions ───────────────────────────────
+
+  /** 1. توليد صورة للمنتج بالـ AI */
+  generateAIImage(): void {
+    if (!this.formModel.name?.trim()) {
+      this.showToast('Veuillez d\'abord saisir le nom du produit', 'error');
+      return;
+    }
+
+    this.isGeneratingImage.set(true);
+    this.aiService.generateProductImage(this.formModel.name).subscribe({
+      next: (res) => {
+        if (res.success && res.image_url) {
+          this.previewUrl.set(res.image_url);
+          this.showToast('Image générée avec succès', 'success');
+        }
+        this.isGeneratingImage.set(false);
+      },
+      error: () => {
+        this.showToast('Erreur lors de la génération de l\'image', 'error');
+        this.isGeneratingImage.set(false);
+      }
+    });
+  }
+
+  /** 2. فتح وإغلاق مودال الـ AI Assistant */
+  openAiAssistantModal(): void {
+    this.showAiModal.set(true);
+  }
+
+  closeAiModal(): void {
+    this.showAiModal.set(false);
+  }
+
+  /** 3. قراءة ورقة المينيو بالأي آي (OCR Vision) */
+  onMenuImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      this.isParsingMenu.set(true);
+
+      this.aiService.parseMenu(file).subscribe({
+        next: (res) => {
+          if (res.success && res.products) {
+            const productsWithSelection = res.products.map(p => ({ ...p, selected: true }));
+            this.parsedProducts.set(productsWithSelection);
+            this.showToast('Menu analysé avec succès!', 'success');
+          }
+          this.isParsingMenu.set(false);
+        },
+        error: () => {
+          this.showToast('Erreur lors de la lecture du menu', 'error');
+          this.isParsingMenu.set(false);
+        }
+      });
+    }
+  }
+
+  removeParsedProduct(index: number): void {
+    this.parsedProducts.update(list => list.filter((_, i) => i !== index));
+  }
+
+  /** 4. توليد صور لكل المنتجات المستخرجة */
+  generateImagesForParsedProducts(): void {
+    const products = this.parsedProducts();
+    if (products.length === 0) return;
+
+    this.showToast('Génération des images en cours...', 'success');
+    products.forEach((prod, index) => {
+      if (prod.selected) {
+        this.aiService.generateProductImage(prod.name).subscribe({
+          next: (res) => {
+            if (res.success) {
+              this.parsedProducts.update(list => {
+                const updated = [...list];
+                updated[index].image_url = res.image_url;
+                return updated;
+              });
+            }
+          }
+        });
+      }
+    });
+  }
+
+  /** 5. حفظ واستيراد المنتجات المستخرجة للـ Database */
+  importParsedProducts(): void {
+    const selected = this.parsedProducts().filter(p => p.selected);
+    if (selected.length === 0) {
+      this.showToast('Veuillez sélectionner au moins un produit', 'error');
+      return;
+    }
+
+    this.loading.set(true);
+    let importedCount = 0;
+
+    selected.forEach((prod) => {
+      // البحث عن الفئة المناسبة أو استخدام أول فئة
+      let cat = this.categories().find(c => c.name.toLowerCase() === prod.category.toLowerCase());
+      const catId = cat ? cat.id : (this.categories()[0]?.id ?? 1);
+
+      const formData = new FormData();
+      formData.append('name', prod.name);
+      formData.append('price', String(prod.price));
+      formData.append('category_id', String(catId));
+      formData.append('is_active', '1');
+
+      this.productService.addProduct(formData).subscribe({
+        next: () => {
+          importedCount++;
+          if (importedCount === selected.length) {
+            this.loadProducts();
+            this.closeAiModal();
+            this.parsedProducts.set([]);
+            this.showToast('Tous les produits ont été importés avec succès!', 'success');
+          }
+        }
+      });
+    });
+  }
+
+  /** 6. إرسال رسالة للشات مع المساعد الذكي */
+  sendChatMessage(): void {
+    if (!this.chatInput.trim() || this.isChatting()) return;
+
+    const userText = this.chatInput.trim();
+    this.chatMessages.update(msgs => [...msgs, { sender: 'user', text: userText }]);
+    this.chatInput = '';
+    this.isChatting.set(true);
+
+    this.aiService.chat(userText, { products_count: this.products().length }).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.chatMessages.update(msgs => [...msgs, { sender: 'ai', text: res.reply }]);
+        }
+        this.isChatting.set(false);
+      },
+      error: () => {
+        this.chatMessages.update(msgs => [...msgs, { sender: 'ai', text: 'عذراً، حدث خطأ أثناء الاتصال بالمساعد الذكي.' }]);
+        this.isChatting.set(false);
+      }
+    });
+  }
+
   // ─── Helpers for template ─────────────────────────────
 
-  /** دالة الفلترة المشتركة */
   getFilteredProducts(): Product[] {
     const catFilter = this.selectedCategory();
     const search = this.searchTerm().toLowerCase().trim();
@@ -245,19 +390,16 @@ error: () => {
 
   // ─── Modal actions ────────────────────────────────────
 
-openAddModal(): void {
+  openAddModal(): void {
     this.editMode.set(false);
     this.formModel = this.emptyFormModel();
     
-    // إعطاء قيمة الـ category_id لأول عنصر موجود ديناميكياً إذا متوفر
     if (this.categories().length > 0) {
       this.formModel.category_id = this.categories()[0].id;
     }
 
-    // 🆕 Reset size variants (default OFF, no sizes)
     this.sizesEnabled.set(false);
     this.formSizes.set([]);
-
     this.selectedFile.set(null);
     this.previewUrl.set(null);
     this.showModal.set(true);
@@ -273,7 +415,6 @@ openAddModal(): void {
       this.previewUrl.set(null);
     }
     
-    // 🆕 Pre-populate size variants if the product has any
     const existingSizes = product.sizes && product.sizes.length > 0 ? product.sizes : [];
     this.sizesEnabled.set(existingSizes.length > 0);
     this.formSizes.set(existingSizes.map(s => ({ ...s })));
@@ -286,17 +427,14 @@ openAddModal(): void {
     this.showModal.set(false);
     this.selectedFile.set(null);
     this.previewUrl.set(null);
-    // 🆕 Reset size state when closing
     this.sizesEnabled.set(false);
     this.formSizes.set([]);
   }
 
-  // 🆕 Add an empty size row (when toggle is ON)
   addSizeRow(): void {
     this.formSizes.update(rows => [...rows, { size_name: '', price: 0 }]);
   }
 
-  // 🆕 Remove a size row by index
   removeSizeRow(index: number): void {
     this.formSizes.update(rows => rows.filter((_, i) => i !== index));
   }
@@ -326,44 +464,33 @@ openAddModal(): void {
     });
   }
 
-saveProduct(): void {
-    // ── 1. Name is required — otherwise log & abort ─────────────────
+  saveProduct(): void {
     if (!this.formModel.name?.trim()) {
-      console.error('Form invalid: name is empty', this.formModel);
       this.showToast('Le nom du produit est obligatoire', 'error');
       return;
     }
 
-    // ── 2. Handle price when Size Variations are ENABLED ────────────
-    //    If sizes are on, the single price is optional: use the first
-    //    size price (or 0) so the backend `nullable` rule passes.
     let priceValue = this.formModel.price;
     if (this.sizesEnabled()) {
       const first = this.formSizes()[0];
       priceValue = (first && Number(first.price)) ? Number(first.price) : 0;
     }
 
-const formData = new FormData();
+    const formData = new FormData();
     formData.append('name', this.formModel.name);
     formData.append('category_id', String(this.formModel.category_id));
     formData.append('price', String(priceValue ?? 0));
     formData.append('description', this.formModel.description || '');
     formData.append('is_active', this.formModel.is_active ? '1' : '0');
-
-    // ⭐ Featured toggle (can be multiple)
     formData.append('is_featured', this.formModel.is_featured ? '1' : '0');
-
-    // 👑 Hero toggle (single per shop — backend enforces uniqueness)
     formData.append('is_hero', this.formModel.is_hero ? '1' : '0');
 
-    // 🆕 Append size variants as JSON string when toggle is ON
     if (this.sizesEnabled()) {
       const sizes = this.formSizes()
         .filter(s => (s.size_name ?? '').trim() !== '')
         .map(s => ({ size_name: s.size_name.trim(), price: Number(s.price) || 0 }));
       formData.append('sizes', JSON.stringify(sizes));
     } else {
-      // Toggle OFF → send empty sizes to clear any existing variants on update
       formData.append('sizes', JSON.stringify([]));
     }
 
@@ -371,9 +498,6 @@ const formData = new FormData();
       formData.append('image', this.selectedFile()!);
     }
 
-    console.log('Submitting product form...', formData);
-
-    // ── 3. Guard against double-submission ──────────────────────────
     if (this.loading()) return;
     this.loading.set(true);
 
@@ -385,9 +509,9 @@ const formData = new FormData();
           this.loading.set(false);
           this.loadProducts();
           this.closeModal();
+          this.showToast('Produit mis à jour avec succès', 'success');
         },
         error: (err) => {
-          console.error('API Error:', err);
           this.loading.set(false);
           this.showToast(err?.error?.message ?? 'Erreur lors de la mise à jour', 'error');
         },
@@ -398,9 +522,9 @@ const formData = new FormData();
           this.loading.set(false);
           this.loadProducts();
           this.closeModal();
+          this.showToast('Produit ajouté avec succès', 'success');
         },
         error: (err) => {
-          console.error('API Error:', err);
           this.loading.set(false);
           this.showToast(err?.error?.message ?? 'Erreur lors de l\'ajout du produit', 'error');
         },
@@ -418,9 +542,7 @@ const formData = new FormData();
     });
   }
 
-  // ─── Private helpers ──────────────────────────────────
-
-private emptyFormModel(): Product {
+  private emptyFormModel(): Product {
     return {
       id: 0,
       name: '',

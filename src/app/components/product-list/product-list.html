@@ -6,7 +6,13 @@
       <p class="text-muted">{{ t('prod.sub') }}</p>
     </div>
 
-<div class="header-actions-group">
+    <div class="header-actions-group">
+      <!-- 🤖 زر Assistant AI في الهيدر الرئيسي -->
+      <button class="btn btn-ai-assistant" (click)="openAiAssistantModal()">
+        <i class="fas fa-robot text-amber-400"></i>
+        <span>Assistant AI</span>
+      </button>
+
       <!-- فورم إضافة تصنيف سريع ومدمج بجنب الأزرار -->
       <div class="add-category-inline-modern">
         <input 
@@ -39,13 +45,13 @@
           {{ t('orders.tabs.all') }}
           <span class="chip-count">{{ getProductCountByCategory('all') }}</span>
         </button>
-@for (cat of categories(); track cat.id) {
+        @for (cat of categories(); track cat.id) {
           <button class="chip"
                   [class.active]="selectedCategory() === toStr(cat.id)"
                   (click)="setCategoryFilter(toStr(cat.id))">
             {{ cat.name }}
             <span class="chip-count">{{ getProductCountByCategory(cat.id) }}</span>
-<!-- 🆕 أزرار تعديل وحذف التصنيف مباشرة داخل الـ Chip -->
+            <!-- 🆕 أزرار تعديل وحذف التصنيف مباشرة داخل الـ Chip -->
             <span class="chip-actions" (click)="$event.stopPropagation()">
               <span class="chip-action edit" (click)="openEditCategory(cat)" title="Renommer la catégorie" role="button">
                 <i class="fas fa-pen"></i>
@@ -62,7 +68,7 @@
     <!-- حقل البحث + زر Clear All المصفوف بجانبه -->
     <div class="filter-right">
       <!-- 🆕 زر حذف جميع المنتجات (Clear All) — بنبلي ناعم/خطر -->
-<button class="btn-clear-all" (click)="clearAllProducts()" [disabled]="products().length === 0">
+      <button class="btn-clear-all" (click)="clearAllProducts()" [disabled]="products().length === 0">
         <i class="fas fa-trash-can"></i> {{ t('prod.clearAll') }}
       </button>
       <div class="filter-search">
@@ -115,7 +121,7 @@
                 </div>
               </td>
               <td>
-<div class="product-name-cell">
+                <div class="product-name-cell">
                   <div class="product-name-row">
                     <span class="product-name">{{ product.name }}</span>
                     @if (product.is_hero) {
@@ -208,7 +214,7 @@
               </select>
             </div>
 
-<!-- Price -->
+            <!-- Price -->
             <div class="form-group">
               <label class="form-label">{{ t('prod.modalPrice') }}</label>
               <input type="number" class="form-control" [(ngModel)]="formModel.price" min="0" step="0.5"
@@ -258,7 +264,7 @@
               </div>
             }
 
-<!-- Active status -->
+            <!-- Active status -->
             <div class="form-group">
               <label class="form-label">{{ t('prod.table.status') }}</label>
               <div class="checkbox-group">
@@ -300,9 +306,26 @@
               <textarea class="form-control" [(ngModel)]="formModel.description" rows="3" [placeholder]="t('prod.modalDesc') + '...'"></textarea>
             </div>
 
-            <!-- Image -->
+            <!-- Image + AI Button -->
             <div class="form-group full-width">
-              <label class="form-label">{{ t('prod.modalImage') }}</label>
+              <div class="flex-between-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin: 0;">{{ t('prod.modalImage') }}</label>
+                
+                <!-- ✨ زر توليد صورة المنتج بالـ AI -->
+                <button 
+                  type="button" 
+                  class="btn-ai-generate" 
+                  (click)="generateAIImage()" 
+                  [disabled]="isGeneratingImage() || !formModel.name">
+                  @if (isGeneratingImage()) {
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Génération...</span>
+                  } @else {
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                    <span>Générer AI</span>
+                  }
+                </button>
+              </div>
               
               <input 
                 type="file" 
@@ -358,6 +381,133 @@
           <button class="btn btn-primary" (click)="saveCategoryEdit()">
             <i class="fas fa-save"></i> {{ t('prod.saveChanges') }}
           </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 🤖 AI Assistant Modal (استخراج ورقة المينيو + الشات) -->
+  @if (showAiModal()) {
+    <div class="modal-overlay" (click)="closeAiModal()">
+      <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3><i class="fas fa-robot text-amber-500"></i> Assistant AI - Café SaaS</h3>
+          <button class="btn-icon" (click)="closeAiModal()">
+            <i class="fas fa-xmark"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- أزرار التبديل بين الأوضاع: OCR Menu Parser أو Chat -->
+          <div class="ai-tabs mb-4 flex gap-2 border-b border-slate-200 pb-2">
+            <button 
+              type="button" 
+              class="btn-tab" 
+              [class.active]="aiTab() === 'ocr'" 
+              (click)="aiTab.set('ocr')">
+              <i class="fas fa-file-invoice"></i> Extraction Menu (Scan War9a)
+            </button>
+            <button 
+              type="button" 
+              class="btn-tab" 
+              [class.active]="aiTab() === 'chat'" 
+              (click)="aiTab.set('chat')">
+              <i class="fas fa-comments"></i> Chat & Assistant
+            </button>
+          </div>
+
+          <!-- Tab 1: OCR Menu Extraction -->
+          @if (aiTab() === 'ocr') {
+            <div class="ocr-section">
+              <div class="form-group">
+                <label class="form-label">Télécharger l'image du menu (الورقة)</label>
+                <input type="file" (change)="onMenuImageSelected($event)" accept="image/*" class="form-control">
+              </div>
+
+              @if (isParsingMenu()) {
+                <div class="text-center py-6">
+                  <i class="fas fa-spinner fa-spin text-2xl text-indigo-600 mb-2"></i>
+                  <p class="text-sm text-slate-600">Lecture et extraction des produits du menu en cours...</p>
+                </div>
+              }
+
+              <!-- جدول المنتجات المستخرجة -->
+              @if (parsedProducts().length > 0) {
+                <div class="parsed-results mt-4">
+                  <h4 class="font-semibold text-sm mb-2">Produits détectés:</h4>
+                  <div class="table-card overflow-x-auto">
+                    <table class="modern-table">
+                      <thead>
+                        <tr>
+                          <th>Sélection</th>
+                          <th>Nom</th>
+                          <th>Prix</th>
+                          <th>Catégorie</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (prod of parsedProducts(); track $index) {
+                          <tr>
+                            <td>
+                              <input type="checkbox" [(ngModel)]="prod.selected">
+                            </td>
+                            <td>
+                              <input type="text" class="form-control-sm" [(ngModel)]="prod.name">
+                            </td>
+                            <td>
+                              <input type="number" class="form-control-sm" [(ngModel)]="prod.price" style="width: 80px;">
+                            </td>
+                            <td>
+                              <input type="text" class="form-control-sm" [(ngModel)]="prod.category">
+                            </td>
+                            <td>
+                              <button class="btn-icon delete" (click)="removeParsedProduct($index)">
+                                <i class="fas fa-trash"></i>
+                              </button>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div class="mt-4 flex justify-between items-center">
+                    <button type="button" class="btn btn-sm btn-outline" (click)="generateImagesForParsedProducts()">
+                      <i class="fas fa-magic"></i> Générer images avec AI
+                    </button>
+                    <button type="button" class="btn btn-primary" (click)="importParsedProducts()">
+                      <i class="fas fa-check"></i> Importer les produits sélectionnés
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Tab 2: AI Chatbot -->
+          @if (aiTab() === 'chat') {
+            <div class="chat-section">
+              <div class="chat-messages p-3 bg-slate-50 rounded-lg max-h-64 overflow-y-auto mb-3 border border-slate-200">
+                @for (msg of chatMessages(); track $index) {
+                  <div class="chat-bubble mb-2" [class.user]="msg.sender === 'user'" [class.ai]="msg.sender === 'ai'">
+                    <strong>{{ msg.sender === 'user' ? 'Vous: ' : 'AI: ' }}</strong>
+                    <span>{{ msg.text }}</span>
+                  </div>
+                }
+              </div>
+              <div class="flex gap-2">
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  placeholder="Posez une question à l'assistant..." 
+                  [(ngModel)]="chatInput"
+                  (keyup.enter)="sendChatMessage()">
+                <button type="button" class="btn btn-primary" (click)="sendChatMessage()" [disabled]="isChatting()">
+                  <i class="fas fa-paper-plane"></i>
+                </button>
+              </div>
+            </div>
+          }
         </div>
       </div>
     </div>
