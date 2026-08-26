@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject, computed, DestroyRef } from '@angular/core';
+import { Component, OnInit, signal, inject, computed, DestroyRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval } from 'rxjs';
@@ -65,6 +65,9 @@ export class Orders implements OnInit {
   selectedFilter = signal<string>('all');
   loading = signal(false);
 
+  /** Popover active order ID */
+  activeNoteOrderId = signal<number | null>(null);
+
   /** Track order ids that have an in-flight status PUT */
   inFlight = signal<Record<number, boolean>>({});
 
@@ -97,6 +100,15 @@ export class Orders implements OnInit {
     return activeOrders.filter(o => strToLower(o.status) === strToLower(filter));
   });
 
+  // ─── Event Listener to Close Popover on Outside Click ─────────
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    if (this.activeNoteOrderId() !== null) {
+      this.activeNoteOrderId.set(null);
+    }
+  }
+
   // ─── Lifecycle ────────────────────────────────────────
 
   ngOnInit(): void {
@@ -109,6 +121,16 @@ export class Orders implements OnInit {
       .subscribe(() => {
         this.loadOrders(false);
       });
+  }
+
+  // ─── Note Popover Logic ───────────────────────────────
+
+  toggleNote(orderId: number): void {
+    if (this.activeNoteOrderId() === orderId) {
+      this.activeNoteOrderId.set(null);
+    } else {
+      this.activeNoteOrderId.set(orderId);
+    }
   }
 
   // ─── Data fetching ────────────────────────────────────
@@ -152,7 +174,7 @@ export class Orders implements OnInit {
     });
   }
 
-  // ─── Helpers for template & Type Safety ──────────────────
+  // ─── Helpers ──────────────────────────────────────────
 
   isPaid(status: string | undefined): boolean {
     if (!status) return false;
@@ -212,7 +234,7 @@ export class Orders implements OnInit {
     }
   }
 
-  // ─── Actions ───────────────────────────────
+  // ─── Actions ──────────────────────────────────────────
 
   cloturerJournee(): void {
     if (!confirm(this.t('orders.cloturerConfirm') || 'Êtes-vous sûr de vouloir clôturer la journée ?')) {
@@ -268,7 +290,6 @@ export class Orders implements OnInit {
   }
 }
 
-// Helper خفيف لتفادي مشاكل الحروف الكبيرة/الصغيرة في الحالات (Upper/Lower case)
 function strToLower(val: string | undefined | null): string {
   return val ? String(val).toLowerCase() : '';
 }
