@@ -80,7 +80,20 @@
               @for (order of filteredOrders(); track order.id) {
                 <tr>
                   <td class="font-bold text-slate-700">
-                    {{ order.display_number || ('#' + order.id) }}
+                    <div class="flex items-center gap-2">
+                      <span>{{ order.display_number || ('#' + order.id) }}</span>
+                      
+                      <!-- 🔔 أيقونة الرسالة والتنبيه عند وجود ملاحظة للطلب -->
+                      @if (order.note) {
+                        <div class="relative inline-flex items-center" [title]="'Note: ' + order.note">
+                          <i class="fas fa-envelope text-amber-500 text-sm"></i>
+                          <span class="absolute -top-1 -right-1 flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                          </span>
+                        </div>
+                      }
+                    </div>
                   </td>
                   <td>
                     <span class="table-pill">
@@ -95,12 +108,10 @@
                           <div class="item-row flex items-center gap-1.5">
                             <span class="qty font-bold text-indigo-600">{{ item.quantity }}x</span>
                             <span class="name font-medium">{{ item.product?.name || item.product_name }}</span>
-                            <!-- 🍕 عرض الحجم إذا وجد -->
                             @if (item.size_name) {
                               <span class="size-badge text-[11px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">{{ item.size_name }}</span>
                             }
                           </div>
-                          <!-- 📝 عرض ملاحظة المنتج الخاصة -->
                           @if (item.notes) {
                             <div class="item-note text-xs text-amber-600 italic mt-0.5">
                               <i class="fas fa-pen-alt text-[10px]"></i> {{ item.notes }}
@@ -109,10 +120,14 @@
                         </div>
                       }
 
-                      <!-- 💬 عرض الملاحظة العامة للطلب -->
+                      <!-- 💬 الملاحظة العامة للطلب مع تنبيه بصري -->
                       @if (order.note) {
-                        <div class="order-note-tag mt-2 p-1.5 bg-amber-50 text-amber-800 text-xs rounded border border-amber-200">
-                          <i class="fas fa-comment-alt text-amber-500"></i> {{ order.note }}
+                        <div class="order-note-tag mt-2 p-2 bg-amber-50 text-amber-900 text-xs rounded-md border border-amber-300 flex items-start gap-1.5 shadow-sm">
+                          <i class="fas fa-comment-dots text-amber-600 mt-0.5"></i>
+                          <div>
+                            <span class="font-semibold block text-[11px] text-amber-800">Note du client:</span>
+                            <span>{{ order.note }}</span>
+                          </div>
                         </div>
                       }
                     </div>
@@ -173,7 +188,12 @@
             @for (order of historyOrders(); track order.id) {
               <tr>
                 <td class="font-bold text-slate-700">
-                  {{ order.display_number || ('#' + order.id) }}
+                  <div class="flex items-center gap-2">
+                    <span>{{ order.display_number || ('#' + order.id) }}</span>
+                    @if (order.note) {
+                      <i class="fas fa-envelope text-amber-500 text-xs" [title]="'Note: ' + order.note"></i>
+                    }
+                  </div>
                 </td>
                 <td>
                   <span class="table-pill">
@@ -200,8 +220,12 @@
                       </div>
                     }
                     @if (order.note) {
-                      <div class="order-note-tag mt-2 p-1.5 bg-amber-50 text-amber-800 text-xs rounded border border-amber-200">
-                        <i class="fas fa-comment-alt text-amber-500"></i> {{ order.note }}
+                      <div class="order-note-tag mt-2 p-2 bg-amber-50 text-amber-900 text-xs rounded-md border border-amber-300 flex items-start gap-1.5 shadow-sm">
+                        <i class="fas fa-comment-dots text-amber-600 mt-0.5"></i>
+                        <div>
+                          <span class="font-semibold block text-[11px] text-amber-800">Note du client:</span>
+                          <span>{{ order.note }}</span>
+                        </div>
                       </div>
                     }
                   </div>

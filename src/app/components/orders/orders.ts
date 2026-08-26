@@ -94,7 +94,7 @@ export class Orders implements OnInit {
     if (filter === 'all') {
       return activeOrders;
     }
-    return activeOrders.filter(o => o.status === filter);
+    return activeOrders.filter(o => strToLower(o.status) === strToLower(filter));
   });
 
   // ─── Lifecycle ────────────────────────────────────────
@@ -174,22 +174,25 @@ export class Orders implements OnInit {
     if (statusKey === 'all') {
       return active.length;
     }
-    return active.filter(o => o.status === statusKey).length;
+    return active.filter(o => strToLower(o.status) === strToLower(statusKey)).length;
   }
 
   canProgress(status: string): boolean {
-    return !!this.nextStatus[status];
+    const key = strToLower(status);
+    return !!this.nextStatus[key];
   }
 
   getNextStatusLabel(status: string): string {
-    const next = this.nextStatus[status];
+    const key = strToLower(status);
+    const next = this.nextStatus[key];
     if (!next) return '';
     const found = this.statusFlow.find(s => s.key === next);
     return found ? found.label : '';
   }
 
   getStatusInfo(status: string): StatusFlowItem {
-    const found = this.statusFlow.find(s => s.key === status);
+    const key = strToLower(status);
+    const found = this.statusFlow.find(s => s.key === key);
     if (found) return found;
     return { key: 'cancelled' as OrderStatus, label: 'dash.cancelled', icon: 'fas fa-ban', color: '#ef4444' };
   }
@@ -212,6 +215,10 @@ export class Orders implements OnInit {
   // ─── Actions ───────────────────────────────
 
   cloturerJournee(): void {
+    if (!confirm(this.t('orders.cloturerConfirm') || 'Êtes-vous sûr de vouloir clôturer la journée ?')) {
+      return;
+    }
+
     this.orderService.cloturerJournee().subscribe({
       next: (res) => {
         alert(res?.message ?? this.t('orders.cloturerSuccess'));
@@ -225,7 +232,7 @@ export class Orders implements OnInit {
   }
 
   progressOrder(order: Order): void {
-    const current = String(order.status);
+    const current = strToLower(String(order.status));
     const next = this.nextStatus[current];
     if (!next) return;
     if (this.inFlight()[order.id]) return;
@@ -259,4 +266,9 @@ export class Orders implements OnInit {
       },
     });
   }
+}
+
+// Helper خفيف لتفادي مشاكل الحروف الكبيرة/الصغيرة في الحالات (Upper/Lower case)
+function strToLower(val: string | undefined | null): string {
+  return val ? String(val).toLowerCase() : '';
 }
