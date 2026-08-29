@@ -210,7 +210,6 @@ export class ProductListComponent implements OnInit {
 
     this.isGeneratingImage.set(true);
 
-    // إذا كان المنتج موجود سلفاً نبعث إشعار للـ Backend يحفظها مباشرة في Cloudinary
     if (this.editMode() && this.formModel.id) {
       this.productService.generateProductImage(this.formModel.id).subscribe({
         next: (res: any) => {
@@ -229,7 +228,6 @@ export class ProductListComponent implements OnInit {
         }
       });
     } else {
-      // إذا كان المنتج جديد، نولدو رابط المعاينة المباشر
       this.aiService.generateProductImage(this.formModel.name).subscribe({
         next: (res) => {
           if (res.success && res.image_url) {
@@ -267,7 +265,7 @@ export class ProductListComponent implements OnInit {
           if (res.success && res.products) {
             const productsWithSelection = res.products.map(p => ({ ...p, selected: true }));
             this.parsedProducts.set(productsWithSelection);
-            this.loadCategories(); // إعادة تحميل التصنيفات في حالة ما إدا الـ Backend أنشأ أقسام جديدة
+            this.loadCategories();
             this.showToast('Menu analysé avec succès!', 'success');
           }
           this.isParsingMenu.set(false);
@@ -285,27 +283,45 @@ export class ProductListComponent implements OnInit {
     this.parsedProducts.update(list => list.filter((_, i) => i !== index));
   }
 
-  /** 4. توليد صور لكل المنتجات المستخرجة */
-  generateImagesForParsedProducts(): void {
-    const products = this.parsedProducts();
-    if (products.length === 0) return;
+  /** 4. 🚀 توليد صور لكل المنتجات المستخرجة بدفعات (Batches of 3) تفادياً للـ 500 error */
+  async generateImagesForParsedProducts(): Promise<void> {
+    const selectedProducts = this.parsedProducts().filter(p => p.selected);
+    if (selectedProducts.length === 0) {
+      this.showToast('Veuillez sélectionner au moins un produit', 'error');
+      return;
+    }
 
-    this.showToast('Génération des images en cours...', 'success');
-    products.forEach((prod, index) => {
-      if (prod.selected) {
-        this.aiService.generateProductImage(prod.name).subscribe({
-          next: (res) => {
-            if (res.success) {
-              this.parsedProducts.update(list => {
-                const updated = [...list];
-                updated[index].image_url = res.image_url;
-                return updated;
-              });
-            }
-          }
+    this.showToast('Génération des images HD en cours (par lots)...', 'success');
+
+    const BATCH_SIZE = 3;
+
+    for (let i = 0; i < selectedProducts.length; i += BATCH_SIZE) {
+      const batch = selectedProducts.slice(i, i + BATCH_SIZE);
+
+      const promises = batch.map(prod => {
+        return new Promise<void>((resolve) => {
+          this.aiService.generateProductImage(prod.name).subscribe({
+            next: (res) => {
+              if (res.success && res.image_url) {
+                this.parsedProducts.update(list => 
+                  list.map(p => p.name === prod.name ? { ...p, image_url: res.image_url } : p)
+                );
+              }
+              resolve();
+            },
+            error: () => resolve()
+          });
         });
+      });
+
+      await Promise.all(promises);
+
+      if (i + BATCH_SIZE < selectedProducts.length) {
+        await new Promise(res => setTimeout(res, 2000));
       }
-    });
+    }
+
+    this.showToast('Toutes les images ont été générées avec succès!', 'success');
   }
 
   /** 5. حفظ واستيراد المنتجات المستخرجة للـ Database */
