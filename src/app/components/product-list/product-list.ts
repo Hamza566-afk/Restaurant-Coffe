@@ -209,19 +209,41 @@ export class ProductListComponent implements OnInit {
     }
 
     this.isGeneratingImage.set(true);
-    this.aiService.generateProductImage(this.formModel.name).subscribe({
-      next: (res) => {
-        if (res.success && res.image_url) {
-          this.previewUrl.set(res.image_url);
-          this.showToast('Image générée avec succès', 'success');
+
+    // إذا كان المنتج موجود سلفاً نبعث إشعار للـ Backend يحفظها مباشرة في Cloudinary
+    if (this.editMode() && this.formModel.id) {
+      this.productService.generateProductImage(this.formModel.id).subscribe({
+        next: (res: any) => {
+          if (res.success && res.product?.image_url) {
+            this.previewUrl.set(res.product.image_url);
+            this.formModel.image_url = res.product.image_url;
+            this.showToast('Image générée et enregistrée avec succès', 'success');
+          } else {
+            this.showToast('Erreur lors de la génération', 'error');
+          }
+          this.isGeneratingImage.set(false);
+        },
+        error: () => {
+          this.showToast('Erreur lors de la génération de l\'image', 'error');
+          this.isGeneratingImage.set(false);
         }
-        this.isGeneratingImage.set(false);
-      },
-      error: () => {
-        this.showToast('Erreur lors de la génération de l\'image', 'error');
-        this.isGeneratingImage.set(false);
-      }
-    });
+      });
+    } else {
+      // إذا كان المنتج جديد، نولدو رابط المعاينة المباشر
+      this.aiService.generateProductImage(this.formModel.name).subscribe({
+        next: (res) => {
+          if (res.success && res.image_url) {
+            this.previewUrl.set(res.image_url);
+            this.showToast('Image générée avec succès', 'success');
+          }
+          this.isGeneratingImage.set(false);
+        },
+        error: () => {
+          this.showToast('Erreur lors de la génération de l\'image', 'error');
+          this.isGeneratingImage.set(false);
+        }
+      });
+    }
   }
 
   /** 2. فتح وإغلاق مودال الـ AI Assistant */
@@ -245,12 +267,14 @@ export class ProductListComponent implements OnInit {
           if (res.success && res.products) {
             const productsWithSelection = res.products.map(p => ({ ...p, selected: true }));
             this.parsedProducts.set(productsWithSelection);
+            this.loadCategories(); // إعادة تحميل التصنيفات في حالة ما إدا الـ Backend أنشأ أقسام جديدة
             this.showToast('Menu analysé avec succès!', 'success');
           }
           this.isParsingMenu.set(false);
         },
-        error: () => {
-          this.showToast('Erreur lors de la lecture du menu', 'error');
+        error: (err) => {
+          const msg = err?.error?.message ?? 'Erreur lors de la lecture du menu';
+          this.showToast(msg, 'error');
           this.isParsingMenu.set(false);
         }
       });
@@ -296,7 +320,6 @@ export class ProductListComponent implements OnInit {
     let importedCount = 0;
 
     selected.forEach((prod) => {
-      // البحث عن الفئة المناسبة أو استخدام أول فئة
       let cat = this.categories().find(c => c.name.toLowerCase() === prod.category.toLowerCase());
       const catId = cat ? cat.id : (this.categories()[0]?.id ?? 1);
 
@@ -314,6 +337,14 @@ export class ProductListComponent implements OnInit {
             this.closeAiModal();
             this.parsedProducts.set([]);
             this.showToast('Tous les produits ont été importés avec succès!', 'success');
+          }
+        },
+        error: () => {
+          importedCount++;
+          if (importedCount === selected.length) {
+            this.loadProducts();
+            this.closeAiModal();
+            this.parsedProducts.set([]);
           }
         }
       });

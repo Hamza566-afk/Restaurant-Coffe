@@ -65,4 +65,9 @@ export class ProductService {
   clearAllProducts(): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/clear-all`, { withCredentials: true });
   }
+
+  /** 🆕 POST /api/admin/products/{id}/generate-image (AI Image Generation) */
+  generateProductImage(id: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/generate-image`, {}, { withCredentials: true });
+  }
 }
