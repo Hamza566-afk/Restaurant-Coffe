@@ -1,5 +1,5 @@
 <div class="products-page">
-  <!-- 🌟 الـ Header المطور: ملموم وفيه الأزرار الكل فرد سطر وبجنب بعضهم -->
+  <!-- 🌟 Header Section -->
   <div class="section-header-modern">
     <div class="header-title-block">
       <h2>{{ t('prod.title') }}</h2>
@@ -7,13 +7,13 @@
     </div>
 
     <div class="header-actions-group">
-      <!-- 🤖 زر Assistant AI في الهيدر الرئيسي -->
+      <!-- 🤖 Assistant AI Button -->
       <button class="btn btn-ai-assistant" (click)="openAiAssistantModal()">
         <i class="fas fa-robot text-amber-400"></i>
         <span>Assistant AI</span>
       </button>
 
-      <!-- فورم إضافة تصنيف سريع ومدمج بجنب الأزرار -->
+      <!-- Quick Add Category Form -->
       <div class="add-category-inline-modern">
         <input 
           type="text" 
@@ -25,7 +25,7 @@
         </button>
       </div>
 
-      <!-- زر إضافة منتج الرئيسي والبارز -->
+      <!-- Add Product Button -->
       <button class="btn btn-primary-modern" (click)="openAddModal()">
         <i class="fas fa-plus"></i>
         {{ t('prod.addBtn') }}
@@ -33,7 +33,7 @@
     </div>
   </div>
 
-  <!-- 🔍 الـ Filters Bar المطور للتصنيفات والبحث -->
+  <!-- 🔍 Filters & Search Bar -->
   <div class="filters-bar-modern">
     <div class="filter-group">
       <label class="filter-label">{{ t('prod.filterCat') }}</label>
@@ -51,7 +51,6 @@
                   (click)="setCategoryFilter(toStr(cat.id))">
             {{ cat.name }}
             <span class="chip-count">{{ getProductCountByCategory(cat.id) }}</span>
-            <!-- 🆕 أزرار تعديل وحذف التصنيف مباشرة داخل الـ Chip -->
             <span class="chip-actions" (click)="$event.stopPropagation()">
               <span class="chip-action edit" (click)="openEditCategory(cat)" title="Renommer la catégorie" role="button">
                 <i class="fas fa-pen"></i>
@@ -65,9 +64,7 @@
       </div>
     </div>
     
-    <!-- حقل البحث + زر Clear All المصفوف بجانبه -->
     <div class="filter-right">
-      <!-- 🆕 زر حذف جميع المنتجات (Clear All) — بنبلي ناعم/خطر -->
       <button class="btn-clear-all" (click)="clearAllProducts()" [disabled]="products().length === 0">
         <i class="fas fa-trash-can"></i> {{ t('prod.clearAll') }}
       </button>
@@ -84,7 +81,7 @@
     </div>
   </div>
 
-  <!-- Loading -->
+  <!-- Loading State -->
   @if (loading()) {
     <div class="loading-state">
       <i class="fas fa-spinner fa-spin"></i>
@@ -198,13 +195,11 @@
         </div>
         <div class="modal-body">
           <div class="form-grid">
-            <!-- Name -->
             <div class="form-group">
               <label class="form-label">{{ t('prod.modalName') }}</label>
               <input type="text" class="form-control" [(ngModel)]="formModel.name" placeholder="Ex: Cappuccino">
             </div>
 
-            <!-- Category -->
             <div class="form-group">
               <label class="form-label">{{ t('prod.table.cat') }}</label>
               <select class="form-control" [(ngModel)]="formModel.category_id">
@@ -214,14 +209,11 @@
               </select>
             </div>
 
-            <!-- Price -->
             <div class="form-group">
               <label class="form-label">{{ t('prod.modalPrice') }}</label>
-              <input type="number" class="form-control" [(ngModel)]="formModel.price" min="0" step="0.5"
-                     [disabled]="sizesEnabled()">
+              <input type="number" class="form-control" [(ngModel)]="formModel.price" min="0" step="0.5" [disabled]="sizesEnabled()">
             </div>
 
-            <!-- 🆕 Size Variations toggle -->
             <div class="form-group full-width">
               <label class="form-label">{{ t('prod.sizeVariationsTitle') }}</label>
               <div class="checkbox-group">
@@ -233,26 +225,15 @@
               </div>
             </div>
 
-            <!-- 🆕 Dynamic size rows (only when toggle is ON) -->
             @if (sizesEnabled()) {
               <div class="form-group full-width">
                 <label class="form-label">{{ t('prod.sizesList') }}</label>
                 <div class="sizes-editor">
                   @for (size of formSizes(); track $index) {
                     <div class="size-row">
-                      <input type="text"
-                             class="form-control"
-                             [placeholder]="t('prod.sizePlaceholder')"
-                             [(ngModel)]="size.size_name">
-                      <input type="number"
-                             class="form-control size-price"
-                             [placeholder]="t('prod.sizePrice')"
-                             min="0" step="0.5"
-                             [(ngModel)]="size.price">
-                      <button type="button"
-                              class="btn-icon delete"
-                              (click)="removeSizeRow($index)"
-                              [title]="t('prod.delete')">
+                      <input type="text" class="form-control" [placeholder]="t('prod.sizePlaceholder')" [(ngModel)]="size.size_name">
+                      <input type="number" class="form-control size-price" [placeholder]="t('prod.sizePrice')" min="0" step="0.5" [(ngModel)]="size.price">
+                      <button type="button" class="btn-icon delete" (click)="removeSizeRow($index)" [title]="t('prod.delete')">
                         <i class="fas fa-trash"></i>
                       </button>
                     </div>
@@ -264,7 +245,6 @@
               </div>
             }
 
-            <!-- Active status -->
             <div class="form-group">
               <label class="form-label">{{ t('prod.table.status') }}</label>
               <div class="checkbox-group">
@@ -276,42 +256,37 @@
               </div>
             </div>
 
-            <!-- ⭐ Featured toggle (multiple allowed) -->
             <div class="form-group">
-              <label class="form-label">favorit</label>
+              <label class="form-label">Favorit</label>
               <div class="checkbox-group">
                 <label class="toggle-switch">
                   <input type="checkbox" [(ngModel)]="formModel.is_featured">
                   <span class="toggle-slider"></span>
                 </label>
-                <span><i class="fas fa-star" style="color:#f59e0b;"></i> {{ formModel.is_featured ? 'active' : 'inactive' }}</span>
+                <span><i class="fas fa-star" style="color:#f59e0b;"></i> {{ formModel.is_featured ? 'Active' : 'Inactive' }}</span>
               </div>
             </div>
 
-            <!-- 👑 Hero toggle (single per shop) -->
             <div class="form-group">
-              <label class="form-label">Hero</label>
+              <label class="form-label">Hero Banner</label>
               <div class="checkbox-group">
                 <label class="toggle-switch">
                   <input type="checkbox" [(ngModel)]="formModel.is_hero">
                   <span class="toggle-slider"></span>
                 </label>
-                <span><i class="fas fa-crown" style="color:#c67c4e;"></i> {{ formModel.is_hero ? 'active' : 'inactive' }}</span>
+                <span><i class="fas fa-crown" style="color:#c67c4e;"></i> {{ formModel.is_hero ? 'Active' : 'Inactive' }}</span>
               </div>
             </div>
 
-            <!-- Description -->
             <div class="form-group full-width">
               <label class="form-label">{{ t('prod.modalDesc') }}</label>
               <textarea class="form-control" [(ngModel)]="formModel.description" rows="3" [placeholder]="t('prod.modalDesc') + '...'"></textarea>
             </div>
 
-            <!-- Image + AI Button -->
             <div class="form-group full-width">
               <div class="flex-between-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <label class="form-label" style="margin: 0;">{{ t('prod.modalImage') }}</label>
-                
-                <!-- ✨ زر توليد صورة المنتج بالـ AI -->
+
                 <button 
                   type="button" 
                   class="btn-ai-generate" 
@@ -326,13 +301,8 @@
                   }
                 </button>
               </div>
-              
-              <input 
-                type="file" 
-                #fileInput 
-                style="display: none;" 
-                accept="image/*" 
-                (change)="onFileSelected($event)">
+
+              <input type="file" #fileInput style="display: none;" accept="image/*" (change)="onFileSelected($event)">
 
               <div class="file-upload" (click)="fileInput.click()" style="cursor: pointer; position: relative;">
                 @if (previewUrl()) {
@@ -360,7 +330,7 @@
     </div>
   }
 
-  <!-- 🆕 Rename Category Modal -->
+  <!-- Rename Category Modal -->
   @if (showCategoryModal()) {
     <div class="modal-overlay" (click)="showCategoryModal.set(false)">
       <div class="modal-content" (click)="$event.stopPropagation()">
@@ -386,7 +356,7 @@
     </div>
   }
 
-  <!-- 🤖 AI Assistant Modal (استخراج ورقة المينيو + الشات) -->
+  <!-- AI Assistant Modal -->
   @if (showAiModal()) {
     <div class="modal-overlay" (click)="closeAiModal()">
       <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
@@ -397,7 +367,6 @@
           </button>
         </div>
         <div class="modal-body">
-          <!-- أزرار التبديل بين الأوضاع: OCR Menu Parser أو Chat -->
           <div class="ai-tabs mb-4 flex gap-2 border-b border-slate-200 pb-2">
             <button 
               type="button" 
@@ -417,7 +386,6 @@
             </button>
           </div>
 
-          <!-- Tab 1: OCR Menu Extraction -->
           @if (aiTab() === 'ocr') {
             <div class="ocr-section">
               <div class="form-group">
@@ -432,7 +400,6 @@
                 </div>
               }
 
-              <!-- 🔄 Progress bar عند حفظ وإضافة الصور بالـ AI -->
               @if (isGeneratingBulkImages()) {
                 <div class="bulk-progress-card p-4 my-4 bg-indigo-50 rounded-xl border border-indigo-100 text-center">
                   <div class="flex items-center justify-between mb-2">
@@ -445,7 +412,6 @@
                 </div>
               }
 
-              <!-- جدول المنتجات المستخرجة القابل للتعديل -->
               @if (parsedProducts().length > 0) {
                 <div class="parsed-results mt-4">
                   <div class="flex justify-between items-center mb-2">
@@ -509,7 +475,6 @@
             </div>
           }
 
-          <!-- Tab 2: AI Chatbot -->
           @if (aiTab() === 'chat') {
             <div class="chat-section">
               <div class="chat-messages p-3 bg-slate-50 rounded-lg max-h-64 overflow-y-auto mb-3 border border-slate-200">
@@ -538,7 +503,7 @@
     </div>
   }
 
-  <!-- 🆕 Toast Notification -->
+  <!-- Toast Notification -->
   @if (toastMessage()) {
     <div class="toast-notification" [class.toast-error]="toastType() === 'error'" [class.toast-success]="toastType() === 'success'">
       <i class="fas" [class.fa-circle-check]="toastType() === 'success'" [class.fa-circle-exclamation]="toastType() === 'error'"></i>

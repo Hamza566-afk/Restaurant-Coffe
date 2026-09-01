@@ -25,32 +25,24 @@ export class ProductListComponent implements OnInit {
   protected languageService = inject(LanguageService);
   protected t = (key: string): string => this.languageService.t(key);
 
-  /** القوائم التفاعلية */
   products = signal<Product[]>([]);
   categories = signal<Category[]>([]);
 
-  /** علامات حالة الواجهة */
   loading = signal(false);
   showModal = signal(false);
   editMode = signal(false);
   selectedCategory = signal<string>('all');
-  
-  /** حقل البحث */
   searchTerm = signal<string>('');
 
-  /** إدارة الصور المعروضة والمرفوعة */
   selectedFile = signal<File | null>(null);
   previewUrl = signal<string | null>(null);
 
-  /** الـ Variable المرتبطة بحقل إضافة تصنيف جديد سريع من الواجهة */
   newCategoryName = '';
-
-  /** 🆕 الـ Modal الخاص بتعديل اسم التصنيف */
   showCategoryModal = signal(false);
   categoryIdToEdit = signal<number | null>(null);
   categoryNameEditing = signal<string>('');
 
-  /** 🤖 AI State Signals & Properties */
+  // 🤖 AI State Signals
   isGeneratingImage = signal(false);
   showAiModal = signal(false);
   aiTab = signal<'ocr' | 'chat'>('ocr');
@@ -58,33 +50,25 @@ export class ProductListComponent implements OnInit {
   isImporting = signal(false);
   isGeneratingBulkImages = signal(false);
   imageGenProgress = signal({ current: 0, total: 0 });
-  parsedProducts = signal<ParsedProduct[]>([]);
+  parsedProducts = signal<(ParsedProduct & { selected?: boolean; is_active?: boolean })[]>([]);
   chatMessages = signal<ChatMessage[]>([
     { sender: 'ai', text: 'أهلاً بك! أنا مساعدك الذكي. كيف أستطيع مساعدتك اليوم في إدارة مقهاك؟' }
   ]);
   chatInput = '';
   isChatting = signal(false);
 
-  /** 🆕 Toast للتنبيهات */
   toastMessage = signal<string>('');
   toastType = signal<'success' | 'error'>('success');
   private toastTimeout: any = null;
 
-  /** الـ Form Model المرتبط بالمودال عبر [(ngModel)] */
   formModel: Product = this.emptyFormModel();
-
-  /** 🆕 Product Sizes / Variants state */
   sizesEnabled = signal<boolean>(false);
   formSizes = signal<ProductSize[]>([]);
-
-  // ─── Lifecycle ────────────────────────────────────────
 
   ngOnInit(): void {
     this.loadCategories();
     this.loadProducts();
   }
-
-  // ─── Data fetching ────────────────────────────────────
 
   loadCategories(): void {
     this.categoryService.getCategories().subscribe({
@@ -112,8 +96,6 @@ export class ProductListComponent implements OnInit {
     });
   }
 
-  // ─── Management of Categories ─────────────────────────
-
   addNewCategory(): void {
     if (!this.newCategoryName.trim()) return;
 
@@ -126,9 +108,7 @@ export class ProductListComponent implements OnInit {
         this.newCategoryName = '';
         this.showToast('Catégorie ajoutée avec succès', 'success');
       },
-      error: () => {
-        this.showToast('Erreur lors de l\'ajout de la catégorie', 'error');
-      }
+      error: () => this.showToast('Erreur lors de l\'ajout de la catégorie', 'error')
     });
   }
 
@@ -157,8 +137,7 @@ export class ProductListComponent implements OnInit {
   }
 
   deleteCategory(cat: Category): void {
-    const confirmMsg = `Êtes-vous sûr de vouloir supprimer la catégorie '${cat.name}' ?`;
-    if (!confirm(confirmMsg)) return;
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer la catégorie '${cat.name}' ?`)) return;
 
     this.categoryService.deleteCategory(cat.id).subscribe({
       next: () => {
@@ -169,15 +148,14 @@ export class ProductListComponent implements OnInit {
         this.showToast('Catégorie supprimée avec succès', 'success');
       },
       error: (err) => {
-        const msg = err?.error?.message ?? 'Impossible de supprimer cette catégorie car elle contient des produits.';
+        const msg = err?.error?.message ?? 'Impossible de supprimer cette catégorie.';
         this.showToast(msg, 'error');
       }
     });
   }
 
   clearAllProducts(): void {
-    const confirmMsg = 'Êtes-vous sûr de vouloir supprimer TOUS les produits ? Cette action est irréversible !';
-    if (!confirm(confirmMsg)) return;
+    if (!confirm('Êtes-vous sûr de vouloir supprimer TOUS les produits ?')) return;
 
     this.productService.clearAllProducts().subscribe({
       next: () => {
@@ -185,7 +163,7 @@ export class ProductListComponent implements OnInit {
         this.showToast('Tous les produits ont été supprimés', 'success');
       },
       error: (err) => {
-        const msg = err?.error?.message ?? 'Erreur lors de la suppression de tous les produits';
+        const msg = err?.error?.message ?? 'Erreur lors de la suppression';
         this.showToast(msg, 'error');
       }
     });
@@ -194,17 +172,12 @@ export class ProductListComponent implements OnInit {
   private showToast(message: string, type: 'success' | 'error'): void {
     this.toastMessage.set(message);
     this.toastType.set(type);
-    if (this.toastTimeout) {
-      clearTimeout(this.toastTimeout);
-    }
-    this.toastTimeout = setTimeout(() => {
-      this.toastMessage.set('');
-    }, 4000);
+    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+    this.toastTimeout = setTimeout(() => this.toastMessage.set(''), 4000);
   }
 
   // ─── AI Service Actions ───────────────────────────────
 
-  /** 1. توليد صورة للمنتج بالـ AI */
   generateAIImage(): void {
     if (!this.formModel.name?.trim()) {
       this.showToast('Veuillez d\'abord saisir le nom du produit', 'error');
@@ -247,7 +220,6 @@ export class ProductListComponent implements OnInit {
     }
   }
 
-  /** 2. فتح وإغلاق مودال الـ AI Assistant */
   openAiAssistantModal(): void {
     this.showAiModal.set(true);
   }
@@ -257,7 +229,7 @@ export class ProductListComponent implements OnInit {
     this.parsedProducts.set([]);
   }
 
-  /** 3. قراءة ورقة المينيو بالأي آي وعرضها في Editable Table */
+  /** قراءة ورقة المينيو بالأي آي وعرضها في Editable Table */
   onMenuImageSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
@@ -265,11 +237,18 @@ export class ProductListComponent implements OnInit {
       this.isParsingMenu.set(true);
 
       this.aiService.parseMenu(file).subscribe({
-        next: (res: ParseMenuResponse) => {
-          if (res.success && res.products) {
-            const productsWithSelection = res.products.map((p: ParsedProduct) => ({ ...p, selected: true }));
+        next: (res: any) => {
+          const itemsList = res.items || res.products || [];
+          if (res.success && itemsList.length > 0) {
+            const productsWithSelection = itemsList.map((p: ParsedProduct) => ({
+              ...p,
+              selected: true,
+              is_active: true
+            }));
             this.parsedProducts.set(productsWithSelection);
-            this.showToast('Menu analysé avec succès! Vérifiez les éléments ci-dessous.', 'success');
+            this.showToast('Menu analysé avec succès ! Vérifiez et modifiez les éléments.', 'success');
+          } else {
+            this.showToast('Aucun produit n\'a pu être extrait de cette image.', 'error');
           }
           this.isParsingMenu.set(false);
         },
@@ -285,7 +264,7 @@ export class ProductListComponent implements OnInit {
   addParsedRow(): void {
     this.parsedProducts.update(list => [
       ...list,
-      { name: '', price: 0, category: 'Général', selected: true }
+      { name: '', price: 0, category: 'Général', selected: true, is_active: true }
     ]);
   }
 
@@ -293,7 +272,7 @@ export class ProductListComponent implements OnInit {
     this.parsedProducts.update(list => list.filter((_, i) => i !== index));
   }
 
-  /** 4. حفظ المنتجات المستخرجة في قاعدة البيانات ثم توليد الصور متسلسلاً */
+  /** حفظ المنتجات المستخرجة في قاعدة البيانات ثم توليد الصور متسلسلاً */
   confirmImportAndGenerateImages(): void {
     const selected = this.parsedProducts().filter(p => p.selected && p.name.trim() !== '');
     if (selected.length === 0) {
@@ -309,9 +288,7 @@ export class ProductListComponent implements OnInit {
         if (res.success && res.products) {
           this.loadProducts();
           this.loadCategories();
-          this.showToast(`${res.products.length} produits enregistrés! Génération des images en cours...`, 'success');
-          
-          // بدء توليد الصور للمنتجات المضافة متسلسلاً
+          this.showToast(`${res.products.length} produits enregistrés ! Génération des images en cours...`, 'success');
           this.generateImagesForImportedProducts(res.products);
         }
       },
@@ -323,7 +300,6 @@ export class ProductListComponent implements OnInit {
     });
   }
 
-  /** 5. 🚀 توليد الصور بشكل متسلسل واحد تلو الآخر لكل المنتجات المستوردة */
   async generateImagesForImportedProducts(createdProducts: Product[]): Promise<void> {
     this.isGeneratingBulkImages.set(true);
     this.imageGenProgress.set({ current: 0, total: createdProducts.length });
@@ -343,7 +319,7 @@ export class ProductListComponent implements OnInit {
               }
               resolve();
             },
-            error: () => resolve() // الاستمرار حتى في حالة حدوث خطأ في منتج معين
+            error: () => resolve()
           });
         });
       } catch (err) {
@@ -356,7 +332,6 @@ export class ProductListComponent implements OnInit {
     this.showToast('Toutes les images ont été générées et enregistrées avec succès !', 'success');
   }
 
-  /** 6. إرسال رسالة للشات مع المساعد الذكي */
   sendChatMessage(): void {
     if (!this.chatInput.trim() || this.isChatting()) return;
 
@@ -379,8 +354,6 @@ export class ProductListComponent implements OnInit {
     });
   }
 
-  // ─── Helpers for template ─────────────────────────────
-
   getFilteredProducts(): Product[] {
     const catFilter = this.selectedCategory();
     const search = this.searchTerm().toLowerCase().trim();
@@ -393,9 +366,7 @@ export class ProductListComponent implements OnInit {
   }
 
   getProductCountByCategory(catId: number | string): number {
-    if (catId === 'all') {
-      return this.products().length;
-    }
+    if (catId === 'all') return this.products().length;
     return this.products().filter(p => p.category_id === Number(catId)).length;
   }
 
@@ -407,8 +378,6 @@ export class ProductListComponent implements OnInit {
   toStr(val: number): string {
     return String(val);
   }
-
-  // ─── Image Upload Handling ────────────────────────────
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -424,16 +393,12 @@ export class ProductListComponent implements OnInit {
     }
   }
 
-  // ─── Modal actions ────────────────────────────────────
-
   openAddModal(): void {
     this.editMode.set(false);
     this.formModel = this.emptyFormModel();
-    
     if (this.categories().length > 0) {
       this.formModel.category_id = this.categories()[0].id;
     }
-
     this.sizesEnabled.set(false);
     this.formSizes.set([]);
     this.selectedFile.set(null);
@@ -444,17 +409,11 @@ export class ProductListComponent implements OnInit {
   openEditModal(product: Product): void {
     this.editMode.set(true);
     this.formModel = { ...product };
-    
-    if (product.image_url) {
-      this.previewUrl.set(product.image_url);
-    } else {
-      this.previewUrl.set(null);
-    }
-    
+    this.previewUrl.set(product.image_url || null);
+
     const existingSizes = product.sizes && product.sizes.length > 0 ? product.sizes : [];
     this.sizesEnabled.set(existingSizes.length > 0);
     this.formSizes.set(existingSizes.map(s => ({ ...s })));
-    
     this.selectedFile.set(null);
     this.showModal.set(true);
   }
@@ -478,8 +437,6 @@ export class ProductListComponent implements OnInit {
   setCategoryFilter(catId: string): void {
     this.selectedCategory.set(catId);
   }
-
-  // ─── CRUD operations ──────────────────────────────────
 
   toggleActive(product: Product): void {
     const nextStatus = !product.is_active;
