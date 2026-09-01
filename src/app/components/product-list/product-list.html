@@ -356,90 +356,146 @@
     </div>
   }
 
-  <!-- AI Assistant Modal -->
+  <!-- 🤖 AI Assistant Modal -->
   @if (showAiModal()) {
     <div class="modal-overlay" (click)="closeAiModal()">
-      <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-content modal-lg ai-modal-styled" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h3><i class="fas fa-robot text-amber-500"></i> Assistant AI - Café SaaS</h3>
+          <h3>
+            <i class="fas fa-robot text-amber-500"></i> Assistant AI - Café SaaS
+          </h3>
           <button class="btn-icon" (click)="closeAiModal()" [disabled]="isImporting() || isGeneratingBulkImages()">
             <i class="fas fa-xmark"></i>
           </button>
         </div>
+
         <div class="modal-body">
-          <div class="ai-tabs mb-4 flex gap-2 border-b border-slate-200 pb-2">
+          <!-- Navigation Tabs -->
+          <div class="ai-tabs-container">
             <button 
               type="button" 
-              class="btn-tab" 
-              [class.active]="aiTab() === 'ocr'" 
-              (click)="aiTab.set('ocr')"
-              [disabled]="isImporting() || isGeneratingBulkImages()">
-              <i class="fas fa-file-invoice"></i> Extraction Menu (Scan War9a)
-            </button>
-            <button 
-              type="button" 
-              class="btn-tab" 
+              class="ai-tab-btn" 
               [class.active]="aiTab() === 'chat'" 
               (click)="aiTab.set('chat')"
               [disabled]="isImporting() || isGeneratingBulkImages()">
               <i class="fas fa-comments"></i> Chat & Assistant
             </button>
+
+            <button 
+              type="button" 
+              class="ai-tab-btn" 
+              [class.active]="aiTab() === 'ocr'" 
+              (click)="aiTab.set('ocr')"
+              [disabled]="isImporting() || isGeneratingBulkImages()">
+              <i class="fas fa-wand-magic-sparkles"></i> Extraction Menu (OCR)
+            </button>
           </div>
 
-          @if (aiTab() === 'ocr') {
-            <div class="ocr-section">
-              <div class="form-group">
-                <label class="form-label">Télécharger l'image du menu (الورقة)</label>
-                <input type="file" (change)="onMenuImageSelected($event)" accept="image/*" class="form-control" [disabled]="isParsingMenu() || isImporting() || isGeneratingBulkImages()">
+          <!-- TAB 1: Chat Assistant -->
+          @if (aiTab() === 'chat') {
+            <div class="chat-section">
+              <div class="chat-messages-container">
+                @for (msg of chatMessages(); track $index) {
+                  <div class="chat-bubble-wrapper" [class.user]="msg.sender === 'user'" [class.ai]="msg.sender === 'ai'">
+                    <div class="chat-avatar">
+                      <i class="fas" [class.fa-user]="msg.sender === 'user'" [class.fa-robot]="msg.sender === 'ai'"></i>
+                    </div>
+                    <div class="chat-bubble">
+                      <span class="chat-sender-title">{{ msg.sender === 'user' ? 'Vous' : 'Assistant AI' }}</span>
+                      <p class="chat-text">{{ msg.text }}</p>
+                    </div>
+                  </div>
+                }
               </div>
 
+              <div class="chat-input-bar">
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  placeholder="Posez une question ou demandez des conseils sur vos produits..." 
+                  [(ngModel)]="chatInput"
+                  (keyup.enter)="sendChatMessage()">
+                <button type="button" class="btn btn-primary btn-send" (click)="sendChatMessage()" [disabled]="isChatting() || !chatInput.trim()">
+                  @if (isChatting()) {
+                    <i class="fas fa-spinner fa-spin"></i>
+                  } @else {
+                    <i class="fas fa-paper-plane"></i>
+                  }
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- TAB 2: Scan Menu Extraction -->
+          @if (aiTab() === 'ocr') {
+            <div class="ocr-section">
+              <div class="ocr-upload-card">
+                <div class="upload-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <h4>Scanner un Menu / Une Liste de Produits</h4>
+                <p class="text-sm text-slate-500 mb-3">Téléchargez la photo d'un menu manuscrit ou imprimé pour extraire automatiquement les prix et les catégories.</p>
+                
+                <label class="btn btn-outline custom-file-btn">
+                  <i class="fas fa-upload"></i> Importer une photo
+                  <input type="file" (change)="onMenuImageSelected($event)" accept="image/*" style="display: none;" [disabled]="isParsingMenu() || isImporting() || isGeneratingBulkImages()">
+                </label>
+              </div>
+
+              <!-- Loader Parsing -->
               @if (isParsingMenu()) {
-                <div class="text-center py-6">
-                  <i class="fas fa-spinner fa-spin text-2xl text-indigo-600 mb-2"></i>
-                  <p class="text-sm text-slate-600">Lecture et extraction des produits du menu en cours...</p>
+                <div class="ai-loader-box">
+                  <i class="fas fa-compact-disc fa-spin text-3xl text-indigo-600 mb-2"></i>
+                  <p class="font-semibold text-slate-700">Analyse de l'image en cours par l'IA...</p>
+                  <span class="text-xs text-slate-500">Extraction des titres, catégories et prix des boissons</span>
                 </div>
               }
 
+              <!-- Loader Bulk Images -->
               @if (isGeneratingBulkImages()) {
-                <div class="bulk-progress-card p-4 my-4 bg-indigo-50 rounded-xl border border-indigo-100 text-center">
+                <div class="bulk-progress-card">
                   <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-indigo-700">Génération des images HD en cours...</span>
+                    <span class="text-xs font-bold text-indigo-700">Génération des visuels HD en cours...</span>
                     <span class="text-xs font-semibold text-indigo-600">{{ imageGenProgress().current }} / {{ imageGenProgress().total }}</span>
                   </div>
-                  <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                    <div class="bg-indigo-600 h-full transition-all duration-300" [style.width.%]="(imageGenProgress().current / imageGenProgress().total) * 100"></div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" [style.width.%]="(imageGenProgress().current / imageGenProgress().total) * 100"></div>
                   </div>
                 </div>
               }
 
+              <!-- Table Extraction Output -->
               @if (parsedProducts().length > 0) {
                 <div class="parsed-results mt-4">
-                  <div class="flex justify-between items-center mb-2">
-                    <h4 class="font-semibold text-sm">Produits détectés (Modifiables):</h4>
+                  <div class="flex justify-between items-center mb-3">
+                    <div>
+                      <h4 class="font-bold text-slate-800 text-base">Produits Détectés</h4>
+                      <p class="text-xs text-slate-500">Vérifiez les données avant de valider l'importation</p>
+                    </div>
                     <button type="button" class="btn btn-sm btn-outline" (click)="addParsedRow()" [disabled]="isImporting() || isGeneratingBulkImages()">
                       <i class="fas fa-plus"></i> Ajouter une ligne
                     </button>
                   </div>
                   
-                  <div class="table-card overflow-x-auto max-h-72">
-                    <table class="modern-table">
+                  <div class="parsed-table-wrapper">
+                    <table class="modern-table parsed-table">
                       <thead>
                         <tr>
-                          <th style="width: 40px;">Sélec.</th>
-                          <th>Nom du produit</th>
-                          <th style="width: 100px;">Prix</th>
-                          <th>Catégorie</th>
-                          <th style="width: 50px;">Action</th>
+                          <th style="width: 40px; text-align: center;">Import</th>
+                          <th>Nom du Produit</th>
+                          <th style="width: 110px;">Prix (TND)</th>
+                          <th>Catégorie Suggested</th>
+                          <th style="width: 50px; text-align: center;">Action</th>
                         </tr>
                       </thead>
                       <tbody>
                         @for (prod of parsedProducts(); track $index) {
                           <tr>
                             <td class="text-center">
-                              <input type="checkbox" [(ngModel)]="prod.selected" [disabled]="isImporting() || isGeneratingBulkImages()">
+                              <input type="checkbox" class="styled-checkbox" [(ngModel)]="prod.selected" [disabled]="isImporting() || isGeneratingBulkImages()">
                             </td>
                             <td>
-                              <input type="text" class="form-control-sm w-full" [(ngModel)]="prod.name" [disabled]="isImporting() || isGeneratingBulkImages()">
+                              <input type="text" class="form-control-sm w-full font-medium" [(ngModel)]="prod.name" [disabled]="isImporting() || isGeneratingBulkImages()">
                             </td>
                             <td>
                               <input type="number" class="form-control-sm w-full" [(ngModel)]="prod.price" [disabled]="isImporting() || isGeneratingBulkImages()">
@@ -458,7 +514,7 @@
                     </table>
                   </div>
 
-                  <div class="mt-4 flex justify-end gap-2 items-center">
+                  <div class="modal-footer-ai">
                     <button type="button" class="btn btn-outline" (click)="closeAiModal()" [disabled]="isImporting() || isGeneratingBulkImages()">
                       Annuler
                     </button>
@@ -466,36 +522,12 @@
                       @if (isImporting()) {
                         <i class="fas fa-spinner fa-spin"></i> Enregistrement...
                       } @else {
-                        <i class="fas fa-cloud-arrow-down"></i> Enregistrer et générer les images
+                        <i class="fas fa-cloud-arrow-down"></i> Enregistrer & Générer les Visuels
                       }
                     </button>
                   </div>
                 </div>
               }
-            </div>
-          }
-
-          @if (aiTab() === 'chat') {
-            <div class="chat-section">
-              <div class="chat-messages p-3 bg-slate-50 rounded-lg max-h-64 overflow-y-auto mb-3 border border-slate-200">
-                @for (msg of chatMessages(); track $index) {
-                  <div class="chat-bubble mb-2" [class.user]="msg.sender === 'user'" [class.ai]="msg.sender === 'ai'">
-                    <strong>{{ msg.sender === 'user' ? 'Vous: ' : 'AI: ' }}</strong>
-                    <span>{{ msg.text }}</span>
-                  </div>
-                }
-              </div>
-              <div class="flex gap-2">
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  placeholder="Posez une question à l'assistant..." 
-                  [(ngModel)]="chatInput"
-                  (keyup.enter)="sendChatMessage()">
-                <button type="button" class="btn btn-primary" (click)="sendChatMessage()" [disabled]="isChatting()">
-                  <i class="fas fa-paper-plane"></i>
-                </button>
-              </div>
             </div>
           }
         </div>

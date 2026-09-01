@@ -45,14 +45,15 @@ export class ProductListComponent implements OnInit {
   // 🤖 AI State Signals
   isGeneratingImage = signal(false);
   showAiModal = signal(false);
-  aiTab = signal<'ocr' | 'chat'>('ocr');
+  aiTab = signal<'ocr' | 'chat'>('chat'); // ✅ مثبت افتراضياً على الشات مباشرة
   isParsingMenu = signal(false);
   isImporting = signal(false);
   isGeneratingBulkImages = signal(false);
   imageGenProgress = signal({ current: 0, total: 0 });
   parsedProducts = signal<(ParsedProduct & { selected?: boolean; is_active?: boolean })[]>([]);
+  
   chatMessages = signal<ChatMessage[]>([
-    { sender: 'ai', text: 'أهلاً بك! أنا مساعدك الذكي. كيف أستطيع مساعدتك اليوم في إدارة مقهاك؟' }
+    { sender: 'ai', text: 'أهلاً بك! أنا مساعدك الذكي. كيف أستطيع مساعدتك اليوم في إدارة مقهاك ومتابعة المبيعات؟' }
   ]);
   chatInput = '';
   isChatting = signal(false);
@@ -222,14 +223,16 @@ export class ProductListComponent implements OnInit {
 
   openAiAssistantModal(): void {
     this.showAiModal.set(true);
+    this.aiTab.set('chat');
+    document.body.style.overflow = 'hidden'; // ✅ منع Scroll الصفحة الخلفية
   }
 
   closeAiModal(): void {
     this.showAiModal.set(false);
     this.parsedProducts.set([]);
+    document.body.style.overflow = 'auto'; // ✅ إعادة Scroll الصفحة الخارجي
   }
 
-  /** قراءة ورقة المينيو بالأي آي وعرضها في Editable Table */
   onMenuImageSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
@@ -272,7 +275,6 @@ export class ProductListComponent implements OnInit {
     this.parsedProducts.update(list => list.filter((_, i) => i !== index));
   }
 
-  /** حفظ المنتجات المستخرجة في قاعدة البيانات ثم توليد الصور متسلسلاً */
   confirmImportAndGenerateImages(): void {
     const selected = this.parsedProducts().filter(p => p.selected && p.name.trim() !== '');
     if (selected.length === 0) {
@@ -342,7 +344,7 @@ export class ProductListComponent implements OnInit {
 
     this.aiService.chat(userText, { products_count: this.products().length }).subscribe({
       next: (res) => {
-        if (res.success) {
+        if (res.success && res.reply) {
           this.chatMessages.update(msgs => [...msgs, { sender: 'ai', text: res.reply }]);
         }
         this.isChatting.set(false);
