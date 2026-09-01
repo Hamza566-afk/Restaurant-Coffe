@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ProductService, Product, ProductSize } from '../../services/product';
 import { CategoryService, Category } from '../../services/category';
 import { LanguageService } from '../../services/language.service';
-import { AIService, ParsedProduct } from '../../services/ai.service';
+import { AIService, ParsedProduct, ParseMenuResponse } from '../../services/ai.service';
 
 interface ChatMessage {
   sender: 'user' | 'ai';
@@ -42,7 +42,7 @@ export class ProductListComponent implements OnInit {
   selectedFile = signal<File | null>(null);
   previewUrl = signal<string | null>(null);
 
-  /** الـ Variable المرتبطة بحقل إضافة تصنيف جديد سريع م الواجهة */
+  /** الـ Variable المرتبطة بحقل إضافة تصنيف جديد سريع من الواجهة */
   newCategoryName = '';
 
   /** 🆕 الـ Modal الخاص بتعديل اسم التصنيف */
@@ -55,6 +55,9 @@ export class ProductListComponent implements OnInit {
   showAiModal = signal(false);
   aiTab = signal<'ocr' | 'chat'>('ocr');
   isParsingMenu = signal(false);
+  isImporting = signal(false);
+  isGeneratingBulkImages = signal(false);
+  imageGenProgress = signal({ current: 0, total: 0 });
   parsedProducts = signal<ParsedProduct[]>([]);
   chatMessages = signal<ChatMessage[]>([
     { sender: 'ai', text: 'أهلاً بك! أنا مساعدك الذكي. كيف أستطيع مساعدتك اليوم في إدارة مقهاك؟' }
@@ -251,9 +254,10 @@ export class ProductListComponent implements OnInit {
 
   closeAiModal(): void {
     this.showAiModal.set(false);
+    this.parsedProducts.set([]);
   }
 
-  /** 3. قراءة ورقة المينيو بالأي آي (OCR Vision) */
+  /** 3. قراءة ورقة المينيو بالأي آي وعرضها في Editable Table */
   onMenuImageSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
@@ -261,16 +265,15 @@ export class ProductListComponent implements OnInit {
       this.isParsingMenu.set(true);
 
       this.aiService.parseMenu(file).subscribe({
-        next: (res) => {
+        next: (res: ParseMenuResponse) => {
           if (res.success && res.products) {
-            const productsWithSelection = res.products.map(p => ({ ...p, selected: true }));
+            const productsWithSelection = res.products.map((p: ParsedProduct) => ({ ...p, selected: true }));
             this.parsedProducts.set(productsWithSelection);
-            this.loadCategories();
-            this.showToast('Menu analysé avec succès!', 'success');
+            this.showToast('Menu analysé avec succès! Vérifiez les éléments ci-dessous.', 'success');
           }
           this.isParsingMenu.set(false);
         },
-        error: (err) => {
+        error: (err: any) => {
           const msg = err?.error?.message ?? 'Erreur lors de la lecture du menu';
           this.showToast(msg, 'error');
           this.isParsingMenu.set(false);
@@ -279,92 +282,78 @@ export class ProductListComponent implements OnInit {
     }
   }
 
+  addParsedRow(): void {
+    this.parsedProducts.update(list => [
+      ...list,
+      { name: '', price: 0, category: 'Général', selected: true }
+    ]);
+  }
+
   removeParsedProduct(index: number): void {
     this.parsedProducts.update(list => list.filter((_, i) => i !== index));
   }
 
-  /** 4. 🚀 توليد صور لكل المنتجات المستخرجة بدفعات (Batches of 3) تفادياً للـ 500 error */
-  async generateImagesForParsedProducts(): Promise<void> {
-    const selectedProducts = this.parsedProducts().filter(p => p.selected);
-    if (selectedProducts.length === 0) {
-      this.showToast('Veuillez sélectionner au moins un produit', 'error');
+  /** 4. حفظ المنتجات المستخرجة في قاعدة البيانات ثم توليد الصور متسلسلاً */
+  confirmImportAndGenerateImages(): void {
+    const selected = this.parsedProducts().filter(p => p.selected && p.name.trim() !== '');
+    if (selected.length === 0) {
+      this.showToast('Veuillez sélectionner au moins un produit valide', 'error');
       return;
     }
 
-    this.showToast('Génération des images HD en cours (par lots)...', 'success');
+    this.isImporting.set(true);
 
-    const BATCH_SIZE = 3;
+    this.aiService.confirmImport(selected).subscribe({
+      next: (res) => {
+        this.isImporting.set(false);
+        if (res.success && res.products) {
+          this.loadProducts();
+          this.loadCategories();
+          this.showToast(`${res.products.length} produits enregistrés! Génération des images en cours...`, 'success');
+          
+          // بدء توليد الصور للمنتجات المضافة متسلسلاً
+          this.generateImagesForImportedProducts(res.products);
+        }
+      },
+      error: (err) => {
+        this.isImporting.set(false);
+        const msg = err?.error?.message ?? 'Erreur lors de l\'enregistrement des produits';
+        this.showToast(msg, 'error');
+      }
+    });
+  }
 
-    for (let i = 0; i < selectedProducts.length; i += BATCH_SIZE) {
-      const batch = selectedProducts.slice(i, i + BATCH_SIZE);
+  /** 5. 🚀 توليد الصور بشكل متسلسل واحد تلو الآخر لكل المنتجات المستوردة */
+  async generateImagesForImportedProducts(createdProducts: Product[]): Promise<void> {
+    this.isGeneratingBulkImages.set(true);
+    this.imageGenProgress.set({ current: 0, total: createdProducts.length });
 
-      const promises = batch.map(prod => {
-        return new Promise<void>((resolve) => {
-          this.aiService.generateProductImage(prod.name).subscribe({
-            next: (res) => {
-              if (res.success && res.image_url) {
-                this.parsedProducts.update(list => 
-                  list.map(p => p.name === prod.name ? { ...p, image_url: res.image_url } : p)
+    for (let i = 0; i < createdProducts.length; i++) {
+      const product = createdProducts[i];
+      this.imageGenProgress.set({ current: i + 1, total: createdProducts.length });
+
+      try {
+        await new Promise<void>((resolve) => {
+          this.productService.generateProductImage(product.id).subscribe({
+            next: (res: any) => {
+              if (res.success && res.product) {
+                this.products.update(list =>
+                  list.map(p => p.id === product.id ? res.product : p)
                 );
               }
               resolve();
             },
-            error: () => resolve()
+            error: () => resolve() // الاستمرار حتى في حالة حدوث خطأ في منتج معين
           });
         });
-      });
-
-      await Promise.all(promises);
-
-      if (i + BATCH_SIZE < selectedProducts.length) {
-        await new Promise(res => setTimeout(res, 2000));
+      } catch (err) {
+        console.error(`Error generating image for ${product.name}`, err);
       }
     }
 
-    this.showToast('Toutes les images ont été générées avec succès!', 'success');
-  }
-
-  /** 5. حفظ واستيراد المنتجات المستخرجة للـ Database */
-  importParsedProducts(): void {
-    const selected = this.parsedProducts().filter(p => p.selected);
-    if (selected.length === 0) {
-      this.showToast('Veuillez sélectionner au moins un produit', 'error');
-      return;
-    }
-
-    this.loading.set(true);
-    let importedCount = 0;
-
-    selected.forEach((prod) => {
-      let cat = this.categories().find(c => c.name.toLowerCase() === prod.category.toLowerCase());
-      const catId = cat ? cat.id : (this.categories()[0]?.id ?? 1);
-
-      const formData = new FormData();
-      formData.append('name', prod.name);
-      formData.append('price', String(prod.price));
-      formData.append('category_id', String(catId));
-      formData.append('is_active', '1');
-
-      this.productService.addProduct(formData).subscribe({
-        next: () => {
-          importedCount++;
-          if (importedCount === selected.length) {
-            this.loadProducts();
-            this.closeAiModal();
-            this.parsedProducts.set([]);
-            this.showToast('Tous les produits ont été importés avec succès!', 'success');
-          }
-        },
-        error: () => {
-          importedCount++;
-          if (importedCount === selected.length) {
-            this.loadProducts();
-            this.closeAiModal();
-            this.parsedProducts.set([]);
-          }
-        }
-      });
-    });
+    this.isGeneratingBulkImages.set(false);
+    this.closeAiModal();
+    this.showToast('Toutes les images ont été générées et enregistrées avec succès !', 'success');
   }
 
   /** 6. إرسال رسالة للشات مع المساعد الذكي */

@@ -392,7 +392,7 @@
       <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h3><i class="fas fa-robot text-amber-500"></i> Assistant AI - Café SaaS</h3>
-          <button class="btn-icon" (click)="closeAiModal()">
+          <button class="btn-icon" (click)="closeAiModal()" [disabled]="isImporting() || isGeneratingBulkImages()">
             <i class="fas fa-xmark"></i>
           </button>
         </div>
@@ -403,14 +403,16 @@
               type="button" 
               class="btn-tab" 
               [class.active]="aiTab() === 'ocr'" 
-              (click)="aiTab.set('ocr')">
+              (click)="aiTab.set('ocr')"
+              [disabled]="isImporting() || isGeneratingBulkImages()">
               <i class="fas fa-file-invoice"></i> Extraction Menu (Scan War9a)
             </button>
             <button 
               type="button" 
               class="btn-tab" 
               [class.active]="aiTab() === 'chat'" 
-              (click)="aiTab.set('chat')">
+              (click)="aiTab.set('chat')"
+              [disabled]="isImporting() || isGeneratingBulkImages()">
               <i class="fas fa-comments"></i> Chat & Assistant
             </button>
           </div>
@@ -420,7 +422,7 @@
             <div class="ocr-section">
               <div class="form-group">
                 <label class="form-label">Télécharger l'image du menu (الورقة)</label>
-                <input type="file" (change)="onMenuImageSelected($event)" accept="image/*" class="form-control">
+                <input type="file" (change)="onMenuImageSelected($event)" accept="image/*" class="form-control" [disabled]="isParsingMenu() || isImporting() || isGeneratingBulkImages()">
               </div>
 
               @if (isParsingMenu()) {
@@ -430,38 +432,57 @@
                 </div>
               }
 
-              <!-- جدول المنتجات المستخرجة -->
+              <!-- 🔄 Progress bar عند حفظ وإضافة الصور بالـ AI -->
+              @if (isGeneratingBulkImages()) {
+                <div class="bulk-progress-card p-4 my-4 bg-indigo-50 rounded-xl border border-indigo-100 text-center">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-indigo-700">Génération des images HD en cours...</span>
+                    <span class="text-xs font-semibold text-indigo-600">{{ imageGenProgress().current }} / {{ imageGenProgress().total }}</span>
+                  </div>
+                  <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                    <div class="bg-indigo-600 h-full transition-all duration-300" [style.width.%]="(imageGenProgress().current / imageGenProgress().total) * 100"></div>
+                  </div>
+                </div>
+              }
+
+              <!-- جدول المنتجات المستخرجة القابل للتعديل -->
               @if (parsedProducts().length > 0) {
                 <div class="parsed-results mt-4">
-                  <h4 class="font-semibold text-sm mb-2">Produits détectés:</h4>
-                  <div class="table-card overflow-x-auto">
+                  <div class="flex justify-between items-center mb-2">
+                    <h4 class="font-semibold text-sm">Produits détectés (Modifiables):</h4>
+                    <button type="button" class="btn btn-sm btn-outline" (click)="addParsedRow()" [disabled]="isImporting() || isGeneratingBulkImages()">
+                      <i class="fas fa-plus"></i> Ajouter une ligne
+                    </button>
+                  </div>
+                  
+                  <div class="table-card overflow-x-auto max-h-72">
                     <table class="modern-table">
                       <thead>
                         <tr>
-                          <th>Sélection</th>
-                          <th>Nom</th>
-                          <th>Prix</th>
+                          <th style="width: 40px;">Sélec.</th>
+                          <th>Nom du produit</th>
+                          <th style="width: 100px;">Prix</th>
                           <th>Catégorie</th>
-                          <th>Actions</th>
+                          <th style="width: 50px;">Action</th>
                         </tr>
                       </thead>
                       <tbody>
                         @for (prod of parsedProducts(); track $index) {
                           <tr>
-                            <td>
-                              <input type="checkbox" [(ngModel)]="prod.selected">
+                            <td class="text-center">
+                              <input type="checkbox" [(ngModel)]="prod.selected" [disabled]="isImporting() || isGeneratingBulkImages()">
                             </td>
                             <td>
-                              <input type="text" class="form-control-sm" [(ngModel)]="prod.name">
+                              <input type="text" class="form-control-sm w-full" [(ngModel)]="prod.name" [disabled]="isImporting() || isGeneratingBulkImages()">
                             </td>
                             <td>
-                              <input type="number" class="form-control-sm" [(ngModel)]="prod.price" style="width: 80px;">
+                              <input type="number" class="form-control-sm w-full" [(ngModel)]="prod.price" [disabled]="isImporting() || isGeneratingBulkImages()">
                             </td>
                             <td>
-                              <input type="text" class="form-control-sm" [(ngModel)]="prod.category">
+                              <input type="text" class="form-control-sm w-full" [(ngModel)]="prod.category" [disabled]="isImporting() || isGeneratingBulkImages()">
                             </td>
-                            <td>
-                              <button class="btn-icon delete" (click)="removeParsedProduct($index)">
+                            <td class="text-center">
+                              <button class="btn-icon delete" (click)="removeParsedProduct($index)" [disabled]="isImporting() || isGeneratingBulkImages()">
                                 <i class="fas fa-trash"></i>
                               </button>
                             </td>
@@ -471,12 +492,16 @@
                     </table>
                   </div>
 
-                  <div class="mt-4 flex justify-between items-center">
-                    <button type="button" class="btn btn-sm btn-outline" (click)="generateImagesForParsedProducts()">
-                      <i class="fas fa-magic"></i> Générer images avec AI
+                  <div class="mt-4 flex justify-end gap-2 items-center">
+                    <button type="button" class="btn btn-outline" (click)="closeAiModal()" [disabled]="isImporting() || isGeneratingBulkImages()">
+                      Annuler
                     </button>
-                    <button type="button" class="btn btn-primary" (click)="importParsedProducts()">
-                      <i class="fas fa-check"></i> Importer les produits sélectionnés
+                    <button type="button" class="btn btn-primary" (click)="confirmImportAndGenerateImages()" [disabled]="isImporting() || isGeneratingBulkImages()">
+                      @if (isImporting()) {
+                        <i class="fas fa-spinner fa-spin"></i> Enregistrement...
+                      } @else {
+                        <i class="fas fa-cloud-arrow-down"></i> Enregistrer et générer les images
+                      }
                     </button>
                   </div>
                 </div>

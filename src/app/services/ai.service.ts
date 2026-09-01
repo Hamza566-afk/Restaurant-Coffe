@@ -11,6 +11,11 @@ export interface ParsedProduct {
   selected?: boolean;
 }
 
+export interface ParseMenuResponse {
+  success: boolean;
+  products: ParsedProduct[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -24,10 +29,15 @@ export class AIService {
   }
 
   /** استخراج المينيو من صورة ورقة */
-  parseMenu(imageFile: File): Observable<{ success: boolean; products: ParsedProduct[] }> {
+  parseMenu(imageFile: File): Observable<ParseMenuResponse> {
     const formData = new FormData();
     formData.append('image', imageFile);
-    return this.http.post<{ success: boolean; products: ParsedProduct[] }>(`${this.apiUrl}/parse-menu`, formData);
+    return this.http.post<ParseMenuResponse>(`${this.apiUrl}/parse-menu`, formData);
+  }
+
+  /** 🆕 تأكيد استيراد المنتجات بعد التعديل وتخزينها في قاعدة البيانات */
+  confirmImport(products: ParsedProduct[]): Observable<{ success: boolean; products: any[] }> {
+    return this.http.post<{ success: boolean; products: any[] }>(`${this.apiUrl}/import-products`, { products });
   }
 
   /** المحادثة مع المساعد الذكي */
