@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ProductService, Product, ProductSize } from '../../services/product';
 import { CategoryService, Category } from '../../services/category';
 import { LanguageService } from '../../services/language.service';
-import { AIService, ParsedProduct, ParseMenuResponse } from '../../services/ai.service';
+import { AIService, ParsedProduct } from '../../services/ai.service';
 
 interface ChatMessage {
   sender: 'user' | 'ai';
@@ -45,7 +45,7 @@ export class ProductListComponent implements OnInit {
   // 🤖 AI State Signals
   isGeneratingImage = signal(false);
   showAiModal = signal(false);
-  aiTab = signal<'ocr' | 'chat'>('chat'); // ✅ مثبت افتراضياً على الشات مباشرة
+  aiTab = signal<'ocr' | 'chat'>('chat'); // مثبت افتراضياً على الشات مباشرة
   isParsingMenu = signal(false);
   isImporting = signal(false);
   isGeneratingBulkImages = signal(false);
@@ -224,13 +224,13 @@ export class ProductListComponent implements OnInit {
   openAiAssistantModal(): void {
     this.showAiModal.set(true);
     this.aiTab.set('chat');
-    document.body.style.overflow = 'hidden'; // ✅ منع Scroll الصفحة الخلفية
+    document.body.style.overflow = 'hidden'; // منع Scroll الصفحة الخلفية
   }
 
   closeAiModal(): void {
     this.showAiModal.set(false);
     this.parsedProducts.set([]);
-    document.body.style.overflow = 'auto'; // ✅ إعادة Scroll الصفحة الخارجي
+    document.body.style.overflow = 'auto'; // إعادة Scroll الصفحة الخارجي
   }
 
   onMenuImageSelected(event: Event): void {
@@ -290,6 +290,10 @@ export class ProductListComponent implements OnInit {
         if (res.success && res.products) {
           this.loadProducts();
           this.loadCategories();
+          
+          // غلق الـ Modal مباشرة وإعادة الـ Scroll ليتمكن المستخدم من رؤية شريط التقدم والجدول
+          this.closeAiModal();
+          
           this.showToast(`${res.products.length} produits enregistrés ! Génération des images en cours...`, 'success');
           this.generateImagesForImportedProducts(res.products);
         }
@@ -330,7 +334,6 @@ export class ProductListComponent implements OnInit {
     }
 
     this.isGeneratingBulkImages.set(false);
-    this.closeAiModal();
     this.showToast('Toutes les images ont été générées et enregistrées avec succès !', 'success');
   }
 

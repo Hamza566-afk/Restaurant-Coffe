@@ -33,6 +33,27 @@
     </div>
   </div>
 
+  <!-- 🚀 Main Page Bulk Progress Indicator (Visual feedback when generating AI images) -->
+  @if (isGeneratingBulkImages()) {
+    <div class="bulk-progress-card main-page-progress mb-4 p-4 bg-indigo-50 border border-indigo-200 rounded-xl shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <i class="fas fa-wand-magic-sparkles text-indigo-600 fa-spin"></i>
+          <span class="text-sm font-bold text-indigo-900">Génération des visuels HD en cours...</span>
+        </div>
+        <span class="text-xs font-semibold text-indigo-700 bg-indigo-100 px-2 py-1 rounded-full">
+          {{ imageGenProgress().current }} / {{ imageGenProgress().total }}
+        </span>
+      </div>
+      <div class="progress-bar-bg w-full bg-indigo-200 rounded-full h-2.5 overflow-hidden">
+        <div 
+          class="progress-bar-fill bg-indigo-600 h-2.5 rounded-full transition-all duration-300" 
+          [style.width.%]="(imageGenProgress().current / imageGenProgress().total) * 100">
+        </div>
+      </div>
+    </div>
+  }
+
   <!-- 🔍 Filters & Search Bar -->
   <div class="filters-bar-modern">
     <div class="filter-group">
@@ -451,7 +472,7 @@
                 </div>
               }
 
-              <!-- Loader Bulk Images -->
+              <!-- Loader Bulk Images inside Modal -->
               @if (isGeneratingBulkImages()) {
                 <div class="bulk-progress-card">
                   <div class="flex items-center justify-between mb-2">
