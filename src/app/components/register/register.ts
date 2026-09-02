@@ -58,7 +58,8 @@ export class RegisterComponent {
         }
 
         this.authService.register(payload).subscribe({
-          next: () => this.router.navigate(['/login-owner']),
+          // ⚖️ التوجيه الجديد لصفحة الشروط والملكية الفكرية بدلاً من صفحة الدخول
+          next: () => this.router.navigate(['/legal-terms']),
           error: (err) => alert(err?.error?.message ?? 'خطأ في التسجيل')
         });
       },
