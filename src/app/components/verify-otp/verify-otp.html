@@ -1,0 +1,14 @@
+<div class="otp-container">
+  <div class="otp-card">
+    <h2>تأكيد رمز الدخول (OTP)</h2>
+    <p>تم إرسال كود متكون من 6 أرقام إلى بريدك: <strong>{{ email }}</strong></p>
+
+    <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+    <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+
+    <input type="text" maxlength="6" [(ngModel)]="otpCode" placeholder="X X X X X X" class="otp-input" />
+
+    <button (click)="onVerify()" class="btn-verify">تأكيد الدخول</button>
+    <button (click)="resendOtp()" class="btn-resend">إعادة إرسال الكود</button>
+  </div>
+</div>

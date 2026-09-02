@@ -85,11 +85,32 @@ export class AuthService {
   }
 
   /**
-   * 2b. عملية تسجيل دخول الـ Owner (🚀 محدثة لجلب بيانات الـ Shop والاشتراكات فوراً)
+   * 2b. عملية تسجيل دخول الـ Owner (🚀 ترجع الـ Response متاع الـ API باش تعرف إذا مطلوب OTP)
    */
   loginOwner(credentials: any): Observable<any> {
     return this.prepareCsrf().pipe(
-      switchMap(() => this.http.post(`${this.apiUrl}/login-owner`, credentials, { withCredentials: true })),
+      switchMap(() => this.http.post(`${this.apiUrl}/login-owner`, credentials, { withCredentials: true }))
+    );
+  }
+
+  /**
+   * 🔑 2c. إرسال أو إعادة إرسال كود الـ OTP
+   */
+  sendOtp(email: string): Observable<any> {
+    return this.prepareCsrf().pipe(
+      switchMap(() => this.http.post(`${this.apiUrl}/auth/send-otp`, { email }, { withCredentials: true }))
+    );
+  }
+
+  /**
+   * 🔑 2d. التثبت من صحة الـ OTP وتسجيل الدخول
+   */
+  verifyOtp(email: string, otpCode: string): Observable<any> {
+    return this.prepareCsrf().pipe(
+      switchMap(() => this.http.post(`${this.apiUrl}/auth/verify-otp`, { 
+        email, 
+        otp_code: otpCode 
+      }, { withCredentials: true })),
       switchMap(() => this.prepareCsrf()),
       switchMap(() => this.http.get(`${this.apiUrl}/user`, { withCredentials: true })),
       tap((res: any) => {
@@ -100,7 +121,7 @@ export class AuthService {
   }
 
   /**
-   * 2c. عملية تسجيل حساب جديد للـ Owner
+   * 2e. عملية تسجيل حساب جديد للـ Owner
    */
   register(userData: any): Observable<any> {
     return this.prepareCsrf().pipe(
@@ -129,7 +150,6 @@ export class AuthService {
    */
   checkCurrentUserStatus(): Observable<any> {
     return this.http.get(`${this.apiUrl}/user`, { withCredentials: true }).pipe(
-      // 🆕 Keep the reactive user state fresh on every polling cycle
       tap((res: any) => {
         const user = res?.user ?? res;
         this.currentUser.set(user);
