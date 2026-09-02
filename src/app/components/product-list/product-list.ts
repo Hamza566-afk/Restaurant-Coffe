@@ -9,6 +9,8 @@ import { AIService, ParsedProduct } from '../../services/ai.service';
 interface ChatMessage {
   sender: 'user' | 'ai';
   text: string;
+  isPrompt?: boolean;
+  importedProducts?: Product[];
 }
 
 @Component({
@@ -45,13 +47,13 @@ export class ProductListComponent implements OnInit {
   // 🤖 AI State Signals
   isGeneratingImage = signal(false);
   showAiModal = signal(false);
-  aiTab = signal<'ocr' | 'chat'>('chat'); // مثبت افتراضياً على الشات مباشرة
+  aiTab = signal<'ocr' | 'chat'>('chat');
   isParsingMenu = signal(false);
   isImporting = signal(false);
   isGeneratingBulkImages = signal(false);
   imageGenProgress = signal({ current: 0, total: 0 });
   parsedProducts = signal<(ParsedProduct & { selected?: boolean; is_active?: boolean })[]>([]);
-  
+
   chatMessages = signal<ChatMessage[]>([
     { sender: 'ai', text: 'أهلاً بك! أنا مساعدك الذكي. كيف أستطيع مساعدتك اليوم في إدارة مقهاك ومتابعة المبيعات؟' }
   ]);
@@ -223,14 +225,13 @@ export class ProductListComponent implements OnInit {
 
   openAiAssistantModal(): void {
     this.showAiModal.set(true);
-    this.aiTab.set('chat');
-    document.body.style.overflow = 'hidden'; // منع Scroll الصفحة الخلفية
+    document.body.style.overflow = 'hidden';
   }
 
   closeAiModal(): void {
     this.showAiModal.set(false);
     this.parsedProducts.set([]);
-    document.body.style.overflow = 'auto'; // إعادة Scroll الصفحة الخارجي
+    document.body.style.overflow = 'auto';
   }
 
   onMenuImageSelected(event: Event): void {
@@ -275,6 +276,7 @@ export class ProductListComponent implements OnInit {
     this.parsedProducts.update(list => list.filter((_, i) => i !== index));
   }
 
+  // 🚀 Step 1: Import Direct Without Images & Show AI Prompt
   confirmImportAndGenerateImages(): void {
     const selected = this.parsedProducts().filter(p => p.selected && p.name.trim() !== '');
     if (selected.length === 0) {
@@ -288,14 +290,26 @@ export class ProductListComponent implements OnInit {
       next: (res) => {
         this.isImporting.set(false);
         if (res.success && res.products) {
+          const createdProducts: Product[] = res.products;
           this.loadProducts();
           this.loadCategories();
-          
-          // غلق الـ Modal مباشرة وإعادة الـ Scroll ليتمكن المستخدم من رؤية شريط التقدم والجدول
-          this.closeAiModal();
-          
-          this.showToast(`${res.products.length} produits enregistrés ! Génération des images en cours...`, 'success');
-          this.generateImagesForImportedProducts(res.products);
+          this.parsedProducts.set([]);
+
+          // Switch tab to Chat
+          this.aiTab.set('chat');
+
+          // Append AI question with Oui/Non Buttons
+          this.chatMessages.update(msgs => [
+            ...msgs,
+            {
+              sender: 'ai',
+              text: `تم استيراد ${createdProducts.length} منتجات بنجاح! هل تريد أن أقوم بتوليد صور خاصة بهذه المنتجات؟`,
+              isPrompt: true,
+              importedProducts: createdProducts
+            }
+          ]);
+
+          this.showToast(`${createdProducts.length} produits enregistrés avec succès!`, 'success');
         }
       },
       error: (err) => {
@@ -306,6 +320,33 @@ export class ProductListComponent implements OnInit {
     });
   }
 
+  // 🚀 Step 2: User Decision (Oui / Non)
+  handleImageGenDecision(choice: 'oui' | 'non', msgIndex: number, createdProducts?: Product[]): void {
+    // Hide buttons from message
+    this.chatMessages.update(msgs => msgs.map((m, idx) => idx === msgIndex ? { ...m, isPrompt: false } : m));
+
+    if (choice === 'non') {
+      this.chatMessages.update(msgs => [
+        ...msgs,
+        { sender: 'user', text: 'لا' },
+        { sender: 'ai', text: 'حسناً، تم الاحتفاظ بالمنتجات بدون صور. يمكنك توليد الصور لاحقاً في أي وقت.' }
+      ]);
+      return;
+    }
+
+    // User chose OUI
+    this.chatMessages.update(msgs => [
+      ...msgs,
+      { sender: 'user', text: 'نعم' },
+      { sender: 'ai', text: 'ممتاز! جاري الآن توليد وجلب الصور الخاصة بالمنتجات...' }
+    ]);
+
+    if (createdProducts && createdProducts.length > 0) {
+      this.generateImagesForImportedProducts(createdProducts);
+    }
+  }
+
+  // 🚀 Step 3: Sequential Image Generation
   async generateImagesForImportedProducts(createdProducts: Product[]): Promise<void> {
     this.isGeneratingBulkImages.set(true);
     this.imageGenProgress.set({ current: 0, total: createdProducts.length });
@@ -335,6 +376,10 @@ export class ProductListComponent implements OnInit {
 
     this.isGeneratingBulkImages.set(false);
     this.showToast('Toutes les images ont été générées et enregistrées avec succès !', 'success');
+    this.chatMessages.update(msgs => [
+      ...msgs,
+      { sender: 'ai', text: 'تمت العملية بنجاح! جميع الصور جاهزة ومحدثة الآن في القائمة.' }
+    ]);
   }
 
   sendChatMessage(): void {

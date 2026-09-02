@@ -33,7 +33,7 @@
     </div>
   </div>
 
-  <!-- 🚀 Main Page Bulk Progress Indicator (Visual feedback when generating AI images) -->
+  <!-- 🚀 Main Page Bulk Progress Indicator -->
   @if (isGeneratingBulkImages()) {
     <div class="bulk-progress-card main-page-progress mb-4 p-4 bg-indigo-50 border border-indigo-200 rounded-xl shadow-sm">
       <div class="flex items-center justify-between mb-2">
@@ -424,6 +424,26 @@
                     <div class="chat-bubble">
                       <span class="chat-sender-title">{{ msg.sender === 'user' ? 'Vous' : 'Assistant AI' }}</span>
                       <p class="chat-text">{{ msg.text }}</p>
+
+                      <!-- Oui / Non Buttons Prompt -->
+                      @if (msg.isPrompt) {
+                        <div class="ai-prompt-actions mt-3 flex items-center gap-2">
+                          <button 
+                            type="button" 
+                            class="btn-prompt-oui" 
+                            (click)="handleImageGenDecision('oui', $index, msg.importedProducts)"
+                            [disabled]="isGeneratingBulkImages()">
+                            <i class="fas fa-check"></i> Oui (نعم)
+                          </button>
+                          <button 
+                            type="button" 
+                            class="btn-prompt-non" 
+                            (click)="handleImageGenDecision('non', $index, msg.importedProducts)"
+                            [disabled]="isGeneratingBulkImages()">
+                            <i class="fas fa-times"></i> Non (لا)
+                          </button>
+                        </div>
+                      }
                     </div>
                   </div>
                 }
@@ -469,19 +489,6 @@
                   <i class="fas fa-compact-disc fa-spin text-3xl text-indigo-600 mb-2"></i>
                   <p class="font-semibold text-slate-700">Analyse de l'image en cours par l'IA...</p>
                   <span class="text-xs text-slate-500">Extraction des titres, catégories et prix des boissons</span>
-                </div>
-              }
-
-              <!-- Loader Bulk Images inside Modal -->
-              @if (isGeneratingBulkImages()) {
-                <div class="bulk-progress-card">
-                  <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-indigo-700">Génération des visuels HD en cours...</span>
-                    <span class="text-xs font-semibold text-indigo-600">{{ imageGenProgress().current }} / {{ imageGenProgress().total }}</span>
-                  </div>
-                  <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" [style.width.%]="(imageGenProgress().current / imageGenProgress().total) * 100"></div>
-                  </div>
                 </div>
               }
 
@@ -539,11 +546,12 @@
                     <button type="button" class="btn btn-outline" (click)="closeAiModal()" [disabled]="isImporting() || isGeneratingBulkImages()">
                       Annuler
                     </button>
+                    <!-- DIRECT IMPORT BUTTON -->
                     <button type="button" class="btn btn-primary" (click)="confirmImportAndGenerateImages()" [disabled]="isImporting() || isGeneratingBulkImages()">
                       @if (isImporting()) {
                         <i class="fas fa-spinner fa-spin"></i> Enregistrement...
                       } @else {
-                        <i class="fas fa-cloud-arrow-down"></i> Enregistrer & Générer les Visuels
+                        <i class="fas fa-cloud-arrow-down"></i> Importer directement
                       }
                     </button>
                   </div>
