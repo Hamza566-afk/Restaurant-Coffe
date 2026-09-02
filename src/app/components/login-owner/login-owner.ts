@@ -16,35 +16,37 @@ export class LoginOwnerComponent {
   constructor(private authService: AuthService, private router: Router) {}
 
   onLogin() {
-    this.authService.getCsrfCookie().subscribe(() => {
-      // 🚀 عيطنا للـ loginOwner
-      this.authService.loginOwner(this.credentials).subscribe({
-        next: (res: any) => {
-          // 🚀 التثبت الفوري عند الدخول:
-          // نثبتوا إذا كان الحساب موجود والـ shop مش مفعّل (is_active == false أو 0)
-          if (res && res.shop && !res.shop.is_active) {
-
-            // نثبتوا هل عنده اشتراكات سابقة في جدول الـ subscriptions
-            const hasSubscriptions = res.shop.subscriptions && res.shop.subscriptions.length > 0;
-
-            if (hasSubscriptions) {
-              // حساب قديم واشتراكه وفى -> لصفحة انتهاء الاشتراك
-              this.router.navigate(['/subscription-expired']);
-            } else {
-              // حساب جديد عمره ما تفعّل -> لصفحة الانتظار
-              this.router.navigate(['/waiting-approval']);
+    this.authService.getCsrfCookie().subscribe({
+      next: () => {
+        this.authService.loginOwner(this.credentials).subscribe({
+          next: (res: any) => {
+            // 🚀 1. إذا البيانات صحيحة، السيرفر يرجع require_otp -> نبعثوه لصفحة الـ OTP مباشرة
+            if (res && res.require_otp) {
+              this.router.navigate(['/verify-otp'], { 
+                queryParams: { email: this.credentials.email } 
+              });
+              return;
             }
-            return; // نوقفوا الكود هوني باش ما يتعداش للـ Dashboard!
-          }
 
-          // إذا الحساب مفعل وأموره واضحة، يتعدى للـ Dashboard عادي
-          this.router.navigate(['/dashboard/home']);
-        },
-        error: (err) => {
-          alert('خطأ في البيانات أو الحساب غير مفعل');
-        }
-      });
+            // 🚀 2. لو افترضنا سجل دخول مباشر بدون OTP (احتياط)
+            if (res && res.shop && !res.shop.is_active) {
+              const hasSubscriptions = res.shop.subscriptions && res.shop.subscriptions.length > 0;
+              if (hasSubscriptions) {
+                this.router.navigate(['/subscription-expired']);
+              } else {
+                this.router.navigate(['/waiting-approval']);
+              }
+              return;
+            }
+
+            this.router.navigate(['/dashboard/home']);
+          },
+          error: (err) => {
+            alert(err.error?.message || 'خطأ في البيانات أو الحساب غير مفعل');
+          }
+        });
+      },
+      error: (err) => console.error('CSRF Error:', err)
     });
   }
 }
-

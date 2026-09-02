@@ -7,60 +7,63 @@ export const authGuard = (route: ActivatedRouteSnapshot, state: RouterStateSnaps
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // state.url يعطيك الـ URL الجديد اللي المستخدم يحب يدخلّه
   const targetUrl = state.url;
 
   return authService.checkAuth().pipe(
     map((user) => {
-      // 1. إذا كان الـ User مسجل
+      // 1. إذا كان المستخدم مسجل دخول
       if (user) {
 
         // 🚀 الحماية المطورة لأصحاب المحلات (Owners)
         if (user.role === 'owner') {
           const isShopActive = user.shop?.is_active;
-          // نثبتوا هل عنده اشتراكات سابقة في جدول الـ subscriptions
           const hasSubscriptions = user.shop?.subscriptions && user.shop.subscriptions.length > 0;
 
-          // ❌ [حالة 1] إذا كان الحساب مش مفعّل (is_active == false أو 0)
+          // ❌ [حالة 1] إذا كان الحساب غير مفعّل
           if (!isShopActive) {
 
             if (hasSubscriptions) {
-              // حساب قديم واشتراكه وفى -> لازم يكون في صفحة subscription-expired
-              if (!targetUrl.includes('subscription-expired')) {
+              // اشتراك منتهي
+              if (!targetUrl.includes('/subscription-expired')) {
                 router.navigate(['/subscription-expired']);
                 return false;
               }
             } else {
-              // حساب جديد عمره ما تفعّل -> لازم يكون في صفحة waiting-approval
-              if (!targetUrl.includes('waiting-approval')) {
+              // حساب جديد ينتظر الموافقة
+              if (!targetUrl.includes('/waiting-approval')) {
                 router.navigate(['/waiting-approval']);
                 return false;
               }
             }
 
-            return true; // نخلّوه يقعد في الصفحة الصحيحة متاعو (إما waiting أو expired)
+            return true; // السماح بالبقاء في الصفحة المناسبة لحالته
           }
 
-          //  [حالة 2] إذا كان الحساب مفعّل ديجا (is_active == true) ويحاول يدخل لصفحات الانتظار أو الانتهاء غلطة
-          if (isShopActive && (targetUrl.includes('waiting-approval') || targetUrl.includes('subscription-expired'))) {
+          // ✅ [حالة 2] إذا كان الحساب مفعّلاً ويحاول فتح صفحات الانتظار/الانتهاء
+          if (isShopActive && (targetUrl.includes('/waiting-approval') || targetUrl.includes('/subscription-expired'))) {
             router.navigate(['/dashboard/home']);
             return false;
           }
         }
 
-        // إذا كل شيء مريڨل (Admin أو Owner مفعّل)، يخليه يتعدى
+        // الأدمن أو الأونر المفعّل يتعدى عادي
         return true;
       }
 
-      // 2. إذا كان موش مسجل، نثبتوا في الـ URL اللي كان يحب يدخلّه
-      if (targetUrl.includes('dashboard') || targetUrl.includes('shop') || targetUrl.includes('waiting-approval') || targetUrl.includes('subscription-expired')) {
-        router.navigate(['/login-owner']);
-      } else {
+      // 2. إذا كان المستخدم غير مسجل دخول مطلقاً
+      // السماح بزيارة صفحة تسجيل الدخول والـ OTP لتفادي الـ Infinite Loop
+      if (targetUrl.includes('/login') || targetUrl.includes('/login-owner') || targetUrl.includes('/verify-otp')) {
+        return true;
+      }
+
+      // التوجيه للـ Login حسب مسار الهدف
+      if (targetUrl.includes('dashboard') || targetUrl.includes('waiting-approval') || targetUrl.includes('subscription-expired')) {
         router.navigate(['/login']);
+      } else {
+        router.navigate(['/super-admin-mrhadded-login']);
       }
 
       return false;
     })
   );
 };
-

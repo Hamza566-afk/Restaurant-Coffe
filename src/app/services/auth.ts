@@ -8,14 +8,13 @@ import { environment } from '../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  // 🚀 استخدام رابط Railway API مباشرة من بيئة العمل environment.ts
+  // 🚀 استخدام رابط Railway API من environment.ts
   private apiUrl = environment.apiUrl; 
   // 🚀 استخراج الرابط الأساسي للسيرفر (Sanctum CSRF Cookie)
   private serverUrl = environment.apiUrl.replace(/\/api\/?$/, '');
 
   /**
    * 🆕 Reactive signal holding the currently authenticated user payload
-   * (from GET /api/user). Populated after login / checkAuth / status polling.
    */
   readonly currentUser = signal<any>(null);
 
@@ -30,7 +29,6 @@ export class AuthService {
 
   /**
    * 1. Establish Sanctum session cookie, then fetch CSRF token as JSON.
-   *    Required because document.cookie cannot read railway.app cookies from vercel.app.
    */
   prepareCsrf(): Observable<string> {
     return this.http
@@ -54,8 +52,7 @@ export class AuthService {
   }
 
   /**
-   * 🆕 Synchronous helper: returns the owner's name (or a fallback).
-   * Reads directly from the reactive signal state.
+   * 🆕 Synchronous helper: returns current user value from signal.
    */
   getUser(): any {
     return this.currentUser();
@@ -81,11 +78,15 @@ export class AuthService {
       switchMap(() => this.http.post(`${this.apiUrl}/login`, credentials, { withCredentials: true })),
       switchMap(() => this.prepareCsrf()),
       switchMap(() => this.http.get(`${this.apiUrl}/user`, { withCredentials: true })),
+      tap((res: any) => {
+        const user = res?.user ?? res;
+        this.currentUser.set(user);
+      })
     );
   }
 
   /**
-   * 2b. عملية تسجيل دخول الـ Owner (🚀 ترجع الـ Response متاع الـ API باش تعرف إذا مطلوب OTP)
+   * 2b. عملية تسجيل دخول الـ Owner (ترجع الـ Response لمعرفة طلب الـ OTP)
    */
   loginOwner(credentials: any): Observable<any> {
     return this.prepareCsrf().pipe(
@@ -149,30 +150,22 @@ export class AuthService {
    * 3b. التثبت من حالة الـ Owner والـ Shop متاعو
    */
   checkCurrentUserStatus(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/user`, { withCredentials: true }).pipe(
-      tap((res: any) => {
-        const user = res?.user ?? res;
-        this.currentUser.set(user);
-      })
-    );
+    return this.checkAuth();
   }
 
   /**
-   * 4. عملية الخروج (Admin logout endpoint)
+   * 4. عملية الخروج
    */
   logout(): Observable<any> {
     return this.http.post(`${this.apiUrl}/logout`, {}, { withCredentials: true });
   }
 
-  /**
-   * 4b. عملية الخروج الخاصة بالأونر
-   */
   logoutOwner(): Observable<any> {
     return this.logout();
   }
 
   /**
-   * 5. دالة الخروج
+   * 5. تنفيذ الخروج وتنظيف الـ State
    */
   performLogout(role: 'admin' | 'owner'): void {
     this.currentUser.set(null);

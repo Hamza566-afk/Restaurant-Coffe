@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { LoginOwnerComponent } from './components/login-owner/login-owner'; // هذا الـ Component اللّي كاين يخدم للـ Owner
-import { Login } from './components/login/login'; // هذا الـ Component متاع الـ Admin
+import { LoginOwnerComponent } from './components/login-owner/login-owner';
+import { Login } from './components/login/login';
 import { RegisterComponent } from './components/register/register';
 import { ShopListComponent } from './components/shop-list/shop-list';
 import { ProductListComponent } from './components/product-list/product-list';
@@ -13,39 +13,47 @@ import { WaitingApprovalComponent } from './components/waiting-approval/waiting-
 import { SubscriptionExpiredComponent } from './components/subscription-expired/subscription-expired';
 import { MenuComponent } from './components/menu/menu';
 import { LegalTermsComponent } from './components/legal-terms/legal-terms';
+import { VerifyOtpComponent } from './components/verify-otp/verify-otp'; // 👈 إضافة الـ VerifyOtpComponent
 
 export const routes: Routes = [
-  // 1. التوجيه الافتراضي يطير للـ login المباشر
+  // 1. التوجيه الافتراضي
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   
-  // 🔑 2. مسار الـ Super Admin (الكود متاع الـ Login الأصلي)
+  // 🔑 2. مسار الـ Super Admin
   { path: 'super-admin-mrhadded-login', component: Login },
 
-  // ☕ 3. مسار الـ Owner (الواجهة الرئيسية متاع الـ Owners تظهر في الـ URL كـ /login)
+  // ☕ 3. مسار الـ Owner
   { path: 'login', component: LoginOwnerComponent },
 
-  // 📝 4. التسجيل يبقى كيما هو
+  // 🔐 4. مسار الـ OTP
+  { path: 'verify-otp', component: VerifyOtpComponent },
+
+  // 📝 5. التسجيل
   { path: 'register', component: RegisterComponent },
 
-  // ⚖️ 5. مسار الشروط القانونية والملكية الفكرية
+  // ⚖️ 6. الشروط القانونية
   { path: 'legal-terms', component: LegalTermsComponent },
 
-  // 🚀 6. مسارات الانتظار والاشتراك
+  // 🚀 7. مسارات الانتظار والاشتراك المدارية بالـ Guard
   { 
     path: 'waiting-approval', 
     component: WaitingApprovalComponent, 
     canActivate: [authGuard] 
   },
-  { path: 'subscription-expired', component: SubscriptionExpiredComponent },
+  { 
+    path: 'subscription-expired', 
+    component: SubscriptionExpiredComponent,
+    canActivate: [authGuard] // 👈 زدنا الـ Guard هوني
+  },
 
-  // 🛡️ 7. مسارات الـ Admin
+  // 🛡️ 8. مسارات الـ Admin
   { 
     path: 'admin/shops',
     component: ShopListComponent,
     canActivate: [authGuard] 
   },
 
-  // ☕ 8. مسارات الـ Owner Dashboard
+  // ☕ 9. مسارات الـ Owner Dashboard
   {
     path: 'dashboard',
     component: DashboardComponent,
@@ -59,9 +67,9 @@ export const routes: Routes = [
     ]
   },
 
-  // 📜 9. المينيو الخارجي
+  // 📜 10. المينيو الخارجي
   { path: 'menu', component: MenuComponent },
 
-  // 🔄 10. أي مسار مغلوط يرجع للـ /login
+  // 🔄 11. أي مسار آخر يرجع للـ /login
   { path: '**', redirectTo: 'login' }
 ];
