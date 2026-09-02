@@ -12,6 +12,7 @@ import { Orders } from './components/orders/orders';
 import { WaitingApprovalComponent } from './components/waiting-approval/waiting-approval';
 import { SubscriptionExpiredComponent } from './components/subscription-expired/subscription-expired';
 import { MenuComponent } from './components/menu/menu';
+import { LegalTermsComponent } from './components/legal-terms/legal-terms';
 
 export const routes: Routes = [
   // 1. التوجيه الافتراضي يطير للـ login المباشر
@@ -26,7 +27,10 @@ export const routes: Routes = [
   // 📝 4. التسجيل يبقى كيما هو
   { path: 'register', component: RegisterComponent },
 
-  // 🚀 5. مسارات الانتظار والاشتراك
+  // ⚖️ 5. مسار الشروط القانونية والملكية الفكرية
+  { path: 'legal-terms', component: LegalTermsComponent },
+
+  // 🚀 6. مسارات الانتظار والاشتراك
   { 
     path: 'waiting-approval', 
     component: WaitingApprovalComponent, 
@@ -34,14 +38,14 @@ export const routes: Routes = [
   },
   { path: 'subscription-expired', component: SubscriptionExpiredComponent },
 
-  // 🛡️ 6. مسارات الـ Admin
+  // 🛡️ 7. مسارات الـ Admin
   { 
     path: 'admin/shops',
     component: ShopListComponent,
     canActivate: [authGuard] 
   },
 
-  // ☕ 7. مسارات الـ Owner Dashboard
+  // ☕ 8. مسارات الـ Owner Dashboard
   {
     path: 'dashboard',
     component: DashboardComponent,
@@ -55,9 +59,9 @@ export const routes: Routes = [
     ]
   },
 
-  // 📜 8. المينيو الخارجي
+  // 📜 9. المينيو الخارجي
   { path: 'menu', component: MenuComponent },
 
-  // 🔄 9. أي مسار مغلوط يرجع للـ /login
+  // 🔄 10. أي مسار مغلوط يرجع للـ /login
   { path: '**', redirectTo: 'login' }
 ];

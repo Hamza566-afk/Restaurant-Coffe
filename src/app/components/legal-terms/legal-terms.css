@@ -1,0 +1,59 @@
+.legal-container {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.lang-selector {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.lang-selector button {
+  padding: 6px 14px;
+  border: 1px solid #ccc;
+  background: #f8f9fa;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.lang-selector button.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.legal-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border: 1px solid #eef2f5;
+}
+
+.legal-body p {
+  line-height: 1.6;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.btn-accept {
+  width: 100%;
+  padding: 14px;
+  background: #28a745;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background 0.3s;
+}
+
+.btn-accept:hover {
+  background: #218838;
+}

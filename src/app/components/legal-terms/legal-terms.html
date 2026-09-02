@@ -1,0 +1,25 @@
+<div class="legal-container">
+  <!-- Language Selector -->
+  <div class="lang-selector">
+    <button [class.active]="currentLang === 'fr'" (click)="setLanguage('fr')">Français</button>
+    <button [class.active]="currentLang === 'ar'" (click)="setLanguage('ar')">العربية</button>
+    <button [class.active]="currentLang === 'en'" (click)="setLanguage('en')">English</button>
+  </div>
+
+  <div class="legal-card" [dir]="currentLang === 'ar' ? 'rtl' : 'ltr'">
+    <h2>{{ content[currentLang].title }}</h2>
+    
+    <div class="legal-body">
+      <p><strong>{{ content[currentLang].ownershipTitle }}:</strong> {{ content[currentLang].ownershipText }}</p>
+      <p><strong>{{ content[currentLang].licenseTitle }}:</strong> {{ content[currentLang].licenseText }}</p>
+      <p><strong>{{ content[currentLang].protectionTitle }}:</strong> {{ content[currentLang].protectionText }}</p>
+      <p><strong>{{ content[currentLang].approvalTitle }}:</strong> {{ content[currentLang].approvalText }}</p>
+    </div>
+
+    <div class="legal-actions">
+      <button class="btn-accept" (click)="acceptTerms()">
+        {{ content[currentLang].acceptBtn }}
+      </button>
+    </div>
+  </div>
+</div>
