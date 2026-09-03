@@ -1,22 +1,133 @@
-<div class="auth-box">
-  <h2>إنشاء حساب</h2>
-  <form (submit)="onRegister()">
-    <input [(ngModel)]="userData.name" name="name" type="text" placeholder="الاسم" required>
-    <input [(ngModel)]="userData.email" name="email" type="email" placeholder="البريد الإلكتروني" required>
+<div class="auth-wrapper" dir="rtl">
+  <div class="auth-card">
+    
+    <!-- Sidebar -->
+    <div class="auth-sidebar">
+      <div class="brand-badge">Café SaaS</div>
+      <div class="sidebar-content">
+        <h2>إنشاء حساب جديد</h2>
+        <p>انضم إلينا وابدأ في إدارة مقهاك، طلباتك، واشتراكاتك بأسلوب عصري وذكي.</p>
+      </div>
+      <div class="sidebar-footer">
+        &copy; 2026 Hadded Holding. جميع الحقوق محفوظة.
+      </div>
+    </div>
 
-    <input [(ngModel)]="userData.password" name="password" type="password" placeholder="كلمة السر" required>
-    <input [(ngModel)]="userData.password_confirmation" name="password_confirmation" type="password" placeholder="تأكيد كلمة السر" required>
+    <!-- Form -->
+    <div class="auth-form-container">
+      <h3>تسجيل محل جديد</h3>
+      <p class="sub-title">يرجى تعبئة البيانات التالية لإنشاء حسابك</p>
 
-<!-- Shop fields (must match Laravel validation) -->
-    <input [(ngModel)]="userData.shop_name" name="shop_name" type="text" placeholder="اسم المحل" required>
-    <input [(ngModel)]="userData.subdomain" name="subdomain" type="text" placeholder="Subdomain (مثال: cafe-hamza)" required>
+      <form (submit)="onRegister()" #regForm="ngForm">
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>الاسم الكامل *</label>
+            <input 
+              [(ngModel)]="userData.name" 
+              name="name" 
+              type="text" 
+              placeholder="مثال: حمزة" 
+              required 
+            />
+          </div>
+          <div class="form-group">
+            <label>البريد الإلكتروني *</label>
+            <input 
+              [(ngModel)]="userData.email" 
+              name="email" 
+              type="email" 
+              placeholder="example@domain.com" 
+              required 
+            />
+          </div>
+        </div>
 
-    <!-- 🚀 Optional logo upload -->
-    <label class="file-field">
-      <span>Logo du café (optionnel)</span>
-      <input type="file" name="logo" accept="image/*" (change)="onFileSelected($event)">
-    </label>
+        <div class="form-row">
+          <div class="form-group">
+            <label>اسم المحل / المقاهي *</label>
+            <input 
+              [(ngModel)]="userData.shop_name" 
+              name="shop_name" 
+              type="text" 
+              placeholder="Café Hadded" 
+              required 
+            />
+          </div>
+          <div class="form-group">
+            <label>النطاق الفرعي (Subdomain) *</label>
+            <input 
+              [(ngModel)]="userData.subdomain" 
+              name="subdomain" 
+              type="text" 
+              placeholder="cafe-hadded" 
+              required 
+            />
+          </div>
+        </div>
 
-    <button type="submit">تسجيل</button>
-  </form>
+        <div class="form-row">
+          <div class="form-group">
+            <label>كلمة السر *</label>
+            <div class="password-input-wrapper">
+              <input 
+                [(ngModel)]="userData.password" 
+                name="password" 
+                [type]="showPassword ? 'text' : 'password'" 
+                placeholder="••••••••" 
+                required 
+              />
+              <button type="button" class="toggle-password-btn" (click)="togglePassword()">
+                {{ showPassword ? '🙈' : '👁️' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>تأكيد كلمة السر *</label>
+            <div class="password-input-wrapper">
+              <input 
+                [(ngModel)]="userData.password_confirmation" 
+                name="password_confirmation" 
+                [type]="showConfirmPassword ? 'text' : 'password'" 
+                placeholder="••••••••" 
+                required 
+              />
+              <button type="button" class="toggle-password-btn" (click)="toggleConfirmPassword()">
+                {{ showConfirmPassword ? '🙈' : '👁️' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>شعار المحل (اختياري)</label>
+          <input 
+            type="file" 
+            (change)="onFileSelected($event)" 
+            accept="image/*" 
+            class="file-input"
+          />
+        </div>
+
+        <!-- Captcha Component -->
+        <app-captcha (isValid)="onCaptchaStatusChange($event)"></app-captcha>
+
+        <button 
+          type="submit" 
+          [disabled]="!regForm.valid || !isCaptchaValid || isLoading"
+          class="submit-btn"
+        >
+          {{ isLoading ? 'جاري التسجيل...' : 'إنشاء الحساب' }}
+        </button>
+
+        <div class="form-footer">
+          <span>لديك حساب بالفعل؟</span>
+          <a routerLink="/login" class="login-link">تسجيل الدخول</a>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
 </div>

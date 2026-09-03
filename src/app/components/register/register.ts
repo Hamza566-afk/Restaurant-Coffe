@@ -1,12 +1,14 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth';
+import { CaptchaComponent } from '../captcha/captcha';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink, CaptchaComponent],
   templateUrl: './register.html',
   styleUrls: ['./register.css']
 })
@@ -20,12 +22,26 @@ export class RegisterComponent {
     subdomain: ''
   };
 
-  /** 🚀 Optional logo file selected by the user */
   selectedLogo: File | null = null;
+  showPassword = false;
+  showConfirmPassword = false;
+  isCaptchaValid = false;
+  isLoading = false;
 
   constructor(private authService: AuthService, private router: Router) {}
 
-  /** 🚀 Capture the selected logo file from the input */
+  togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPassword() {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
+
+  onCaptchaStatusChange(status: boolean) {
+    this.isCaptchaValid = status;
+  }
+
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
@@ -36,14 +52,16 @@ export class RegisterComponent {
   }
 
   onRegister(): void {
+    if (!this.isCaptchaValid) return;
+
     if (this.userData.password !== this.userData.password_confirmation) {
       alert('كلمة السر وتأكيد كلمة السر غير متطابقين');
       return;
     }
 
+    this.isLoading = true;
     this.authService.getCsrfCookie().subscribe({
       next: () => {
-        // ✅ Build a FormData payload so File objects are sent as multipart
         const payload = new FormData();
         payload.append('name', this.userData.name);
         payload.append('email', this.userData.email);
@@ -52,18 +70,25 @@ export class RegisterComponent {
         payload.append('shop_name', this.userData.shop_name);
         payload.append('subdomain', this.userData.subdomain);
 
-        // 🚀 Append the logo only if one was selected
         if (this.selectedLogo) {
           payload.append('logo', this.selectedLogo, this.selectedLogo.name);
         }
 
         this.authService.register(payload).subscribe({
-          // ⚖️ التوجيه الجديد لصفحة الشروط والملكية الفكرية بدلاً من صفحة الدخول
-          next: () => this.router.navigate(['/legal-terms']),
-          error: (err) => alert(err?.error?.message ?? 'خطأ في التسجيل')
+          next: () => {
+            this.isLoading = false;
+            this.router.navigate(['/legal-terms']);
+          },
+          error: (err) => {
+            this.isLoading = false;
+            alert(err?.error?.message ?? 'خطأ في التسجيل');
+          }
         });
       },
-      error: () => alert('خطأ في الاتصال بالخادم')
+      error: () => {
+        this.isLoading = false;
+        alert('خطأ في الاتصال بالخادم');
+      }
     });
   }
 }

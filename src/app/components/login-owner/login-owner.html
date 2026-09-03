@@ -1,8 +1,73 @@
-<div class="auth-box">
-  <h2>دخول صاحب المحل</h2>
-  <form (submit)="onLogin()">
-    <input [(ngModel)]="credentials.email" name="email" type="email" placeholder="البريد الإلكتروني" required>
-    <input [(ngModel)]="credentials.password" name="password" type="password" placeholder="كلمة السر" required>
-    <button type="submit">تسجيل الدخول</button>
-  </form>
+<div class="auth-wrapper" dir="rtl">
+  <div class="auth-card">
+    
+    <!-- Sidebar -->
+    <div class="auth-sidebar">
+      <div class="brand-badge">Café SaaS</div>
+      <div class="sidebar-content">
+        <h2>مرحباً بك مجدداً</h2>
+        <p>سجّل الدخول للوصول إلى لوحة تحكم مقهاك ومتابعة المبيعات والطلبات بكل سهولة.</p>
+      </div>
+      <div class="sidebar-footer">
+        &copy; 2026 Hadded Holding. جميع الحقوق محفوظة.
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="auth-form-container">
+      <h3>تسجيل الدخول</h3>
+      <p class="sub-title">أدخل بيانات حسابك المعتمدة للدخول</p>
+
+      <form (submit)="onLogin()" #loginForm="ngForm">
+        
+        <div class="form-group">
+          <label>البريد الإلكتروني *</label>
+          <input 
+            [(ngModel)]="credentials.email" 
+            name="email" 
+            type="email" 
+            placeholder="example@domain.com" 
+            required 
+          />
+        </div>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label>كلمة السر *</label>
+            <a routerLink="/forgot-password" class="forgot-link">نسيت كلمة السر؟</a>
+          </div>
+          <div class="password-input-wrapper">
+            <input 
+              [(ngModel)]="credentials.password" 
+              name="password" 
+              [type]="showPassword ? 'text' : 'password'" 
+              placeholder="••••••••" 
+              required 
+            />
+            <button type="button" class="toggle-password-btn" (click)="togglePassword()">
+              {{ showPassword ? '🙈' : '👁️' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Captcha Component -->
+        <app-captcha (isValid)="onCaptchaStatusChange($event)"></app-captcha>
+
+        <button 
+          type="submit" 
+          [disabled]="!loginForm.valid || !isCaptchaValid || isLoading"
+          class="submit-btn"
+        >
+          {{ isLoading ? 'جاري التحقق...' : 'تسجيل الدخول' }}
+        </button>
+
+        <div class="form-footer">
+          <span>ليس لديك حساب؟</span>
+          <a routerLink="/register" class="register-link">إنشاء حساب جديد</a>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
 </div>
