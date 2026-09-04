@@ -20,6 +20,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'legal.approvalTitle': 'تفعيل الحساب',
     'legal.approvalText': 'بعد الموافقة، سيتم تحويل حسابك لصفحة الانتظار لحين تفعيله من طرف الإدارة.',
     'legal.accept': 'أوافق على الشروط والاستمرار',
+    'legal.sidebarTitle': 'الشروط والأحكام القانونية',
+    'legal.sidebarDesc': 'يرجى مراجعة الموافقة على شروط الاستخدام والملكية الفكرية لحماية حسابك ومؤسستك.',
+    'legal.rights': 'جميع الحقوق محفوظة.',
 
     'brand.name': 'Café SaaS',
     'brand.sub': 'لوحة تحكم المالك',
@@ -176,6 +179,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'legal.approvalTitle': 'Validation du Compte',
     'legal.approvalText': 'Après acceptation, votre compte sera placé en attente d\'activation par l\'administrateur.',
     'legal.accept': 'J\'accepte les conditions et continuer',
+    'legal.sidebarTitle': 'Mentions Légales & Conditions',
+    'legal.sidebarDesc': 'Veuillez lire et accepter nos conditions d\'utilisation et de propriété intellectuelle pour sécuriser votre compte.',
+    'legal.rights': 'Tous droits réservés.',
 
     'brand.name': 'Café SaaS',
     'brand.sub': 'Tableau de bord',
@@ -332,7 +338,10 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'legal.approvalTitle': 'Account Approval',
     'legal.approvalText': 'Upon acceptance, your account will await manual admin activation.',
     'legal.accept': 'I Accept Terms and Continue',
-    
+    'legal.sidebarTitle': 'Legal Terms & Policy',
+    'legal.sidebarDesc': 'Please review and accept our terms of service and intellectual property rights to secure your account.',
+    'legal.rights': 'All rights reserved.',
+
     'brand.name': 'Café SaaS',
     'brand.sub': 'Owner Dashboard',
     'nav.main': 'Main Menu',

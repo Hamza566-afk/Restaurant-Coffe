@@ -1,20 +1,23 @@
 <div class="legal-wrapper">
   <div class="legal-card" [attr.dir]="langService.isRtl() ? 'rtl' : 'ltr'">
     
-    <!-- Left Main Content -->
+    <!-- القسم الأيسر: النصوص والشروط -->
     <div class="legal-main">
       <div>
+        <!-- شريط اختيار اللغة -->
         <div class="lang-selector">
           <button type="button" (click)="setLanguage('ar')" [class.active]="langService.lang() === 'ar'">العربية</button>
           <button type="button" (click)="setLanguage('fr')" [class.active]="langService.lang() === 'fr'">Français</button>
           <button type="button" (click)="setLanguage('en')" [class.active]="langService.lang() === 'en'">English</button>
         </div>
 
+        <!-- العنوان الفرعي -->
         <div class="legal-header">
           <h2>{{ langService.t('legal.title') }}</h2>
           <p>{{ langService.t('legal.sub') }}</p>
         </div>
 
+        <!-- محتوى الشروط والبنود -->
         <div class="legal-body">
           <div class="legal-section">
             <h3>{{ langService.t('legal.ownershipTitle') }}</h3>
@@ -38,20 +41,23 @@
         </div>
       </div>
 
+      <!-- زر القبول -->
       <button type="button" class="btn-accept" (click)="acceptTerms()">
         {{ langService.t('legal.accept') }}
       </button>
     </div>
 
-    <!-- Right Brand Panel (Dark Green) -->
+    <!-- القسم الأيمن: الشعار والنص القانوني الجانبي (الأخضر الغامق) -->
     <div class="legal-sidebar">
       <div class="brand-badge">Café SaaS</div>
+      
       <div class="sidebar-content">
-        <h1>{{ langService.t('auth.sidebarRegTitle') }}</h1>
-        <p>{{ langService.t('auth.sidebarRegDesc') }}</p>
+        <h1>{{ langService.t('legal.sidebarTitle') }}</h1>
+        <p>{{ langService.t('legal.sidebarDesc') }}</p>
       </div>
+      
       <div class="sidebar-footer">
-        © Hadded Holding 2026. {{ langService.t('auth.rights') }}
+        © Hadded Holding 2026. {{ langService.t('legal.rights') }}
       </div>
     </div>
 
