@@ -2,13 +2,23 @@ import { Injectable, signal, computed } from '@angular/core';
 
 export type Language = 'ar' | 'fr' | 'en';
 
-/**
- * Lightweight i18n dictionary — add keys here as the app grows.
- * No heavy external library needed; signals make it fully reactive.
- */
 const TRANSLATIONS: Record<Language, Record<string, string>> = {
   ar: {
-    // ar:
+    // Auth Keys
+    'auth.loginTitle': 'تسجيل الدخول',
+    'auth.loginSub': 'أدخل بيانات حسابك المعتمدة للدخول',
+    'auth.emailLabel': 'البريد الإلكتروني',
+    'auth.passwordLabel': 'كلمة السر',
+    'auth.forgotPassword': 'نسيت كلمة السر؟',
+    'auth.loginBtn': 'تسجيل الدخول',
+    'auth.loggingIn': 'جاري التحقق...',
+    'auth.noAccount': 'ليس لديك حساب؟',
+    'auth.registerLink': 'إنشاء حساب جديد',
+    'auth.sidebarLoginTitle': 'مرحباً بك مجدداً',
+    'auth.sidebarLoginDesc': 'سجّل الدخول للوصول إلى لوحة تحكم مقهاك ومتابعة المبيعات والطلبات بكل سهولة.',
+    'auth.rights': 'جميع الحقوق محفوظة.',
+
+    // Legal & Dashboard
     'legal.title': 'الشروط العامة والملكية الفكرية',
     'legal.sub': 'يرجى قراءة الشروط والأحكام بعناية قبل استخدام المنصة',
     'legal.ownershipTitle': 'الملكية الحصرية',
@@ -74,7 +84,6 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'dash.ready': 'جاهز',
     'dash.paid': 'مدفوع',
     'dash.cancelled': 'ملغي',
-    // Orders
     'orders.title': 'إدارة الطلبات',
     'orders.sub': 'تتبع وتحديث حالة طلبات العملاء',
     'orders.refresh': 'تحديث',
@@ -92,7 +101,6 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'orders.cloturerConfirm': 'هل أنت متأكد من إغلاق اليوم؟ سيتم أرشفة جميع الطلبات الحالية.',
     'orders.cloturerSuccess': 'تم إغلاق اليوم وأرشفة جميع الطلبات بنجاح.',
     'orders.cloturerError': 'فشل إغلاق اليوم، يرجى المحاولة مرة أخرى.',
-    // Products
     'prod.title': 'إدارة المنيو',
     'prod.sub': 'إضافة وتحديث المنتجات والوجبات',
     'prod.addBtn': 'إضافة منتج',
@@ -105,7 +113,6 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.table.price': 'السعر',
     'prod.table.status': 'الحالة',
     'prod.table.actions': 'الإجراءات',
-    // QR Code
     'qr.title': 'للطاولات QR Code إدارة الـ',
     'qr.sub': 'توليد وإدارة الرموز الرقمية المربوطة بالطاولات والطلبات',
     'qr.generateTitle': 'توليد طاولات جديدة',
@@ -140,10 +147,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.clickChange': 'اضغط لتغيير الصورة',
     'prod.dropImage': 'اختر صورة أو اسحبها هنا',
     'prod.fileHint': 'PNG, JPG (أقصى 2MB)',
-'prod.cancel': 'إلغاء',
-'prod.saveChanges': 'حفظ التغييرات',
+    'prod.cancel': 'إلغاء',
+    'prod.saveChanges': 'حفظ التغييرات',
     'prod.uncategorized': 'غير مصنف',
-    // 🆕 Product Sizes / Variants
     'prod.sizeVariationsTitle': 'خيارات المقاسات',
     'prod.sizeVariationsToggle': 'تفعيل المقاسات والأسعار المختلفة',
     'prod.sizesList': 'المقاسات والأسعار',
@@ -167,7 +173,20 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorDeleteTables': 'فشل في حذف الطاولة.',
   },
   fr: {
-    // fr:
+    // Auth Keys
+    'auth.loginTitle': 'Connexion',
+    'auth.loginSub': 'Entrez vos identifiants pour continuer',
+    'auth.emailLabel': 'Adresse e-mail',
+    'auth.passwordLabel': 'Mot de passe',
+    'auth.forgotPassword': 'Mot de passe oublié ?',
+    'auth.loginBtn': 'Se connecter',
+    'auth.loggingIn': 'Vérification...',
+    'auth.noAccount': "Vous n'avez pas de compte ?",
+    'auth.registerLink': "S'inscrire",
+    'auth.sidebarLoginTitle': 'Bon retour !',
+    'auth.sidebarLoginDesc': 'Connectez-vous pour accéder au panneau de contrôle de votre café.',
+    'auth.rights': 'Tous droits réservés.',
+
     'legal.title': 'Conditions Générales & Propriété Intellectuelle',
     'legal.sub': 'Veuillez lire attentivement nos conditions avant d\'utiliser la plateforme',
     'legal.ownershipTitle': 'Propriété Exclusive',
@@ -175,7 +194,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'legal.licenseTitle': 'Licence d\'Utilisation',
     'legal.licenseText': 'L\'inscription vous accorde un droit d\'utilisation temporaire et non exclusif pour la gestion de votre établissement.',
     'legal.protectionTitle': 'Protection Juridique',
-    'legal.protectionText': 'Toute tentative de reproduction, ingénierie inverse (reverse engineering) ou revente est strictement interdite sous peine de poursuites judiciaires.',
+    'legal.protectionText': 'Toute tentative de reproduction, ingénierie inverse (reverse engineering) ou revente est strictly interdite sous peine de poursuites judiciaires.',
     'legal.approvalTitle': 'Validation du Compte',
     'legal.approvalText': 'Après acceptation, votre compte sera placé en attente d\'activation par l\'administrateur.',
     'legal.accept': 'J\'accepte les conditions et continuer',
@@ -233,7 +252,6 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'dash.ready': 'Prêt',
     'dash.paid': 'Payé',
     'dash.cancelled': 'Annulé',
-    // Orders
     'orders.title': 'Gestion des Commandes',
     'orders.sub': 'Suivi et mise à jour des statuts des commandes',
     'orders.refresh': 'Actualiser',
@@ -251,7 +269,6 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'orders.cloturerConfirm': 'Êtes-vous sûr de vouloir clôturer la journée ? Toutes les commandes actuelles seront archivées.',
     'orders.cloturerSuccess': 'Journée clôturée, toutes les commandes ont été archivées avec succès.',
     'orders.cloturerError': 'Échec de la clôture de la journée, veuillez réessayer.',
-    // Products
     'prod.title': 'Gestion du Menu',
     'prod.sub': 'Ajouter et mettre à jour les produits et repas',
     'prod.addBtn': 'Ajouter un produit',
@@ -264,7 +281,6 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.table.price': 'Prix',
     'prod.table.status': 'Statut',
     'prod.table.actions': 'Actions',
-    // QR Code
     'qr.title': 'Gestion des QR Codes',
     'qr.sub': 'Générer et gérer les codes QR liés aux tables et commandes',
     'qr.generateTitle': 'Générer de nouvelles tables',
@@ -299,10 +315,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.clickChange': 'Cliquez pour changer l\'image',
     'prod.dropImage': 'Choisissez ou déposez une image ici',
     'prod.fileHint': 'PNG, JPG (max 2MB)',
-'prod.cancel': 'Annuler',
-'prod.saveChanges': 'Enregistrer les modifications',
+    'prod.cancel': 'Annuler',
+    'prod.saveChanges': 'Enregistrer les modifications',
     'prod.uncategorized': 'Non catégorisé',
-    // 🆕 Product Sizes / Variants
     'prod.sizeVariationsTitle': 'Variations de taille',
     'prod.sizeVariationsToggle': 'Activer les variations de taille',
     'prod.sizesList': 'Tailles et prix',
@@ -326,7 +341,20 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorDeleteTables': 'Échec de la suppression de la table.',
   },
   en: {
-    // en:
+    // Auth Keys
+    'auth.loginTitle': 'Sign In',
+    'auth.loginSub': 'Enter your credentials to continue',
+    'auth.emailLabel': 'Email Address',
+    'auth.passwordLabel': 'Password',
+    'auth.forgotPassword': 'Forgot password?',
+    'auth.loginBtn': 'Sign In',
+    'auth.loggingIn': 'Verifying...',
+    'auth.noAccount': "Don't have an account?",
+    'auth.registerLink': 'Create an account',
+    'auth.sidebarLoginTitle': 'Welcome back!',
+    'auth.sidebarLoginDesc': 'Log in to access your coffee shop dashboard.',
+    'auth.rights': 'All rights reserved.',
+
     'legal.title': 'Terms of Service & Intellectual Property',
     'legal.sub': 'Please read our terms carefully before using the platform',
     'legal.ownershipTitle': 'Exclusive Ownership',
@@ -392,7 +420,6 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'dash.ready': 'Ready',
     'dash.paid': 'Paid',
     'dash.cancelled': 'Cancelled',
-    // Orders
     'orders.title': 'Orders Management',
     'orders.sub': 'Track and update customer order statuses',
     'orders.refresh': 'Refresh',
@@ -410,7 +437,6 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'orders.cloturerConfirm': 'Are you sure you want to close the day? All current orders will be archived.',
     'orders.cloturerSuccess': 'Day closed, all orders have been archived successfully.',
     'orders.cloturerError': 'Failed to close the day, please try again.',
-    // Products
     'prod.title': 'Menu Management',
     'prod.sub': 'Add and update products and meals',
     'prod.addBtn': 'Add product',
@@ -423,7 +449,6 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.table.price': 'Price',
     'prod.table.status': 'Status',
     'prod.table.actions': 'Actions',
-    // QR Code
     'qr.title': 'QR Codes Management',
     'qr.sub': 'Generate and manage digital codes linked to tables and orders',
     'qr.generateTitle': 'Generate New Tables',
@@ -458,10 +483,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.clickChange': 'Click to change image',
     'prod.dropImage': 'Choose or drag an image here',
     'prod.fileHint': 'PNG, JPG (max 2MB)',
-'prod.cancel': 'Cancel',
-'prod.saveChanges': 'Save changes',
+    'prod.cancel': 'Cancel',
+    'prod.saveChanges': 'Save changes',
     'prod.uncategorized': 'Uncategorized',
-    // 🆕 Product Sizes / Variants
     'prod.sizeVariationsTitle': 'Size Variations',
     'prod.sizeVariationsToggle': 'Enable size variations',
     'prod.sizesList': 'Sizes and Prices',
@@ -488,58 +512,37 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
 
 @Injectable({ providedIn: 'root' })
 export class LanguageService {
-  /** 🆕 Reactive signal — the single source of truth for the active language */
   readonly lang = signal<Language>(this.loadInitial());
-
-  /** True when the layout must be RTL (Arabic) */
   readonly isRtl = computed(() => this.lang() === 'ar');
-
-  /** Reactive lookup table of the active language */
   readonly translations = computed(() => TRANSLATIONS[this.lang()]);
 
   constructor() {
-    // Apply the correct `dir`/`lang` attributes as soon as the app bootstraps
     this.applyDocumentDirection(this.lang());
   }
 
-  /**
-   * Switch language, persist it to localStorage, and flip the
-   * document direction immediately.
-   */
   setLanguage(lang: Language): void {
     this.lang.set(lang);
     try {
       localStorage.setItem('cafe_lang', lang);
-    } catch {
-      /* storage unavailable (privacy mode) — state still works in-memory */
-    }
+    } catch {}
     this.applyDocumentDirection(lang);
   }
 
-  /**
-   * Translate a key using the active language.
-   * Reads the reactive `lang` signal → any template calling this method
-   * automatically re-renders when the language changes.
-   */
   t(key: string): string {
     return this.translations()[key] ?? key;
   }
 
-  /** Set <html dir="rtl|ltr" lang="ar|fr|en"> */
   private applyDocumentDirection(lang: Language): void {
     const dir = lang === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.setAttribute('dir', dir);
     document.documentElement.setAttribute('lang', lang);
   }
 
-  /** Restore persisted language (defaults to Arabic/RTL) */
   private loadInitial(): Language {
     try {
       const stored = localStorage.getItem('cafe_lang');
       if (stored === 'ar' || stored === 'fr' || stored === 'en') return stored;
-    } catch {
-      /* ignore */
-    }
+    } catch {}
     return 'fr';
   }
 }

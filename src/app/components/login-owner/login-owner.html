@@ -1,5 +1,5 @@
-<div class="auth-wrapper">
-  <div class="auth-card" [attr.dir]="langService.isRtl() ? 'rtl' : 'ltr'">
+<div class="auth-wrapper" [attr.dir]="langService.isRtl() ? 'rtl' : 'ltr'">
+  <div class="auth-card">
     
     <!-- Sidebar -->
     <div class="auth-sidebar">
@@ -18,9 +18,9 @@
       
       <!-- Lang Selector -->
       <div class="lang-selector">
-        <button type="button" (click)="setLanguage('ar')" [class.active]="langService.lang() === 'ar'">العربية</button>
-        <button type="button" (click)="setLanguage('fr')" [class.active]="langService.lang() === 'fr'">Français</button>
-        <button type="button" (click)="setLanguage('en')" [class.active]="langService.lang() === 'en'">English</button>
+        <button type="button" (click)="langService.setLanguage('ar')" [class.active]="langService.lang() === 'ar'">العربية</button>
+        <button type="button" (click)="langService.setLanguage('fr')" [class.active]="langService.lang() === 'fr'">Français</button>
+        <button type="button" (click)="langService.setLanguage('en')" [class.active]="langService.lang() === 'en'">English</button>
       </div>
 
       <h3>{{ langService.t('auth.loginTitle') }}</h3>
@@ -30,7 +30,7 @@
         
         <!-- Email Input -->
         <div class="form-group">
-          <label>{{ langService.t('auth.emailLabel') }} *</label>
+          <label>* {{ langService.t('auth.emailLabel') }}</label>
           <input 
             [(ngModel)]="credentials.email" 
             name="email" 
@@ -42,10 +42,7 @@
 
         <!-- Password Input -->
         <div class="form-group">
-          <div class="label-row">
-            <label>{{ langService.t('auth.passwordLabel') }} *</label>
-            <a routerLink="/forgot-password" class="forgot-link">{{ langService.t('auth.forgotPassword') }}</a>
-          </div>
+          <label>* {{ langService.t('auth.passwordLabel') }}</label>
           <div class="password-input-wrapper">
             <input 
               [(ngModel)]="credentials.password" 
@@ -54,13 +51,11 @@
               required 
             />
             <button type="button" class="toggle-password-btn" (click)="togglePassword()">
-              <!-- عين مفتوحة (Show Password) -->
               <svg *ngIf="!showPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
               </svg>
 
-              <!-- عين عليها خط (Hide Password) -->
               <svg *ngIf="showPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
                 <line x1="1" y1="1" x2="23" y2="23"></line>
@@ -78,12 +73,18 @@
           [disabled]="!loginForm.valid || !isCaptchaValid || isLoading"
           class="submit-btn"
         >
-          {{ isLoading ? langService.t('auth.loading') : langService.t('auth.loginBtn') }}
+          {{ isLoading ? langService.t('auth.loggingIn') : langService.t('auth.loginBtn') }}
         </button>
 
+        <!-- Footer Links -->
         <div class="form-footer">
-          <span>{{ langService.t('auth.noAccount') }}</span>
-          <a routerLink="/register" class="register-link">{{ langService.t('auth.registerLink') }}</a>
+          <div class="form-footer-row">
+            <span>{{ langService.t('auth.noAccount') }}</span>
+            <a routerLink="/register" class="register-link">{{ langService.t('auth.registerLink') }}</a>
+          </div>
+          <div class="forgot-link-container">
+            <a routerLink="/forgot-password" class="forgot-link">{{ langService.t('auth.forgotPassword') }}</a>
+          </div>
         </div>
 
       </form>
