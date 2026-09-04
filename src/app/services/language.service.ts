@@ -8,6 +8,19 @@ export type Language = 'ar' | 'fr' | 'en';
  */
 const TRANSLATIONS: Record<Language, Record<string, string>> = {
   ar: {
+    // ar:
+    'legal.title': 'الشروط العامة والملكية الفكرية',
+    'legal.sub': 'يرجى قراءة الشروط والأحكام بعناية قبل استخدام المنصة',
+    'legal.ownershipTitle': 'الملكية الحصرية',
+    'legal.ownershipText': 'هذه المنصة بكافة مكوناتها والكود البرمجي والتصميم هي ملك فكري وحصري للسيد حمزة حداد (Hamza Hadded).',
+    'legal.licenseTitle': 'ترخيص الاستخدام',
+    'legal.licenseText': 'التسجيل يمنحك حق استخدام مؤقت وغير حصري لإدارة منطقتك/مقهالك فقط.',
+    'legal.protectionTitle': 'الحماية القانونية',
+    'legal.protectionText': 'يُحظر تماماً محاولة نسخ الكود أو تفكيكه أو إعادة بيعه، وأي مخالفة تعرض صاحبها للملاحقة القانونية.',
+    'legal.approvalTitle': 'تفعيل الحساب',
+    'legal.approvalText': 'بعد الموافقة، سيتم تحويل حسابك لصفحة الانتظار لحين تفعيله من طرف الإدارة.',
+    'legal.accept': 'أوافق على الشروط والاستمرار',
+
     'brand.name': 'Café SaaS',
     'brand.sub': 'لوحة تحكم المالك',
     'nav.main': 'القائمة الرئيسية',
@@ -151,6 +164,19 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorDeleteTables': 'فشل في حذف الطاولة.',
   },
   fr: {
+    // fr:
+    'legal.title': 'Conditions Générales & Propriété Intellectuelle',
+    'legal.sub': 'Veuillez lire attentivement nos conditions avant d\'utiliser la plateforme',
+    'legal.ownershipTitle': 'Propriété Exclusive',
+    'legal.ownershipText': 'Cette plate-forme, son code source, son design et ses bases de données sont la propriété exclusive de M. Hamza Hadded.',
+    'legal.licenseTitle': 'Licence d\'Utilisation',
+    'legal.licenseText': 'L\'inscription vous accorde un droit d\'utilisation temporaire et non exclusif pour la gestion de votre établissement.',
+    'legal.protectionTitle': 'Protection Juridique',
+    'legal.protectionText': 'Toute tentative de reproduction, ingénierie inverse (reverse engineering) ou revente est strictement interdite sous peine de poursuites judiciaires.',
+    'legal.approvalTitle': 'Validation du Compte',
+    'legal.approvalText': 'Après acceptation, votre compte sera placé en attente d\'activation par l\'administrateur.',
+    'legal.accept': 'J\'accepte les conditions et continuer',
+
     'brand.name': 'Café SaaS',
     'brand.sub': 'Tableau de bord',
     'nav.main': 'Menu principal',
@@ -294,6 +320,19 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorDeleteTables': 'Échec de la suppression de la table.',
   },
   en: {
+    // en:
+    'legal.title': 'Terms of Service & Intellectual Property',
+    'legal.sub': 'Please read our terms carefully before using the platform',
+    'legal.ownershipTitle': 'Exclusive Ownership',
+    'legal.ownershipText': 'This platform, source code, and design are the exclusive property of Mr. Hamza Hadded.',
+    'legal.licenseTitle': 'User License',
+    'legal.licenseText': 'Registration grants a limited, non-exclusive right of use for your business.',
+    'legal.protectionTitle': 'Legal Protection',
+    'legal.protectionText': 'Any attempt to copy, reverse-engineer, or resell this software is strictly prohibited by law.',
+    'legal.approvalTitle': 'Account Approval',
+    'legal.approvalText': 'Upon acceptance, your account will await manual admin activation.',
+    'legal.accept': 'I Accept Terms and Continue',
+    
     'brand.name': 'Café SaaS',
     'brand.sub': 'Owner Dashboard',
     'nav.main': 'Main Menu',

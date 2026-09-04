@@ -83,75 +83,79 @@
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 18px;
   text-align: right;
 }
 
 .form-group label {
   display: block;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: #334155;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
 
-.label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.forgot-link {
-  font-size: 12px;
-  color: #059669;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.forgot-link:hover { text-decoration: underline; }
-
-.password-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.password-input-wrapper input {
+/* توحيد كل الـ Inputs (Gmail, Password, Text) بنفس الطول والشكل */
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"] {
   width: 100%;
-  padding: 10px 40px 10px 14px;
+  height: 46px;
+  padding: 0 14px;
   border: 1px solid #cbd5e1;
   border-radius: 10px;
   font-size: 14px;
+  color: #1e293b;
+  background-color: #ffffff;
   box-sizing: border-box;
   outline: none;
-  transition: all 0.2s;
+  transition: all 0.2s ease-in-out;
 }
 
-.password-input-wrapper input:focus {
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="password"]:focus {
   border-color: #10b981;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 
+/* تعديل خاص بالحقل المكون لرمز السر مع أيقونة العين */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  padding-left: 42px !important; /* إعطاء مساحة كافية للعين على اليسار */
+}
+
 .toggle-password-btn {
   position: absolute;
-  left: 10px;
-  background: none;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
   border: none;
   cursor: pointer;
   font-size: 16px;
+  color: #64748b;
   padding: 0;
-  line-height: 1;
-  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
 }
 
 .submit-btn {
   width: 100%;
-  padding: 12px;
+  height: 46px;
   background-color: #059669;
   color: white;
   border: none;
   border-radius: 10px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: bold;
   cursor: pointer;
   transition: background 0.2s;
@@ -162,6 +166,25 @@
 .submit-btn:disabled {
   background-color: #cbd5e1;
   cursor: not-allowed;
+}
+
+/* تنسيق رابط نسيت كلمة السر تحت زر الدخول */
+.forgot-password-container {
+  text-align: center;
+  margin-top: 12px;
+}
+
+.forgot-link {
+  font-size: 13px;
+  color: #059669;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+  color: #047857;
 }
 
 .form-footer {

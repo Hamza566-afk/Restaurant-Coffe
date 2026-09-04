@@ -1,25 +1,59 @@
-<div class="legal-container">
-  <!-- Language Selector -->
-  <div class="lang-selector">
-    <button [class.active]="currentLang === 'fr'" (click)="setLanguage('fr')">Français</button>
-    <button [class.active]="currentLang === 'ar'" (click)="setLanguage('ar')">العربية</button>
-    <button [class.active]="currentLang === 'en'" (click)="setLanguage('en')">English</button>
-  </div>
-
-  <div class="legal-card" [dir]="currentLang === 'ar' ? 'rtl' : 'ltr'">
-    <h2>{{ content[currentLang].title }}</h2>
+<div class="legal-wrapper">
+  <div class="legal-card" [attr.dir]="langService.isRtl() ? 'rtl' : 'ltr'">
     
-    <div class="legal-body">
-      <p><strong>{{ content[currentLang].ownershipTitle }}:</strong> {{ content[currentLang].ownershipText }}</p>
-      <p><strong>{{ content[currentLang].licenseTitle }}:</strong> {{ content[currentLang].licenseText }}</p>
-      <p><strong>{{ content[currentLang].protectionTitle }}:</strong> {{ content[currentLang].protectionText }}</p>
-      <p><strong>{{ content[currentLang].approvalTitle }}:</strong> {{ content[currentLang].approvalText }}</p>
-    </div>
+    <!-- Left Main Content -->
+    <div class="legal-main">
+      <div>
+        <div class="lang-selector">
+          <button type="button" (click)="setLanguage('ar')" [class.active]="langService.lang() === 'ar'">العربية</button>
+          <button type="button" (click)="setLanguage('fr')" [class.active]="langService.lang() === 'fr'">Français</button>
+          <button type="button" (click)="setLanguage('en')" [class.active]="langService.lang() === 'en'">English</button>
+        </div>
 
-    <div class="legal-actions">
-      <button class="btn-accept" (click)="acceptTerms()">
-        {{ content[currentLang].acceptBtn }}
+        <div class="legal-header">
+          <h2>{{ langService.t('legal.title') }}</h2>
+          <p>{{ langService.t('legal.sub') }}</p>
+        </div>
+
+        <div class="legal-body">
+          <div class="legal-section">
+            <h3>{{ langService.t('legal.ownershipTitle') }}</h3>
+            <p>{{ langService.t('legal.ownershipText') }}</p>
+          </div>
+
+          <div class="legal-section">
+            <h3>{{ langService.t('legal.licenseTitle') }}</h3>
+            <p>{{ langService.t('legal.licenseText') }}</p>
+          </div>
+
+          <div class="legal-section">
+            <h3>{{ langService.t('legal.protectionTitle') }}</h3>
+            <p>{{ langService.t('legal.protectionText') }}</p>
+          </div>
+
+          <div class="legal-section">
+            <h3>{{ langService.t('legal.approvalTitle') }}</h3>
+            <p>{{ langService.t('legal.approvalText') }}</p>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="btn-accept" (click)="acceptTerms()">
+        {{ langService.t('legal.accept') }}
       </button>
     </div>
+
+    <!-- Right Brand Panel (Dark Green) -->
+    <div class="legal-sidebar">
+      <div class="brand-badge">Café SaaS</div>
+      <div class="sidebar-content">
+        <h1>{{ langService.t('auth.sidebarRegTitle') }}</h1>
+        <p>{{ langService.t('auth.sidebarRegDesc') }}</p>
+      </div>
+      <div class="sidebar-footer">
+        © Hadded Holding 2026. {{ langService.t('auth.rights') }}
+      </div>
+    </div>
+
   </div>
 </div>
