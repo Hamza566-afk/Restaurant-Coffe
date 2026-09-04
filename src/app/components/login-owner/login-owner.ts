@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { CaptchaComponent } from '../captcha/captcha';
+import { LanguageService, Language } from '../../services/language.service'; // المسار حسب مشروعك
 
 @Component({
   selector: 'app-login-owner',
@@ -13,12 +14,18 @@ import { CaptchaComponent } from '../captcha/captcha';
   styleUrls: ['./login-owner.css']
 })
 export class LoginOwnerComponent {
+  readonly langService = inject(LanguageService);
+
   credentials = { email: '', password: '' };
   showPassword = false;
   isCaptchaValid = false;
   isLoading = false;
 
   constructor(private authService: AuthService, private router: Router) {}
+
+  setLanguage(lang: Language): void {
+    this.langService.setLanguage(lang);
+  }
 
   togglePassword() {
     this.showPassword = !this.showPassword;

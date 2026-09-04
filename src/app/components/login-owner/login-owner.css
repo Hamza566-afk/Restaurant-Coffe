@@ -20,6 +20,15 @@
   border: 1px solid #e2e8f0;
 }
 
+/* دعم الاتجاهات عند تغيير اللغة */
+[dir="rtl"] .auth-card {
+  flex-direction: row;
+}
+
+[dir="ltr"] .auth-card {
+  flex-direction: row-reverse;
+}
+
 .auth-sidebar {
   width: 40%;
   background: linear-gradient(135deg, #0f172a, #064e3b);
@@ -67,6 +76,44 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  position: relative;
+}
+
+/* شريط اختيار اللغات */
+.lang-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+[dir="rtl"] .lang-selector {
+  justify-content: flex-start;
+}
+
+[dir="ltr"] .lang-selector {
+  justify-content: flex-end;
+}
+
+.lang-selector button {
+  padding: 6px 14px;
+  border: 1px solid #cbd5e1;
+  background-color: #f8fafc;
+  color: #475569;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lang-selector button:hover {
+  background-color: #e2e8f0;
+}
+
+.lang-selector button.active {
+  background-color: #059669;
+  color: #ffffff;
+  border-color: #059669;
 }
 
 .auth-form-container h3 {
@@ -84,8 +131,10 @@
 
 .form-group {
   margin-bottom: 18px;
-  text-align: right;
 }
+
+[dir="rtl"] .form-group { text-align: right; }
+[dir="ltr"] .form-group { text-align: left; }
 
 .form-group label {
   display: block;
@@ -95,7 +144,6 @@
   margin-bottom: 6px;
 }
 
-/* توحيد كل الـ Inputs (Gmail, Password, Text) بنفس الطول والشكل */
 .form-group input[type="text"],
 .form-group input[type="email"],
 .form-group input[type="password"] {
@@ -119,7 +167,7 @@
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 
-/* تعديل خاص بالحقل المكون لرمز السر مع أيقونة العين */
+/* تنسيق حقل كلمة السر وأيقونة العين SVG */
 .password-input-wrapper {
   position: relative;
   display: flex;
@@ -127,25 +175,37 @@
   width: 100%;
 }
 
-.password-input-wrapper input {
-  padding-left: 42px !important; /* إعطاء مساحة كافية للعين على اليسار */
+[dir="rtl"] .password-input-wrapper input {
+  padding-left: 42px !important;
+  padding-right: 14px !important;
+}
+
+[dir="ltr"] .password-input-wrapper input {
+  padding-right: 42px !important;
+  padding-left: 14px !important;
 }
 
 .toggle-password-btn {
   position: absolute;
-  left: 12px;
   top: 50%;
   transform: translateY(-50%);
   background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 16px;
   color: #64748b;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2;
+  transition: color 0.2s ease;
+}
+
+[dir="rtl"] .toggle-password-btn { left: 12px; }
+[dir="ltr"] .toggle-password-btn { right: 12px; }
+
+.toggle-password-btn:hover {
+  color: #0f172a;
 }
 
 .submit-btn {
@@ -168,26 +228,11 @@
   cursor: not-allowed;
 }
 
-/* تنسيق رابط نسيت كلمة السر تحت زر الدخول */
-.forgot-password-container {
-  text-align: center;
-  margin-top: 12px;
-}
-
-.forgot-link {
-  font-size: 13px;
-  color: #059669;
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.2s;
-}
-
-.forgot-link:hover {
-  text-decoration: underline;
-  color: #047857;
-}
-
+/* Footer & Link (تسجيل جديد + نسيت كلمة السر) */
 .form-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   text-align: center;
   margin-top: 20px;
   padding-top: 15px;
@@ -196,16 +241,32 @@
   color: #64748b;
 }
 
-.register-link {
+.form-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.register-link,
+.forgot-link {
   color: #059669;
   font-weight: bold;
   text-decoration: none;
-  margin-right: 5px;
+  transition: color 0.2s ease;
 }
 
-.register-link:hover { text-decoration: underline; }
+.register-link:hover,
+.forgot-link:hover {
+  text-decoration: underline;
+  color: #047857;
+}
+
+.forgot-link-container {
+  margin-top: 2px;
+}
 
 @media (max-width: 768px) {
-  .auth-card { flex-direction: column; }
+  .auth-card { flex-direction: column !important; }
   .auth-sidebar, .auth-form-container { width: 100%; }
 }
