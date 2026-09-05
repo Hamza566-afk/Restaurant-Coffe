@@ -6,6 +6,7 @@
   justify-content: center;
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-sizing: border-box;
 }
 
 .auth-card {
@@ -15,9 +16,18 @@
   border-radius: 20px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   display: flex;
-  flex-direction: row;
   overflow: hidden;
   border: 1px solid #e2e8f0;
+}
+
+/* التنسيق للغة العربية (RTL) */
+[dir="rtl"] .auth-card {
+  flex-direction: row;
+}
+
+/* التنسيق للفرنساوي والإنجليزي (LTR) */
+[dir="ltr"] .auth-card {
+  flex-direction: row-reverse;
 }
 
 .auth-sidebar {
@@ -28,6 +38,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  box-sizing: border-box;
 }
 
 .brand-badge {
@@ -67,6 +78,46 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  box-sizing: border-box;
+}
+
+/* أزرار اختيار اللغة */
+.lang-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+[dir="rtl"] .lang-selector {
+  justify-content: flex-start;
+}
+
+[dir="ltr"] .lang-selector {
+  justify-content: flex-end;
+}
+
+.lang-selector button {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lang-selector button.active {
+  background-color: #059669;
+  color: #ffffff;
+  border-color: #059669;
+}
+
+/* العناوين وتحديد الاتجاه تلقائياً */
+.auth-form-container h3, 
+.sub-title {
+  text-align: start;
 }
 
 .auth-form-container h3 {
@@ -93,7 +144,7 @@
 
 .form-group {
   margin-bottom: 12px;
-  text-align: right;
+  text-align: start;
 }
 
 .form-group label {
@@ -104,40 +155,7 @@
   margin-bottom: 4px;
 }
 
-.password-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.password-input-wrapper input {
-  width: 100%;
-  padding: 9px 35px 9px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  font-size: 13px;
-  box-sizing: border-box;
-  outline: none;
-  transition: all 0.2s;
-}
-
-.password-input-wrapper input:focus {
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
-}
-
-.toggle-password-btn {
-  position: absolute;
-  left: 10px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 15px;
-  padding: 0;
-  line-height: 1;
-  user-select: none;
-}
-
+/* حقول الإدخال */
 .form-group input {
   width: 100%;
   padding: 9px 12px;
@@ -147,11 +165,7 @@
   box-sizing: border-box;
   outline: none;
   transition: all 0.2s;
-}
-
-.file-input {
-  background: #f8fafc;
-  padding: 6px 10px !important;
+  background-color: #ffffff;
 }
 
 .form-group input:focus {
@@ -159,6 +173,55 @@
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 
+.file-input {
+  background: #f8fafc;
+  padding: 6px 10px !important;
+}
+
+/* كلمة السر والأيقونة */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+[dir="rtl"] .password-input-wrapper input {
+  padding-left: 38px;
+  padding-right: 12px;
+}
+
+[dir="ltr"] .password-input-wrapper input {
+  padding-right: 38px;
+  padding-left: 12px;
+}
+
+.toggle-password-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+[dir="rtl"] .toggle-password-btn {
+  left: 10px;
+  right: auto;
+}
+
+[dir="ltr"] .toggle-password-btn {
+  right: 10px;
+  left: auto;
+}
+
+/* الأزرار والـ Footer */
 .submit-btn {
   width: 100%;
   padding: 11px;
@@ -173,7 +236,10 @@
   margin-top: 8px;
 }
 
-.submit-btn:hover { background-color: #047857; }
+.submit-btn:hover { 
+  background-color: #047857; 
+}
+
 .submit-btn:disabled {
   background-color: #cbd5e1;
   cursor: not-allowed;
@@ -192,13 +258,27 @@
   color: #059669;
   font-weight: bold;
   text-decoration: none;
+  margin-left: 5px;
   margin-right: 5px;
 }
 
-.login-link:hover { text-decoration: underline; }
+.login-link:hover { 
+  text-decoration: underline; 
+}
 
+/* Responsive */
 @media (max-width: 768px) {
-  .auth-card { flex-direction: column; }
-  .auth-sidebar, .auth-form-container { width: 100%; }
-  .form-row { flex-direction: column; gap: 0; }
+  .auth-card,
+  [dir="rtl"] .auth-card,
+  [dir="ltr"] .auth-card { 
+    flex-direction: column; 
+  }
+  .auth-sidebar, 
+  .auth-form-container { 
+    width: 100%; 
+  }
+  .form-row { 
+    flex-direction: column; 
+    gap: 0; 
+  }
 }
