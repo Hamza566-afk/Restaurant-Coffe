@@ -1,14 +1,28 @@
-<div class="otp-container">
-  <div class="otp-card">
-    <h2>تأكيد رمز الدخول (OTP)</h2>
-    <p>تم إرسال كود متكون من 6 أرقام إلى بريدك: <strong>{{ email }}</strong></p>
+<!-- أزرار تغيير اللغة -->
+<div class="lang-selector">
+  <button [class.active]="langService.lang() === 'ar'" (click)="langService.setLanguage('ar')">العربية</button>
+  <button [class.active]="langService.lang() === 'fr'" (click)="langService.setLanguage('fr')">Français</button>
+  <button [class.active]="langService.lang() === 'en'" (click)="langService.setLanguage('en')">English</button>
+</div>
 
-    <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-    <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+<!-- العناوين والترجمة -->
+<h2>{{ langService.t('auth.otpTitle') }}</h2>
+<p class="subtitle">
+  {{ langService.t('auth.otpSubtitle') }}
+  <br><strong>{{ email }}</strong>
+</p>
 
-    <input type="text" maxlength="6" [(ngModel)]="otpCode" placeholder="X X X X X X" class="otp-input" />
+<!-- الأزرار -->
+<button (click)="onVerify()" [disabled]="isLoading" class="btn-primary">
+  {{ isLoading ? '...' : langService.t('auth.verifyBtn') }}
+</button>
 
-    <button (click)="onVerify()" class="btn-verify">تأكيد الدخول</button>
-    <button (click)="resendOtp()" class="btn-resend">إعادة إرسال الكود</button>
-  </div>
+<button (click)="resendOtp()" class="btn-secondary">
+  {{ langService.t('auth.resendBtn') }}
+</button>
+
+<!-- القسم الغامق -->
+<div class="side-content">
+  <h3>{{ langService.t('auth.otpSideTitle') }}</h3>
+  <p>{{ langService.t('auth.otpSideDesc') }}</p>
 </div>

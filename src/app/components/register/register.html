@@ -1,43 +1,51 @@
-<div class="auth-wrapper" dir="rtl">
+<div class="auth-wrapper" [dir]="langService.isRtl() ? 'rtl' : 'ltr'">
   <div class="auth-card">
     
     <!-- Sidebar -->
     <div class="auth-sidebar">
-      <div class="brand-badge">Café SaaS</div>
+      <div class="brand-badge">{{ langService.t('brand.name') }}</div>
       <div class="sidebar-content">
-        <h2>إنشاء حساب جديد</h2>
-        <p>انضم إلينا وابدأ في إدارة مقهاك، طلباتك، واشتراكاتك بأسلوب عصري وذكي.</p>
+        <h2>{{ langService.t('auth.sidebarRegisterTitle') }}</h2>
+        <p>{{ langService.t('auth.sidebarRegisterDesc') }}</p>
       </div>
       <div class="sidebar-footer">
-        &copy; 2026 Hadded Holding. جميع الحقوق محفوظة.
+        &copy; 2026 Hadded Holding. {{ langService.t('auth.rights') }}
       </div>
     </div>
 
-    <!-- Form -->
+    <!-- Form Container -->
     <div class="auth-form-container">
-      <h3>تسجيل محل جديد</h3>
-      <p class="sub-title">يرجى تعبئة البيانات التالية لإنشاء حسابك</p>
+      
+      <!-- Selector de Langue -->
+      <div class="lang-selector">
+        <button type="button" [class.active]="langService.lang() === 'ar'" (click)="langService.setLanguage('ar')">العربية</button>
+        <button type="button" [class.active]="langService.lang() === 'fr'" (click)="langService.setLanguage('fr')">Français</button>
+        <button type="button" [class.active]="langService.lang() === 'en'" (click)="langService.setLanguage('en')">English</button>
+      </div>
+
+      <h3>{{ langService.t('auth.registerTitle') }}</h3>
+      <p class="sub-title">{{ langService.t('auth.registerSub') }}</p>
 
       <form (submit)="onRegister()" #regForm="ngForm">
         
         <div class="form-row">
           <div class="form-group">
-            <label>الاسم الكامل *</label>
+            <label>* {{ langService.t('auth.fullNameLabel') }}</label>
             <input 
               [(ngModel)]="userData.name" 
               name="name" 
               type="text" 
-              placeholder="مثال: حمزة" 
+              [placeholder]="langService.t('auth.fullNamePlaceholder')" 
               required 
             />
           </div>
           <div class="form-group">
-            <label>البريد الإلكتروني *</label>
+            <label>* {{ langService.t('auth.emailLabel') }}</label>
             <input 
               [(ngModel)]="userData.email" 
               name="email" 
               type="email" 
-              placeholder="example@domain.com" 
+              [placeholder]="langService.t('auth.emailPlaceholder')" 
               required 
             />
           </div>
@@ -45,30 +53,31 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label>اسم المحل / المقاهي *</label>
+            <label>* {{ langService.t('auth.cafeNameLabel') }}</label>
             <input 
               [(ngModel)]="userData.shop_name" 
               name="shop_name" 
               type="text" 
-              placeholder="Café Hadded" 
+              [placeholder]="langService.t('auth.cafeNamePlaceholder')" 
               required 
             />
           </div>
           <div class="form-group">
-            <label>النطاق الفرعي (Subdomain) *</label>
+            <label>* {{ langService.t('auth.subdomainLabel') }}</label>
             <input 
               [(ngModel)]="userData.subdomain" 
               name="subdomain" 
               type="text" 
-              placeholder="cafe-hadded" 
+              [placeholder]="langService.t('auth.subdomainPlaceholder')" 
               required 
             />
           </div>
         </div>
 
         <div class="form-row">
+          <!-- Password Field with SVG Eye -->
           <div class="form-group">
-            <label>كلمة السر *</label>
+            <label>* {{ langService.t('auth.passwordLabel') }}</label>
             <div class="password-input-wrapper">
               <input 
                 [(ngModel)]="userData.password" 
@@ -77,14 +86,22 @@
                 placeholder="••••••••" 
                 required 
               />
-              <button type="button" class="toggle-password-btn" (click)="togglePassword()">
-                {{ showPassword ? '🙈' : '👁️' }}
+              <button type="button" class="toggle-password-btn" (click)="togglePassword()" [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+                <svg *ngIf="!showPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg *ngIf="showPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
               </button>
             </div>
           </div>
 
+          <!-- Confirm Password Field with SVG Eye -->
           <div class="form-group">
-            <label>تأكيد كلمة السر *</label>
+            <label>* {{ langService.t('auth.confirmPasswordLabel') }}</label>
             <div class="password-input-wrapper">
               <input 
                 [(ngModel)]="userData.password_confirmation" 
@@ -93,15 +110,22 @@
                 placeholder="••••••••" 
                 required 
               />
-              <button type="button" class="toggle-password-btn" (click)="toggleConfirmPassword()">
-                {{ showConfirmPassword ? '🙈' : '👁️' }}
+              <button type="button" class="toggle-password-btn" (click)="toggleConfirmPassword()" [attr.aria-label]="showConfirmPassword ? 'Hide password' : 'Show password'">
+                <svg *ngIf="!showConfirmPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg *ngIf="showConfirmPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
               </button>
             </div>
           </div>
         </div>
 
         <div class="form-group">
-          <label>شعار المحل (اختياري)</label>
+          <label>{{ langService.t('auth.logoLabel') }}</label>
           <input 
             type="file" 
             (change)="onFileSelected($event)" 
@@ -118,12 +142,12 @@
           [disabled]="!regForm.valid || !isCaptchaValid || isLoading"
           class="submit-btn"
         >
-          {{ isLoading ? 'جاري التسجيل...' : 'إنشاء الحساب' }}
+          {{ isLoading ? langService.t('auth.registering') : langService.t('auth.registerBtn') }}
         </button>
 
         <div class="form-footer">
-          <span>لديك حساب بالفعل؟</span>
-          <a routerLink="/login" class="login-link">تسجيل الدخول</a>
+          <span>{{ langService.t('auth.hasAccount') }}</span>
+          <a routerLink="/login-owner" class="login-link">{{ langService.t('auth.loginBtn') }}</a>
         </div>
 
       </form>

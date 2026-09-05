@@ -1,20 +1,21 @@
 <div class="captcha-container">
-  <label class="captcha-label">رمز الأمان (Captcha) *</label>
-  <div class="captcha-box">
-    <div class="captcha-display">
-      <span class="captcha-text">{{ captchaCode }}</span>
+  <label class="captcha-label">
+    * {{ langService.t('auth.captchaLabel') }}
+  </label>
+  
+  <div class="captcha-input-group">
+    <div class="captcha-code-box">
+      {{ captchaCode }}
     </div>
-
-    <button type="button" (click)="generateCaptcha()" title="تحديث الرمز" class="refresh-btn">
+    
+    <button type="button" class="refresh-btn" (click)="generateCaptcha()">
       🔄
     </button>
 
-    <input
-      type="text"
-      maxLength="5"
+    <input 
+      type="text" 
       [(ngModel)]="userInput"
       (input)="validate()"
-      placeholder="5 رموز"
       class="captcha-input"
     />
   </div>

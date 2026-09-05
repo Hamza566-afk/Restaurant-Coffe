@@ -1,0 +1,203 @@
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  font-family: inherit;
+  padding: 20px;
+}
+
+.auth-card {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* القسم الأبيض */
+.auth-main {
+  flex: 1.2;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+}
+
+.lang-selector {
+  display: flex;
+  gap: 8px;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 8px;
+  width: fit-content;
+  margin-bottom: 24px;
+}
+
+.lang-selector button {
+  border: none;
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.lang-selector button.active {
+  background: #0d9488;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.subtitle strong {
+  color: #0f172a;
+}
+
+/* خانات الـ OTP الستة */
+.otp-boxes {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  direction: ltr; /* لترتيب الخانات من اليسار لليمين دائماً */
+  margin-bottom: 24px;
+}
+
+.otp-box {
+  width: 50px;
+  height: 56px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  background-color: #f8fafc;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.otp-box:focus {
+  border-color: #0d9488;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+
+/* الأزرار والتنبيهات */
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  background: #0d9488;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 12px;
+}
+
+.btn-primary:hover {
+  background: #0f766e;
+}
+
+.btn-secondary {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.alert {
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.alert-danger {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.alert-success {
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+/* القسم الغامق */
+.auth-side {
+  flex: 1;
+  background: linear-gradient(135deg, #022c22 0%, #064e3b 100%);
+  color: white;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.brand-badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 14px;
+  border-radius: 20px;
+  width: fit-content;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.side-content h3 {
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+
+.side-content p {
+  color: #a7f3d0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.copyright {
+  font-size: 12px;
+  color: #6ee7b7;
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .auth-card {
+    flex-direction: column;
+  }
+  .auth-side {
+    display: none;
+  }
+}

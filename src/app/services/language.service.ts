@@ -4,7 +4,7 @@ export type Language = 'ar' | 'fr' | 'en';
 
 const TRANSLATIONS: Record<Language, Record<string, string>> = {
   ar: {
-    // Auth Keys
+    // Auth Keys - Login
     'auth.loginTitle': 'تسجيل الدخول',
     'auth.loginSub': 'أدخل بيانات حسابك المعتمدة للدخول',
     'auth.emailLabel': 'البريد الإلكتروني',
@@ -17,6 +17,28 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'auth.sidebarLoginTitle': 'مرحباً بك مجدداً',
     'auth.sidebarLoginDesc': 'سجّل الدخول للوصول إلى لوحة تحكم مقهاك ومتابعة المبيعات والطلبات بكل سهولة.',
     'auth.rights': 'جميع الحقوق محفوظة.',
+
+    // Auth Keys - Register
+    'auth.registerTitle': 'تسجيل محل جديد',
+    'auth.registerSub': 'يرجى تعبئة البيانات التالية لإنشاء حسابك',
+    'auth.fullNameLabel': 'الاسم الكامل',
+    'auth.fullNamePlaceholder': 'مثال: حمزة',
+    'auth.emailPlaceholder': 'example@domain.com',
+    'auth.cafeNameLabel': 'اسم المحل / المقاهي',
+    'auth.cafeNamePlaceholder': 'Café Hadded',
+    'auth.subdomainLabel': 'النطاق الفرعي (Subdomain)',
+    'auth.subdomainPlaceholder': 'cafe-hadded',
+    'auth.confirmPasswordLabel': 'تأكيد كلمة السر',
+    'auth.logoLabel': 'شعار المحل (اختياري)',
+    'auth.logoBrowse': 'Browse...',
+    'auth.logoNoFile': 'No file selected.',
+    'auth.captchaLabel': 'رمز الأمان (Captcha)',
+    'auth.captchaPlaceholder': '5 رموز',
+    'auth.registerBtn': 'إنشاء الحساب',
+    'auth.registering': 'جاري التسجيل...',
+    'auth.hasAccount': 'لديك حساب بالفعل؟',
+    'auth.sidebarRegisterTitle': 'إنشاء حساب جديد',
+    'auth.sidebarRegisterDesc': 'انضم إلينا وابدأ في إدارة مقهاك، طلباتك، واشتراكاتك بأسلوب عصري وذكي.',
 
     // Legal & Dashboard
     'legal.title': 'الشروط العامة والملكية الفكرية',
@@ -171,9 +193,21 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorInvalidNumber': 'الرجاء إدخال عدد طاولات صحيح.',
     'qr.errorAddTables': 'تعذر إضافة الطاولات.',
     'qr.errorDeleteTables': 'فشل في حذف الطاولة.',
-  },
+
+    'auth.otpTitle': 'تأكيد رمز الدخول (OTP)',
+    'auth.otpSubtitle': 'تم إرسال كود متكون من 6 أرقام إلى بريدك:',
+    'auth.verifyBtn': 'تأكيد الدخول',
+    'auth.resendBtn': 'إعادة إرسال الكود',
+    'auth.otpSideTitle': 'حماية حسابك',
+    'auth.otpSideDesc': 'الرجاء إدخال الرمز السري لتأكيد الهوية والوصول إلى لوحة التحكم الخاصة بك.',
+    'auth.otpIncompleteError': 'الرجاء إدخال كود متكون من 6 أرقام',
+
+    'auth.passwordMismatch': 'كلمة السر وتأكيد كلمة السر غير متطابقين',
+    'auth.registerError': 'حدث خطأ في عملية التسجيل، يرجى إعادة المحاولة',
+    'auth.serverError': 'خطأ في الاتصال بالخادم، يرجى التثبت من الشبكة',
+      },
   fr: {
-    // Auth Keys
+    // Auth Keys - Login
     'auth.loginTitle': 'Connexion',
     'auth.loginSub': 'Entrez vos identifiants pour continuer',
     'auth.emailLabel': 'Adresse e-mail',
@@ -186,6 +220,28 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'auth.sidebarLoginTitle': 'Bon retour !',
     'auth.sidebarLoginDesc': 'Connectez-vous pour accéder au panneau de contrôle de votre café.',
     'auth.rights': 'Tous droits réservés.',
+
+    // Auth Keys - Register
+    'auth.registerTitle': 'Inscrire un nouvel établissement',
+    'auth.registerSub': 'Veuillez remplir les informations suivantes pour créer votre compte',
+    'auth.fullNameLabel': 'Nom complet',
+    'auth.fullNamePlaceholder': 'Ex: Hamza',
+    'auth.emailPlaceholder': 'example@domain.com',
+    'auth.cafeNameLabel': 'Nom du café / Établissement',
+    'auth.cafeNamePlaceholder': 'Café Hadded',
+    'auth.subdomainLabel': 'Sous-domaine (Subdomain)',
+    'auth.subdomainPlaceholder': 'cafe-hadded',
+    'auth.confirmPasswordLabel': 'Confirmer le mot de passe',
+    'auth.logoLabel': 'Logo du café (Optionnel)',
+    'auth.logoBrowse': 'Parcourir...',
+    'auth.logoNoFile': 'Aucun fichier sélectionné.',
+    'auth.captchaLabel': 'Code de sécurité (Captcha)',
+    'auth.captchaPlaceholder': '5 caractères',
+    'auth.registerBtn': 'Créer le compte',
+    'auth.registering': 'Inscription en cours...',
+    'auth.hasAccount': 'Vous avez déjà un compte ?',
+    'auth.sidebarRegisterTitle': 'Créer un nouveau compte',
+    'auth.sidebarRegisterDesc': 'Rejoignez-nous et commencez à gérer votre café, vos commandes et vos abonnements de manière moderne et intelligente.',
 
     'legal.title': 'Conditions Générales & Propriété Intellectuelle',
     'legal.sub': 'Veuillez lire attentivement nos conditions avant d\'utiliser la plateforme',
@@ -339,9 +395,21 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorInvalidNumber': 'Veuillez saisir un nombre de tables valide.',
     'qr.errorAddTables': 'Impossible d\'ajouter les tables.',
     'qr.errorDeleteTables': 'Échec de la suppression de la table.',
+
+    'auth.otpTitle': 'Vérification OTP',
+    'auth.otpSubtitle': 'Un code à 6 chiffres a été envoyé à votre adresse e-mail :',
+    'auth.verifyBtn': 'Vérifier et Se connecter',
+    'auth.resendBtn': 'Renvoyer le code',
+    'auth.otpSideTitle': 'Sécurité de votre compte',
+    'auth.otpSideDesc': 'Veuillez saisir le code de sécurité pour vérifier votre identité et accéder au panneau de contrôle.',
+    'auth.otpIncompleteError': 'Veuillez saisir un code à 6 chiffres',
+
+    'auth.passwordMismatch': 'Le mot de passe et sa confirmation ne correspondent pas',
+    'auth.registerError': 'Une erreur est survenue lors de l\'inscription, veuillez réessayer',
+    'auth.serverError': 'Erreur de connexion au serveur, veuillez vérifier votre réseau',
   },
   en: {
-    // Auth Keys
+    // Auth Keys - Login
     'auth.loginTitle': 'Sign In',
     'auth.loginSub': 'Enter your credentials to continue',
     'auth.emailLabel': 'Email Address',
@@ -354,6 +422,28 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'auth.sidebarLoginTitle': 'Welcome back!',
     'auth.sidebarLoginDesc': 'Log in to access your coffee shop dashboard.',
     'auth.rights': 'All rights reserved.',
+
+    // Auth Keys - Register
+    'auth.registerTitle': 'Register New Shop',
+    'auth.registerSub': 'Please fill in the following details to create your account',
+    'auth.fullNameLabel': 'Full Name',
+    'auth.fullNamePlaceholder': 'e.g. Hamza',
+    'auth.emailPlaceholder': 'example@domain.com',
+    'auth.cafeNameLabel': 'Shop / Cafe Name',
+    'auth.cafeNamePlaceholder': 'Café Hadded',
+    'auth.subdomainLabel': 'Subdomain',
+    'auth.subdomainPlaceholder': 'cafe-hadded',
+    'auth.confirmPasswordLabel': 'Confirm Password',
+    'auth.logoLabel': 'Shop Logo (Optional)',
+    'auth.logoBrowse': 'Browse...',
+    'auth.logoNoFile': 'No file selected.',
+    'auth.captchaLabel': 'Security Code (Captcha)',
+    'auth.captchaPlaceholder': '5 characters',
+    'auth.registerBtn': 'Create Account',
+    'auth.registering': 'Registering...',
+    'auth.hasAccount': 'Already have an account?',
+    'auth.sidebarRegisterTitle': 'Create New Account',
+    'auth.sidebarRegisterDesc': 'Join us and start managing your cafe, orders, and subscriptions in a modern and smart way.',
 
     'legal.title': 'Terms of Service & Intellectual Property',
     'legal.sub': 'Please read our terms carefully before using the platform',
@@ -507,6 +597,18 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorInvalidNumber': 'Please enter a valid number of tables.',
     'qr.errorAddTables': 'Failed to add tables.',
     'qr.errorDeleteTables': 'Failed to delete the table.',
+
+    'auth.otpTitle': 'OTP Verification',
+    'auth.otpSubtitle': 'A 6-digit code has been sent to your email:',
+    'auth.verifyBtn': 'Verify & Login',
+    'auth.resendBtn': 'Resend Code',
+    'auth.otpSideTitle': 'Account Security',
+    'auth.otpSideDesc': 'Please enter the security code to verify your identity and access your dashboard.',
+    'auth.otpIncompleteError': 'Please enter a valid 6-digit code',
+
+    'auth.passwordMismatch': 'Password and confirm password do not match',
+    'auth.registerError': 'Registration failed, please try again',
+    'auth.serverError': 'Server connection error, please check your network',
   },
 };
 

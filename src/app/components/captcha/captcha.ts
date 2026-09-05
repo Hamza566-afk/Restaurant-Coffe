@@ -1,6 +1,7 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LanguageService } from '../../services/language.service'; // تثبت من مسار الـ service حسب مشروعك
 
 @Component({
   selector: 'app-captcha',
@@ -10,6 +11,9 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./captcha.css']
 })
 export class CaptchaComponent implements OnInit {
+  // 1. إدخال الـ LanguageService باش يشوفها الـ HTML
+  public langService = inject(LanguageService);
+
   captchaCode = '';
   userInput = '';
   @Output() isValid = new EventEmitter<boolean>();

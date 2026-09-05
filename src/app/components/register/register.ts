@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { CaptchaComponent } from '../captcha/captcha';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-register',
@@ -13,6 +14,8 @@ import { CaptchaComponent } from '../captcha/captcha';
   styleUrls: ['./register.css']
 })
 export class RegisterComponent {
+  public langService = inject(LanguageService);
+
   userData = {
     name: '',
     email: '',
@@ -30,15 +33,15 @@ export class RegisterComponent {
 
   constructor(private authService: AuthService, private router: Router) {}
 
-  togglePassword() {
+  togglePassword(): void {
     this.showPassword = !this.showPassword;
   }
 
-  toggleConfirmPassword() {
+  toggleConfirmPassword(): void {
     this.showConfirmPassword = !this.showConfirmPassword;
   }
 
-  onCaptchaStatusChange(status: boolean) {
+  onCaptchaStatusChange(status: boolean): void {
     this.isCaptchaValid = status;
   }
 
@@ -55,7 +58,7 @@ export class RegisterComponent {
     if (!this.isCaptchaValid) return;
 
     if (this.userData.password !== this.userData.password_confirmation) {
-      alert('كلمة السر وتأكيد كلمة السر غير متطابقين');
+      alert(this.langService.t('auth.passwordMismatch'));
       return;
     }
 
@@ -81,13 +84,14 @@ export class RegisterComponent {
           },
           error: (err) => {
             this.isLoading = false;
-            alert(err?.error?.message ?? 'خطأ في التسجيل');
+            const errorMsg = err?.error?.message || this.langService.t('auth.registerError');
+            alert(errorMsg);
           }
         });
       },
       error: () => {
         this.isLoading = false;
-        alert('خطأ في الاتصال بالخادم');
+        alert(this.langService.t('auth.serverError'));
       }
     });
   }
