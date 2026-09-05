@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { CommonModule } from '@angular/common';
-import { LanguageService } from '../../services/language.service'; // ثبت في المسار
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-verify-otp',
@@ -20,6 +20,7 @@ export class VerifyOtpComponent implements OnInit {
   errorMessage: string = '';
   successMessage: string = '';
   isLoading: boolean = false;
+  isResending: boolean = false;
 
   constructor(
     private authService: AuthService, 
@@ -36,7 +37,7 @@ export class VerifyOtpComponent implements OnInit {
     });
   }
 
-  // التحكم في التنقل التلقائي بين الخانات
+  // التحكم في التنقل التلقائي بين الخانات عند الكتابة
   onDigitInput(event: any, index: number): void {
     const input = event.target;
     const val = input.value;
@@ -56,8 +57,8 @@ export class VerifyOtpComponent implements OnInit {
     }
   }
 
+  // العودة للخانة السابقة عند الضغط على Backspace
   onKeyDown(event: KeyboardEvent, index: number): void {
-    // العودة للخانة السابقة عند الضغط على Backspace
     if (event.key === 'Backspace' && !this.otpDigits[index] && index > 0) {
       const prevInput = (event.target as HTMLElement).previousElementSibling as HTMLInputElement;
       if (prevInput) {
@@ -66,6 +67,7 @@ export class VerifyOtpComponent implements OnInit {
     }
   }
 
+  // دعم لشق الكود كاملاً (Paste)
   onPaste(event: ClipboardEvent): void {
     event.preventDefault();
     const pastedData = event.clipboardData?.getData('text').trim() || '';
@@ -74,6 +76,11 @@ export class VerifyOtpComponent implements OnInit {
         this.otpDigits[i] = pastedData[i];
       }
     }
+  }
+
+  // التثبت هل تم ملء الخانات الستة بالكامل
+  isOtpComplete(): boolean {
+    return this.otpDigits.every(d => d !== null && d !== undefined && d.trim() !== '');
   }
 
   onVerify(): void {
@@ -106,23 +113,26 @@ export class VerifyOtpComponent implements OnInit {
       },
       error: (err: any) => {
         this.isLoading = false;
-        this.errorMessage = err?.error?.message || 'رمز التحقق غير صحيح أو انتهت صلاحيته';
+        this.errorMessage = err?.error?.message || this.langService.t('auth.otpInvalidError') || 'رمز التحقق غير صحيح أو انتهت صلاحيته';
       }
     });
   }
 
   resendOtp(): void {
-    if (!this.email) return;
+    if (!this.email || this.isResending) return;
 
+    this.isResending = true;
     this.errorMessage = '';
     this.successMessage = '';
 
     this.authService.sendOtp(this.email).subscribe({
       next: () => {
-        this.successMessage = 'تم إعادة إرسال الكود بنجاح إلى بريدك';
+        this.isResending = false;
+        this.successMessage = this.langService.t('auth.otpResendSuccess') || 'تم إعادة إرسال الكود بنجاح إلى بريدك';
       },
       error: (err: any) => {
-        this.errorMessage = err?.error?.message || 'فشل في إعادة الإرسال، حاول لاحقاً';
+        this.isResending = false;
+        this.errorMessage = err?.error?.message || this.langService.t('auth.otpResendError') || 'فشل في إعادة الإرسال، حاول لاحقاً';
       }
     });
   }

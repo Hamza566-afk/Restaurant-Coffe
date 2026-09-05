@@ -1,28 +1,71 @@
-<!-- أزرار تغيير اللغة -->
-<div class="lang-selector">
-  <button [class.active]="langService.lang() === 'ar'" (click)="langService.setLanguage('ar')">العربية</button>
-  <button [class.active]="langService.lang() === 'fr'" (click)="langService.setLanguage('fr')">Français</button>
-  <button [class.active]="langService.lang() === 'en'" (click)="langService.setLanguage('en')">English</button>
-</div>
+<div class="auth-page" [dir]="langService.isRtl() ? 'rtl' : 'ltr'">
+  <div class="auth-card">
+    
+    <!-- القسم الأبيض (Form) -->
+    <div class="auth-main">
+      
+      <!-- أزرار تغيير اللغة -->
+      <div class="lang-selector">
+        <button type="button" [class.active]="langService.lang() === 'ar'" (click)="langService.setLanguage('ar')">العربية</button>
+        <button type="button" [class.active]="langService.lang() === 'fr'" (click)="langService.setLanguage('fr')">Français</button>
+        <button type="button" [class.active]="langService.lang() === 'en'" (click)="langService.setLanguage('en')">English</button>
+      </div>
 
-<!-- العناوين والترجمة -->
-<h2>{{ langService.t('auth.otpTitle') }}</h2>
-<p class="subtitle">
-  {{ langService.t('auth.otpSubtitle') }}
-  <br><strong>{{ email }}</strong>
-</p>
+      <!-- العناوين والترجمة -->
+      <h2>{{ langService.t('auth.otpTitle') }}</h2>
+      <p class="subtitle">
+        {{ langService.t('auth.otpSubtitle') }}
+        <br><strong>{{ email }}</strong>
+      </p>
 
-<!-- الأزرار -->
-<button (click)="onVerify()" [disabled]="isLoading" class="btn-primary">
-  {{ isLoading ? '...' : langService.t('auth.verifyBtn') }}
-</button>
+      <!-- تنبيهات الأخطاء والنجاح -->
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+      <div *ngIf="successMessage" class="alert alert-success">
+        {{ successMessage }}
+      </div>
 
-<button (click)="resendOtp()" class="btn-secondary">
-  {{ langService.t('auth.resendBtn') }}
-</button>
+      <form (submit)="onVerify()">
+        <!-- خانات إدخال الـ OTP الستة -->
+        <div class="otp-boxes" dir="ltr" (paste)="onPaste($event)">
+          <input 
+            *ngFor="let digit of otpDigits; let i = index" 
+            type="text" 
+            maxlength="1" 
+            class="otp-box"
+            [(ngModel)]="otpDigits[i]" 
+            [name]="'otp' + i"
+            (input)="onDigitInput($event, i)"
+            (keydown)="onKeyDown($event, i)"
+            inputmode="numeric"
+            autocomplete="off"
+          />
+        </div>
 
-<!-- القسم الغامق -->
-<div class="side-content">
-  <h3>{{ langService.t('auth.otpSideTitle') }}</h3>
-  <p>{{ langService.t('auth.otpSideDesc') }}</p>
+        <!-- الأزرار -->
+        <button type="submit" [disabled]="isLoading || !isOtpComplete()" class="btn-primary">
+          {{ isLoading ? '...' : langService.t('auth.verifyBtn') }}
+        </button>
+
+        <button type="button" (click)="resendOtp()" [disabled]="isResending" class="btn-secondary">
+          {{ isResending ? '...' : langService.t('auth.resendBtn') }}
+        </button>
+      </form>
+
+    </div>
+
+    <!-- القسم الغامق (Sidebar) -->
+    <div class="auth-side">
+      <div class="brand-badge">Café SaaS</div>
+      <div class="side-content">
+        <h3>{{ langService.t('auth.otpSideTitle') }}</h3>
+        <p>{{ langService.t('auth.otpSideDesc') }}</p>
+      </div>
+      <div class="copyright">
+        &copy; 2026 Hadded Holding. {{ langService.t('auth.rights') }}
+      </div>
+    </div>
+
+  </div>
 </div>
