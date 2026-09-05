@@ -231,7 +231,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'auth.cafeNamePlaceholder': 'Café Hadded',
     'auth.subdomainLabel': 'Sous-domaine (Subdomain)',
     'auth.subdomainPlaceholder': 'cafe-hadded',
-    'auth.confirmPasswordLabel': 'Confirmer le mot de passe',
+    'auth.confirmPasswordLabel': 'Confirmer mot de passe',
     'auth.logoLabel': 'Logo du café (Optionnel)',
     'auth.logoBrowse': 'Parcourir...',
     'auth.logoNoFile': 'Aucun fichier sélectionné.',
