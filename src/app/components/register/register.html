@@ -35,7 +35,6 @@
               [(ngModel)]="userData.name" 
               name="name" 
               type="text" 
-              [placeholder]="langService.t('auth.fullNamePlaceholder')" 
               required 
             />
           </div>
@@ -58,7 +57,6 @@
               [(ngModel)]="userData.shop_name" 
               name="shop_name" 
               type="text" 
-              [placeholder]="langService.t('auth.cafeNamePlaceholder')" 
               required 
             />
           </div>
@@ -68,7 +66,6 @@
               [(ngModel)]="userData.subdomain" 
               name="subdomain" 
               type="text" 
-              [placeholder]="langService.t('auth.subdomainPlaceholder')" 
               required 
             />
           </div>
@@ -82,8 +79,7 @@
               <input 
                 [(ngModel)]="userData.password" 
                 name="password" 
-                [type]="showPassword ? 'text' : 'password'" 
-                placeholder="••••••••" 
+                [type]="showPassword ? 'text' : 'password'"
                 required 
               />
               <button type="button" class="toggle-password-btn" (click)="togglePassword()" [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
@@ -107,7 +103,6 @@
                 [(ngModel)]="userData.password_confirmation" 
                 name="password_confirmation" 
                 [type]="showConfirmPassword ? 'text' : 'password'" 
-                placeholder="••••••••" 
                 required 
               />
               <button type="button" class="toggle-password-btn" (click)="toggleConfirmPassword()" [attr.aria-label]="showConfirmPassword ? 'Hide password' : 'Show password'">
