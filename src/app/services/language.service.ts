@@ -194,6 +194,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorAddTables': 'تعذر إضافة الطاولات.',
     'qr.errorDeleteTables': 'فشل في حذف الطاولة.',
 
+    // OTP Keys
     'auth.otpTitle': 'تأكيد رمز الدخول (OTP)',
     'auth.otpSubtitle': 'تم إرسال كود متكون من 6 أرقام إلى بريدك:',
     'auth.verifyBtn': 'تأكيد الدخول',
@@ -201,12 +202,14 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'auth.otpSideTitle': 'حماية حسابك',
     'auth.otpSideDesc': 'الرجاء إدخال الرمز السري لتأكيد الهوية والوصول إلى لوحة التحكم الخاصة بك.',
     'auth.otpIncompleteError': 'الرجاء إدخال كود متكون من 6 أرقام',
+    'auth.otpInvalidError': 'رمز التحقق غير صحيح أو انتهت صلاحيته',
+    'auth.otpResendSuccess': 'تم إعادة إرسال الكود بنجاح إلى بريدك',
+    'auth.otpResendError': 'فشل في إعادة الإرسال، حاول لاحقاً',
 
     'auth.passwordMismatch': 'كلمة السر وتأكيد كلمة السر غير متطابقين',
     'auth.registerError': 'حدث خطأ في عملية التسجيل، يرجى إعادة المحاولة',
     'auth.serverError': 'خطأ في الاتصال بالخادم، يرجى التثبت من الشبكة',
-
-      },
+  },
   fr: {
     // Auth Keys - Login
     'auth.loginTitle': 'Connexion',
@@ -397,6 +400,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorAddTables': 'Impossible d\'ajouter les tables.',
     'qr.errorDeleteTables': 'Échec de la suppression de la table.',
 
+    // OTP Keys
     'auth.otpTitle': 'Vérification OTP',
     'auth.otpSubtitle': 'Un code à 6 chiffres a été envoyé à votre adresse e-mail :',
     'auth.verifyBtn': 'Vérifier et Se connecter',
@@ -404,6 +408,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'auth.otpSideTitle': 'Sécurité de votre compte',
     'auth.otpSideDesc': 'Veuillez saisir le code de sécurité pour vérifier votre identité et accéder au panneau de contrôle.',
     'auth.otpIncompleteError': 'Veuillez saisir un code à 6 chiffres',
+    'auth.otpInvalidError': 'Code de vérification incorrect ou expiré',
+    'auth.otpResendSuccess': 'Code renvoyé avec succès à votre adresse e-mail',
+    'auth.otpResendError': 'Échec de l\'envoi du code, veuillez réessayer plus tard',
 
     'auth.passwordMismatch': 'Le mot de passe et sa confirmation ne correspondent pas',
     'auth.registerError': 'Une erreur est survenue lors de l\'inscription, veuillez réessayer',
@@ -599,6 +606,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorAddTables': 'Failed to add tables.',
     'qr.errorDeleteTables': 'Failed to delete the table.',
 
+    // OTP Keys
     'auth.otpTitle': 'OTP Verification',
     'auth.otpSubtitle': 'A 6-digit code has been sent to your email:',
     'auth.verifyBtn': 'Verify & Login',
@@ -606,6 +614,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'auth.otpSideTitle': 'Account Security',
     'auth.otpSideDesc': 'Please enter the security code to verify your identity and access your dashboard.',
     'auth.otpIncompleteError': 'Please enter a valid 6-digit code',
+    'auth.otpInvalidError': 'Invalid or expired verification code',
+    'auth.otpResendSuccess': 'Verification code successfully sent to your email',
+    'auth.otpResendError': 'Failed to resend code, please try again later',
 
     'auth.passwordMismatch': 'Password and confirm password do not match',
     'auth.registerError': 'Registration failed, please try again',

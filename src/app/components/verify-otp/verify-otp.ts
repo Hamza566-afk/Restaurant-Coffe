@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth';
@@ -14,9 +14,10 @@ import { LanguageService } from '../../services/language.service';
 })
 export class VerifyOtpComponent implements OnInit {
   public langService = inject(LanguageService);
+  private cdr = inject(ChangeDetectorRef);
 
   email: string = '';
-  otpDigits: string[] = ['', '', '', '', '', '']; // 6 خانات منفصلة
+  otpDigits: string[] = ['', '', '', '', '', ''];
   errorMessage: string = '';
   successMessage: string = '';
   isLoading: boolean = false;
@@ -37,56 +38,69 @@ export class VerifyOtpComponent implements OnInit {
     });
   }
 
-  // التحكم في التنقل التلقائي بين الخانات عند الكتابة
-  onDigitInput(event: any, index: number): void {
-    const input = event.target;
-    const val = input.value;
+  onInput(event: Event, index: number): void {
+    const input = event.target as HTMLInputElement;
+    const rawVal = input.value;
+    const digitsOnly = rawVal.replace(/\D/g, '');
 
-    // قبول أرقام فقط
-    if (!/^\d*$/.test(val)) {
+    if (digitsOnly.length > 0) {
+      const lastDigit = digitsOnly.charAt(digitsOnly.length - 1);
+      this.otpDigits[index] = lastDigit;
+      input.value = lastDigit;
+
+      if (index < 5) {
+        const nextInput = document.getElementById(`otp-input-${index + 1}`) as HTMLInputElement;
+        if (nextInput) {
+          nextInput.focus();
+          nextInput.select();
+        }
+      }
+    } else {
       this.otpDigits[index] = '';
-      return;
+      input.value = '';
     }
 
-    // التنقل للخانة الموالية عند كتابة رقم
-    if (val && index < 5) {
-      const nextInput = input.nextElementSibling;
-      if (nextInput) {
-        nextInput.focus();
-      }
-    }
+    this.cdr.detectChanges();
   }
 
-  // العودة للخانة السابقة عند الضغط على Backspace
   onKeyDown(event: KeyboardEvent, index: number): void {
-    if (event.key === 'Backspace' && !this.otpDigits[index] && index > 0) {
-      const prevInput = (event.target as HTMLElement).previousElementSibling as HTMLInputElement;
-      if (prevInput) {
-        prevInput.focus();
+    if (event.key === 'Backspace') {
+      if (!this.otpDigits[index] && index > 0) {
+        event.preventDefault();
+        const prevInput = document.getElementById(`otp-input-${index - 1}`) as HTMLInputElement;
+        if (prevInput) {
+          this.otpDigits[index - 1] = '';
+          prevInput.value = '';
+          prevInput.focus();
+          this.cdr.detectChanges();
+        }
       }
     }
   }
 
-  // دعم لشق الكود كاملاً (Paste)
   onPaste(event: ClipboardEvent): void {
     event.preventDefault();
-    const pastedData = event.clipboardData?.getData('text').trim() || '';
-    if (/^\d{6}$/.test(pastedData)) {
+    const pastedData = event.clipboardData?.getData('text').replace(/\D/g, '').trim() || '';
+    if (pastedData.length >= 6) {
       for (let i = 0; i < 6; i++) {
         this.otpDigits[i] = pastedData[i];
+        const el = document.getElementById(`otp-input-${i}`) as HTMLInputElement;
+        if (el) el.value = pastedData[i];
       }
+      const lastInput = document.getElementById(`otp-input-5`) as HTMLInputElement;
+      if (lastInput) lastInput.focus();
+      this.cdr.detectChanges();
     }
   }
 
-  // التثبت هل تم ملء الخانات الستة بالكامل
   isOtpComplete(): boolean {
-    return this.otpDigits.every(d => d !== null && d !== undefined && d.trim() !== '');
+    return this.otpDigits.every(d => d !== '' && d !== null && d !== undefined);
   }
 
   onVerify(): void {
     const fullOtp = this.otpDigits.join('');
     if (fullOtp.length !== 6) {
-      this.errorMessage = this.langService.t('auth.otpIncompleteError') || 'الرجاء إدخال كود متكون من 6 أرقام';
+      this.errorMessage = this.langService.t('auth.otpIncompleteError');
       return;
     }
 
@@ -113,7 +127,7 @@ export class VerifyOtpComponent implements OnInit {
       },
       error: (err: any) => {
         this.isLoading = false;
-        this.errorMessage = err?.error?.message || this.langService.t('auth.otpInvalidError') || 'رمز التحقق غير صحيح أو انتهت صلاحيته';
+        this.errorMessage = err?.error?.message || this.langService.t('auth.otpInvalidError');
       }
     });
   }
@@ -128,11 +142,11 @@ export class VerifyOtpComponent implements OnInit {
     this.authService.sendOtp(this.email).subscribe({
       next: () => {
         this.isResending = false;
-        this.successMessage = this.langService.t('auth.otpResendSuccess') || 'تم إعادة إرسال الكود بنجاح إلى بريدك';
+        this.successMessage = this.langService.t('auth.otpResendSuccess');
       },
       error: (err: any) => {
         this.isResending = false;
-        this.errorMessage = err?.error?.message || this.langService.t('auth.otpResendError') || 'فشل في إعادة الإرسال، حاول لاحقاً';
+        this.errorMessage = err?.error?.message || this.langService.t('auth.otpResendError');
       }
     });
   }

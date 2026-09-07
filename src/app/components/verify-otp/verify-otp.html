@@ -31,14 +31,13 @@
         <div class="otp-boxes" dir="ltr" (paste)="onPaste($event)">
           <input 
             *ngFor="let digit of otpDigits; let i = index" 
-            type="text" 
+            [id]="'otp-input-' + i"
+            type="tel" 
             maxlength="1" 
             class="otp-box"
-            [(ngModel)]="otpDigits[i]" 
-            [name]="'otp' + i"
-            (input)="onDigitInput($event, i)"
+            [value]="otpDigits[i]"
+            (input)="onInput($event, i)"
             (keydown)="onKeyDown($event, i)"
-            inputmode="numeric"
             autocomplete="off"
           />
         </div>
