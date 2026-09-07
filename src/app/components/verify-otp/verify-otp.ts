@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth';
@@ -14,7 +14,6 @@ import { LanguageService } from '../../services/language.service';
 })
 export class VerifyOtpComponent implements OnInit {
   public langService = inject(LanguageService);
-  private cdr = inject(ChangeDetectorRef);
 
   email: string = '';
   otpDigits: string[] = ['', '', '', '', '', ''];
@@ -38,16 +37,12 @@ export class VerifyOtpComponent implements OnInit {
     });
   }
 
-  onInput(event: Event, index: number): void {
-    const input = event.target as HTMLInputElement;
-    const rawVal = input.value;
-    const digitsOnly = rawVal.replace(/\D/g, '');
+  onKeyUp(event: KeyboardEvent, index: number): void {
+    const key = event.key;
 
-    if (digitsOnly.length > 0) {
-      const lastDigit = digitsOnly.charAt(digitsOnly.length - 1);
-      this.otpDigits[index] = lastDigit;
-      input.value = lastDigit;
-
+    // إذا نزل على رقم
+    if (/^\d$/.test(key)) {
+      this.otpDigits[index] = key;
       if (index < 5) {
         const nextInput = document.getElementById(`otp-input-${index + 1}`) as HTMLInputElement;
         if (nextInput) {
@@ -55,25 +50,20 @@ export class VerifyOtpComponent implements OnInit {
           nextInput.select();
         }
       }
-    } else {
-      this.otpDigits[index] = '';
-      input.value = '';
     }
-
-    this.cdr.detectChanges();
   }
 
   onKeyDown(event: KeyboardEvent, index: number): void {
     if (event.key === 'Backspace') {
       if (!this.otpDigits[index] && index > 0) {
         event.preventDefault();
+        this.otpDigits[index - 1] = '';
         const prevInput = document.getElementById(`otp-input-${index - 1}`) as HTMLInputElement;
         if (prevInput) {
-          this.otpDigits[index - 1] = '';
-          prevInput.value = '';
           prevInput.focus();
-          this.cdr.detectChanges();
         }
+      } else {
+        this.otpDigits[index] = '';
       }
     }
   }
@@ -84,17 +74,14 @@ export class VerifyOtpComponent implements OnInit {
     if (pastedData.length >= 6) {
       for (let i = 0; i < 6; i++) {
         this.otpDigits[i] = pastedData[i];
-        const el = document.getElementById(`otp-input-${i}`) as HTMLInputElement;
-        if (el) el.value = pastedData[i];
       }
       const lastInput = document.getElementById(`otp-input-5`) as HTMLInputElement;
       if (lastInput) lastInput.focus();
-      this.cdr.detectChanges();
     }
   }
 
   isOtpComplete(): boolean {
-    return this.otpDigits.every(d => d !== '' && d !== null && d !== undefined);
+    return this.otpDigits.every(d => d !== '' && d !== null && d !== undefined && d.trim() !== '');
   }
 
   onVerify(): void {

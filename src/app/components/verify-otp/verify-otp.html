@@ -1,24 +1,20 @@
 <div class="auth-page" [dir]="langService.isRtl() ? 'rtl' : 'ltr'">
   <div class="auth-card">
     
-    <!-- القسم الأبيض (Form) -->
     <div class="auth-main">
       
-      <!-- أزرار تغيير اللغة -->
       <div class="lang-selector">
         <button type="button" [class.active]="langService.lang() === 'ar'" (click)="langService.setLanguage('ar')">العربية</button>
         <button type="button" [class.active]="langService.lang() === 'fr'" (click)="langService.setLanguage('fr')">Français</button>
         <button type="button" [class.active]="langService.lang() === 'en'" (click)="langService.setLanguage('en')">English</button>
       </div>
 
-      <!-- العناوين والترجمة -->
       <h2>{{ langService.t('auth.otpTitle') }}</h2>
       <p class="subtitle">
         {{ langService.t('auth.otpSubtitle') }}
         <br><strong>{{ email }}</strong>
       </p>
 
-      <!-- تنبيهات الأخطاء والنجاح -->
       <div *ngIf="errorMessage" class="alert alert-danger">
         {{ errorMessage }}
       </div>
@@ -27,22 +23,22 @@
       </div>
 
       <form (submit)="onVerify()">
-        <!-- خانات إدخال الـ OTP الستة -->
         <div class="otp-boxes" dir="ltr" (paste)="onPaste($event)">
           <input 
             *ngFor="let digit of otpDigits; let i = index" 
             [id]="'otp-input-' + i"
-            type="tel" 
+            type="text" 
+            inputmode="numeric"
             maxlength="1" 
             class="otp-box"
-            [value]="otpDigits[i]"
-            (input)="onInput($event, i)"
+            [(ngModel)]="otpDigits[i]"
+            [name]="'otp-' + i"
+            (keyup)="onKeyUp($event, i)"
             (keydown)="onKeyDown($event, i)"
             autocomplete="off"
           />
         </div>
 
-        <!-- الأزرار -->
         <button type="submit" [disabled]="isLoading || !isOtpComplete()" class="btn-primary">
           {{ isLoading ? '...' : langService.t('auth.verifyBtn') }}
         </button>
@@ -54,7 +50,6 @@
 
     </div>
 
-    <!-- القسم الغامق (Sidebar) -->
     <div class="auth-side">
       <div class="brand-badge">Café SaaS</div>
       <div class="side-content">
