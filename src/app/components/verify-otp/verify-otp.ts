@@ -37,30 +37,39 @@ export class VerifyOtpComponent implements OnInit {
     });
   }
 
-  onKeyUp(event: KeyboardEvent, index: number): void {
-    const key = event.key;
+  onInput(event: Event, index: number): void {
+    const input = event.target as HTMLInputElement;
+    const val = input.value.replace(/\D/g, ''); // أرقام فقط
 
-    // إذا نزل على رقم
-    if (/^\d$/.test(key)) {
-      this.otpDigits[index] = key;
+    if (val.length > 0) {
+      const lastChar = val.charAt(val.length - 1);
+      this.otpDigits[index] = lastChar;
+      input.value = lastChar;
+
+      // نقل الـ Focus للخانة التالية
       if (index < 5) {
-        const nextInput = document.getElementById(`otp-input-${index + 1}`) as HTMLInputElement;
-        if (nextInput) {
-          nextInput.focus();
-          nextInput.select();
-        }
+        setTimeout(() => {
+          const nextInput = document.getElementById(`otp-input-${index + 1}`) as HTMLInputElement;
+          if (nextInput) {
+            nextInput.focus();
+            nextInput.select();
+          }
+        }, 10);
       }
+    } else {
+      this.otpDigits[index] = '';
     }
   }
 
   onKeyDown(event: KeyboardEvent, index: number): void {
     if (event.key === 'Backspace') {
-      if (!this.otpDigits[index] && index > 0) {
-        event.preventDefault();
+      const input = event.target as HTMLInputElement;
+      if (!input.value && index > 0) {
         this.otpDigits[index - 1] = '';
         const prevInput = document.getElementById(`otp-input-${index - 1}`) as HTMLInputElement;
         if (prevInput) {
           prevInput.focus();
+          prevInput.value = '';
         }
       } else {
         this.otpDigits[index] = '';
@@ -74,6 +83,8 @@ export class VerifyOtpComponent implements OnInit {
     if (pastedData.length >= 6) {
       for (let i = 0; i < 6; i++) {
         this.otpDigits[i] = pastedData[i];
+        const el = document.getElementById(`otp-input-${i}`) as HTMLInputElement;
+        if (el) el.value = pastedData[i];
       }
       const lastInput = document.getElementById(`otp-input-5`) as HTMLInputElement;
       if (lastInput) lastInput.focus();
@@ -81,7 +92,7 @@ export class VerifyOtpComponent implements OnInit {
   }
 
   isOtpComplete(): boolean {
-    return this.otpDigits.every(d => d !== '' && d !== null && d !== undefined && d.trim() !== '');
+    return this.otpDigits.every(d => d !== '' && d !== null && d !== undefined);
   }
 
   onVerify(): void {

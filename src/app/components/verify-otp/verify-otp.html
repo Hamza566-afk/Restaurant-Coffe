@@ -31,9 +31,8 @@
             inputmode="numeric"
             maxlength="1" 
             class="otp-box"
-            [(ngModel)]="otpDigits[i]"
-            [name]="'otp-' + i"
-            (keyup)="onKeyUp($event, i)"
+            [value]="otpDigits[i]"
+            (input)="onInput($event, i)"
             (keydown)="onKeyDown($event, i)"
             autocomplete="off"
           />
