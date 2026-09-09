@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth';
@@ -12,7 +12,7 @@ import { LanguageService } from '../../services/language.service';
   templateUrl: './verify-otp.html',
   styleUrls: ['./verify-otp.css']
 })
-export class VerifyOtpComponent implements OnInit {
+export class VerifyOtpComponent implements OnInit, OnDestroy {
   public langService = inject(LanguageService);
 
   email: string = '';
@@ -21,6 +21,11 @@ export class VerifyOtpComponent implements OnInit {
   successMessage: string = '';
   isLoading: boolean = false;
   isResending: boolean = false;
+
+  // ⏱️ إعدادات الـ Timer لـ 5 دقائق (300 ثانية)
+  timeLeft: number = 300; 
+  canResend: boolean = false;
+  timerInterval: any;
 
   constructor(
     private authService: AuthService, 
@@ -33,8 +38,44 @@ export class VerifyOtpComponent implements OnInit {
       this.email = params['email'] || localStorage.getItem('pending_otp_email') || '';
       if (!this.email) {
         this.router.navigate(['/login-owner']);
+      } else {
+        this.startTimer(); // بداية العد التنازلي عند فتح الصفحة
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.stopTimer(); // تنظيف الـ Interval عند الخروج من الصفحة
+  }
+
+  // ⏱️ دالة تشغيل العداد
+  startTimer(): void {
+    this.stopTimer();
+    this.timeLeft = 300; // 5 دقائق
+    this.canResend = false;
+
+    this.timerInterval = setInterval(() => {
+      if (this.timeLeft > 0) {
+        this.timeLeft--;
+      } else {
+        this.canResend = true;
+        this.stopTimer();
+      }
+    }, 1000);
+  }
+
+  // ⏱️ دالة إيقاف العداد
+  stopTimer(): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
+  }
+
+  // ⏱️ تحويل الثواني إلى صيغة دقائق وثواني (MM:SS)
+  formatTime(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   }
 
   onInput(event: Event, index: number): void {
@@ -109,6 +150,7 @@ export class VerifyOtpComponent implements OnInit {
     this.authService.verifyOtp(this.email, fullOtp).subscribe({
       next: (res: any) => {
         this.isLoading = false;
+        this.stopTimer();
         localStorage.removeItem('pending_otp_email');
 
         const shop = res?.shop;
@@ -131,7 +173,7 @@ export class VerifyOtpComponent implements OnInit {
   }
 
   resendOtp(): void {
-    if (!this.email || this.isResending) return;
+    if (!this.email || this.isResending || !this.canResend) return;
 
     this.isResending = true;
     this.errorMessage = '';
@@ -141,6 +183,7 @@ export class VerifyOtpComponent implements OnInit {
       next: () => {
         this.isResending = false;
         this.successMessage = this.langService.t('auth.otpResendSuccess');
+        this.startTimer(); // إعادة العداد لـ 5 دقائق من جديد
       },
       error: (err: any) => {
         this.isResending = false;

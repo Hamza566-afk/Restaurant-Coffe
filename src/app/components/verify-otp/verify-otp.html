@@ -38,11 +38,22 @@
           />
         </div>
 
+        <!-- ⏱️ عرض العداد التنازلي -->
+        <div class="timer-wrapper" style="text-align: center; margin: 15px 0; font-size: 14px; color: #666;">
+          <span *ngIf="!canResend">
+            ينتهي الرمز خلال: <strong style="color: #e11d48;">{{ formatTime(timeLeft) }}</strong>
+          </span>
+          <span *ngIf="canResend" style="color: #dc2626;">
+            انتهت صلاحية الرمز، يرجى إعادة الإرسال.
+          </span>
+        </div>
+
         <button type="submit" [disabled]="isLoading || !isOtpComplete()" class="btn-primary">
           {{ isLoading ? '...' : langService.t('auth.verifyBtn') }}
         </button>
 
-        <button type="button" (click)="resendOtp()" [disabled]="isResending" class="btn-secondary">
+        <!-- 🔄 زر إعادة الإرسال يتفعل فقط كي يوفى العداد (canResend = true) -->
+        <button type="button" (click)="resendOtp()" [disabled]="isResending || !canResend" class="btn-secondary">
           {{ isResending ? '...' : langService.t('auth.resendBtn') }}
         </button>
       </form>
