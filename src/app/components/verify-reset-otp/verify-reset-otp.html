@@ -1,0 +1,39 @@
+<div class="auth-page" [dir]="langService.isRtl() ? 'rtl' : 'ltr'">
+  <div class="auth-card">
+    <div class="auth-main">
+      <h2>إدخال رمز التحقق (OTP)</h2>
+      <p class="subtitle">تم إرسال رمز متكون من 6 أرقام إلى:<br><strong>{{ email }}</strong></p>
+
+      <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+      <form (submit)="onVerify()">
+        <div class="otp-boxes" dir="ltr">
+          <input 
+            *ngFor="let digit of otpDigits; let i = index" 
+            [id]="'reset-otp-' + i"
+            type="text" 
+            inputmode="numeric"
+            maxlength="1" 
+            class="otp-box"
+            [value]="otpDigits[i]"
+            (input)="onInput($event, i)"
+            (keydown)="onKeyDown($event, i)"
+            autocomplete="off"
+          />
+        </div>
+
+        <button type="submit" [disabled]="isLoading || !isOtpComplete()" class="btn-primary">
+          {{ isLoading ? 'جاري التحقق...' : 'تأكيد الرمز' }}
+        </button>
+      </form>
+    </div>
+
+    <div class="auth-side">
+      <div class="brand-badge">Café SaaS</div>
+      <div class="side-content">
+        <h3>تأكيد الهوية</h3>
+        <p>تحقق من بريدك الإلكتروني للحصول على الرمز لتأكيد ملكيتك للحساب.</p>
+      </div>
+    </div>
+  </div>
+</div>

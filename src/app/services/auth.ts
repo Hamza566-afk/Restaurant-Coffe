@@ -193,4 +193,24 @@ export class AuthService {
       sessionStorage.clear();
     } catch {}
   }
+forgotPassword(email: string) {
+  return this.http.post(`${this.apiUrl}/auth/forgot-password`, { email });
+}
+
+// 2. التحقق من الـ OTP الخاص بإعادة التعيين
+verifyResetOtp(email: string, otp: string) {
+  return this.http.post<{ message: string; reset_token: string }>(
+    `${this.apiUrl}/auth/verify-reset-otp`, 
+    { email, otp }
+  );
+}
+
+// 3. إعادة تعيين كلمة السر الجديدة
+resetPassword(email: string, reset_token: string, password: string) {
+  return this.http.post(`${this.apiUrl}/auth/reset-password`, {
+    email,
+    reset_token,
+    password
+  });
+}
 }

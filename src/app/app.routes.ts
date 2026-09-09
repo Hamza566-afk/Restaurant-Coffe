@@ -14,6 +14,9 @@ import { SubscriptionExpiredComponent } from './components/subscription-expired/
 import { MenuComponent } from './components/menu/menu';
 import { LegalTermsComponent } from './components/legal-terms/legal-terms';
 import { VerifyOtpComponent } from './components/verify-otp/verify-otp'; // 👈 إضافة الـ VerifyOtpComponent
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password';
+import { VerifyResetOtpComponent } from './components/verify-reset-otp/verify-reset-otp';
+import { ResetPasswordComponent } from './components/reset-password/reset-password';
 
 export const routes: Routes = [
   // 1. التوجيه الافتراضي
@@ -33,6 +36,10 @@ export const routes: Routes = [
 
   // ⚖️ 6. الشروط القانونية
   { path: 'legal-terms', component: LegalTermsComponent },
+
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'verify-reset-otp', component: VerifyResetOtpComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
 
   // 🚀 7. مسارات الانتظار والاشتراك المدارية بالـ Guard
   { 
