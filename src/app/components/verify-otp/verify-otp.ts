@@ -103,23 +103,31 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
     }
   }
 
-  // 🧹 تحسين زر الفسخ (Backspace) للتراجع والفسخ سلاسة وبدون مشاكل
+  // 🧹 تحسين زر الفسخ (Backspace) لفسخ الرقم والرجوع للخانة السابقة بسلاسة متواصلة
   onKeyDown(event: KeyboardEvent, index: number): void {
     if (event.key === 'Backspace') {
       const input = event.target as HTMLInputElement;
 
       if (input.value) {
-        // إذا كان بالخانة الحالية قيمة، نكتفي بفسخها
+        // 1. إذا كان بالخانة الحالية قيمة: افسخ القيمة وارجع فوراً للخانة السابقة
+        event.preventDefault();
         this.otpDigits[index] = '';
         input.value = '';
+
+        if (index > 0) {
+          const prevInput = document.getElementById(`otp-input-${index - 1}`) as HTMLInputElement;
+          if (prevInput) {
+            prevInput.focus();
+          }
+        }
       } else if (index > 0) {
-        // إذا كانت الخانة فارغة، نرجع للخانة السابقة ونفسخ ما فيها ونحول الـ Focus إليها
+        // 2. إذا كانت الخانة فارغة بالأساس: ارجع للخانة السابقة، افسخ ما فيها وحول الـ Focus إليها
         event.preventDefault();
         this.otpDigits[index - 1] = '';
         const prevInput = document.getElementById(`otp-input-${index - 1}`) as HTMLInputElement;
         if (prevInput) {
-          prevInput.focus();
           prevInput.value = '';
+          prevInput.focus();
         }
       }
     }
