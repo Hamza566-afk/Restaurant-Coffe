@@ -21,7 +21,7 @@ export class ForgotPasswordComponent {
   isLoading: boolean = false;
   errorMessage: string = '';
 
-  onSubmit() {
+  onSubmit(): void {
     if (!this.email) return;
 
     this.isLoading = true;
@@ -30,13 +30,13 @@ export class ForgotPasswordComponent {
     this.authService.forgotPassword(this.email).subscribe({
       next: () => {
         this.isLoading = false;
-        // حفظ الإيميل في Session/Local Storage للاستعمال في الصفحة التالية
+        // حفظ الإيميل في Local Storage للاستعمال في الصفحة التالية
         localStorage.setItem('reset_email', this.email);
         this.router.navigate(['/verify-reset-otp']);
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err?.error?.message || 'البريد الإلكتروني غير مسجل أو حدث خطأ';
+        this.errorMessage = err?.error?.message || this.langService.t('auth.serverError');
       }
     });
   }

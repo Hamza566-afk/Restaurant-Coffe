@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
-import { LanguageService } from '../../services/language.service';
+import { LanguageService, Language } from '../../services/language.service';
 
 @Component({
   selector: 'app-reset-password',
@@ -34,14 +34,22 @@ export class ResetPasswordComponent implements OnInit {
     }
   }
 
-  onSubmit() {
+  setLanguage(lang: Language): void {
+    this.langService.setLanguage(lang);
+  }
+
+  onSubmit(): void {
     if (this.password !== this.confirmPassword) {
-      this.errorMessage = 'كلمات السر غير متطابقة';
+      this.errorMessage = this.langService.t('auth.passwordMismatch');
       return;
     }
 
     if (this.password.length < 6) {
-      this.errorMessage = 'كلمة السر يجب أن تحتوي على 6 خانات على الأقل';
+      this.errorMessage = this.langService.lang() === 'ar' 
+        ? 'كلمة السر يجب أن تحتوي على 6 خانات على الأقل' 
+        : (this.langService.lang() === 'fr' 
+            ? 'Le mot de passe doit contenir au moins 6 caractères' 
+            : 'Password must be at least 6 characters');
       return;
     }
 
@@ -55,12 +63,12 @@ export class ResetPasswordComponent implements OnInit {
         localStorage.removeItem('reset_email');
         localStorage.removeItem('reset_token');
         
-        alert('تم تغيير كلمة السر بنجاح! يمكنك الآن تسجيل الدخول.');
+        alert(this.langService.t('auth.resetSuccessMsg'));
         this.router.navigate(['/login-owner']);
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err?.error?.message || 'حدث خطأ أثناء تغيير كلمة السر';
+        this.errorMessage = err?.error?.message || this.langService.t('auth.serverError');
       }
     });
   }

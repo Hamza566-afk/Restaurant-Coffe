@@ -53,7 +53,7 @@ export interface Order {
 export class Orders implements OnInit {
   private orderService = inject(OrderService);
   private destroyRef = inject(DestroyRef);
-  protected languageService = inject(LanguageService);
+  public languageService = inject(LanguageService);
   protected t = (key: string): string => this.languageService.t(key);
 
   /** Core reactive lists */
@@ -220,7 +220,7 @@ export class Orders implements OnInit {
   }
 
   isRtl(): boolean {
-    return document.dir === 'rtl';
+    return this.languageService.isRtl();
   }
 
   setFilter(filter: string): void {

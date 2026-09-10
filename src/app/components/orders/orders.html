@@ -1,4 +1,4 @@
-<div class="orders-page">
+<div class="orders-page" [dir]="isRtl() ? 'rtl' : 'ltr'">
   <!-- Header & Actions -->
   <div class="header-container">
     <div>
@@ -177,7 +177,7 @@
                       [disabled]="inFlight()[order.id]"
                       class="btn-next-status">
                       <span>{{ t(getNextStatusLabel(order.status)) || 'Suivant' }}</span>
-                      <i class="fas fa-chevron-right text-xs"></i>
+                      <i class="fas" [class.fa-chevron-right]="!isRtl()" [class.fa-chevron-left]="isRtl()"></i>
                     </button>
                   }
                 </td>

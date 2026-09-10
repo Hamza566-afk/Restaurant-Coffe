@@ -1,8 +1,33 @@
 <div class="auth-page" [dir]="langService.isRtl() ? 'rtl' : 'ltr'">
   <div class="auth-card">
     <div class="auth-main">
-      <h2>إدخال رمز التحقق (OTP)</h2>
-      <p class="subtitle">تم إرسال رمز متكون من 6 أرقام إلى:<br><strong>{{ email }}</strong></p>
+      <!-- Language Switcher Buttons -->
+      <div class="lang-switcher">
+        <button 
+          type="button" 
+          [class.active]="langService.lang() === 'ar'" 
+          (click)="setLanguage('ar')">
+          العربية
+        </button>
+        <button 
+          type="button" 
+          [class.active]="langService.lang() === 'fr'" 
+          (click)="setLanguage('fr')">
+          Français
+        </button>
+        <button 
+          type="button" 
+          [class.active]="langService.lang() === 'en'" 
+          (click)="setLanguage('en')">
+          English
+        </button>
+      </div>
+
+      <h2>{{ langService.t('auth.verifyResetOtpTitle') }}</h2>
+      <p class="subtitle">
+        {{ langService.t('auth.otpSubtitle') }}<br>
+        <strong>{{ email }}</strong>
+      </p>
 
       <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
 
@@ -23,16 +48,21 @@
         </div>
 
         <button type="submit" [disabled]="isLoading || !isOtpComplete()" class="btn-primary">
-          {{ isLoading ? 'جاري التحقق...' : 'تأكيد الرمز' }}
+          {{ isLoading ? langService.t('auth.loggingIn') : langService.t('auth.verifyBtn') }}
         </button>
       </form>
     </div>
 
     <div class="auth-side">
       <div class="brand-badge">Café SaaS</div>
+      
       <div class="side-content">
-        <h3>تأكيد الهوية</h3>
-        <p>تحقق من بريدك الإلكتروني للحصول على الرمز لتأكيد ملكيتك للحساب.</p>
+        <h3>{{ langService.t('auth.resetSideTitle') }}</h3>
+        <p>{{ langService.t('auth.otpSideDesc') }}</p>
+      </div>
+
+      <div class="side-footer">
+        <p>© 2026 Hadded Holding. {{ langService.t('auth.rights') }}</p>
       </div>
     </div>
   </div>

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
-import { LanguageService } from '../../services/language.service';
+import { LanguageService, Language } from '../../services/language.service';
 
 @Component({
   selector: 'app-verify-reset-otp',
@@ -27,6 +27,10 @@ export class VerifyResetOtpComponent implements OnInit {
     if (!this.email) {
       this.router.navigate(['/forgot-password']);
     }
+  }
+
+  setLanguage(lang: Language): void {
+    this.langService.setLanguage(lang);
   }
 
   onInput(event: Event, index: number): void {
@@ -88,7 +92,7 @@ export class VerifyResetOtpComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err?.error?.message || 'رمز التحقق خاطئ أو انتهت صلاحيته';
+        this.errorMessage = err?.error?.message || this.langService.t('auth.otpInvalidError');
       }
     });
   }
