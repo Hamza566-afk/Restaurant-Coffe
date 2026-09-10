@@ -22,7 +22,7 @@
         {{ successMessage }}
       </div>
 
-      <form (submit)="onVerify()">
+      <form (ngSubmit)="onVerify()">
         <div class="otp-boxes" dir="ltr" (paste)="onPaste($event)">
           <input 
             *ngFor="let digit of otpDigits; let i = index" 
@@ -38,17 +38,18 @@
           />
         </div>
 
-        <!-- ⏱️ عرض العداد التنازلي -->
+        <!-- ⏱️ عرض العداد التنازلي متوافق مع جميع اللغات -->
         <div class="timer-wrapper" style="text-align: center; margin: 15px 0; font-size: 14px; color: #666;">
           <span *ngIf="!canResend">
-            ينتهي الرمز خلال: <strong style="color: #e11d48;">{{ formatTime(timeLeft) }}</strong>
+            {{ langService.t('auth.otpExpiresIn') || 'ينتهي الرمز خلال:' }} 
+            <strong style="color: #e11d48;">{{ formatTime(timeLeft) }}</strong>
           </span>
-          <span *ngIf="canResend" style="color: #dc2626;">
-            انتهت صلاحية الرمز، يرجى إعادة الإرسال.
+          <span *ngIf="canResend" style="color: #dc2626; font-weight: 600;">
+            {{ langService.t('auth.otpExpiredMsg') || 'انتهت صلاحية الرمز، يرجى إعادة الإرسال.' }}
           </span>
         </div>
 
-        <button type="submit" [disabled]="isLoading || !isOtpComplete()" class="btn-primary">
+        <button type="submit" [disabled]="isLoading || !isOtpComplete() || (timeLeft === 0 && !canResend)" class="btn-primary">
           {{ isLoading ? '...' : langService.t('auth.verifyBtn') }}
         </button>
 

@@ -60,6 +60,7 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
       } else {
         this.canResend = true;
         this.stopTimer();
+        this.errorMessage = this.langService.t('auth.otpExpiredError') || 'انتهت صلاحية الرمز. يرجى طلب رمز جديد.';
       }
     }, 1000);
   }
@@ -102,18 +103,24 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
     }
   }
 
+  // 🧹 تحسين زر الفسخ (Backspace) للتراجع والفسخ سلاسة وبدون مشاكل
   onKeyDown(event: KeyboardEvent, index: number): void {
     if (event.key === 'Backspace') {
       const input = event.target as HTMLInputElement;
-      if (!input.value && index > 0) {
+
+      if (input.value) {
+        // إذا كان بالخانة الحالية قيمة، نكتفي بفسخها
+        this.otpDigits[index] = '';
+        input.value = '';
+      } else if (index > 0) {
+        // إذا كانت الخانة فارغة، نرجع للخانة السابقة ونفسخ ما فيها ونحول الـ Focus إليها
+        event.preventDefault();
         this.otpDigits[index - 1] = '';
         const prevInput = document.getElementById(`otp-input-${index - 1}`) as HTMLInputElement;
         if (prevInput) {
           prevInput.focus();
           prevInput.value = '';
         }
-      } else {
-        this.otpDigits[index] = '';
       }
     }
   }
@@ -137,6 +144,12 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
   }
 
   onVerify(): void {
+    // 🛑 منع الإرسال إذا انتهى الوقت قبل التحقق من الـ API
+    if (this.timeLeft === 0 && !this.canResend) {
+      this.errorMessage = this.langService.t('auth.otpExpiredError') || 'انتهت صلاحية الرمز. يرجى طلب رمز جديد.';
+      return;
+    }
+
     const fullOtp = this.otpDigits.join('');
     if (fullOtp.length !== 6) {
       this.errorMessage = this.langService.t('auth.otpIncompleteError');
@@ -179,6 +192,9 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.successMessage = '';
 
+    // 🧹 تفريغ الواجهة من الأرقام القديمة
+    this.resetOtpFields();
+
     this.authService.sendOtp(this.email).subscribe({
       next: () => {
         this.isResending = false;
@@ -190,5 +206,16 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
         this.errorMessage = err?.error?.message || this.langService.t('auth.otpResendError');
       }
     });
+  }
+
+  // 🧹 دالة تصفير الخانات بالكامل
+  private resetOtpFields(): void {
+    this.otpDigits = ['', '', '', '', '', ''];
+    for (let i = 0; i < 6; i++) {
+      const input = document.getElementById(`otp-input-${i}`) as HTMLInputElement;
+      if (input) input.value = '';
+    }
+    const firstInput = document.getElementById('otp-input-0') as HTMLInputElement;
+    if (firstInput) firstInput.focus();
   }
 }
