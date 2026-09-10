@@ -47,7 +47,25 @@
           />
         </div>
 
-        <button type="submit" [disabled]="isLoading || !isOtpComplete()" class="btn-primary">
+        <!-- Timer / Resend Section -->
+        <div class="otp-timer-section">
+          <p *ngIf="!isExpired" class="timer-text">
+            {{ langService.t('auth.otpExpiresIn') }} <strong>{{ formattedTime }}</strong>
+          </p>
+          <p *ngIf="isExpired" class="expired-text">
+            {{ langService.t('auth.otpExpiredMsg') }}
+          </p>
+
+          <button 
+            type="button" 
+            class="btn-resend" 
+            (click)="resendOtp()" 
+            [disabled]="isResending || !isExpired">
+            {{ isResending ? langService.t('auth.sendingOtp') : langService.t('auth.resendBtn') }}
+          </button>
+        </div>
+
+        <button type="submit" [disabled]="isLoading || !isOtpComplete() || isExpired" class="btn-primary">
           {{ isLoading ? langService.t('auth.loggingIn') : langService.t('auth.verifyBtn') }}
         </button>
       </form>

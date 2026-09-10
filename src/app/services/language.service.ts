@@ -74,6 +74,8 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'auth.passwordMismatch': 'كلمة السر وتأكيد كلمة السر غير متطابقين',
     'auth.registerError': 'حدث خطأ في عملية التسجيل، يرجى إعادة المحاولة',
     'auth.serverError': 'خطأ في الاتصال بالخادم، يرجى التثبت من الشبكة',
+    'auth.passwordTooShort': 'كلمة السر يجب أن تحتوي على 6 خانات على الأقل',
+    
 
     // Legal & Dashboard
     'legal.title': 'الشروط العامة والملكية الفكرية',

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -19,9 +19,14 @@ export class ResetPasswordComponent implements OnInit {
 
   email: string = '';
   resetToken: string = '';
-  password: string = '';
-  confirmPassword: string = '';
   
+  password = signal<string>('');
+  confirmPassword = signal<string>('');
+  
+  // Variables pour la visibilité des mots de passe
+  showPassword = signal<boolean>(false);
+  showConfirmPassword = signal<boolean>(false);
+
   isLoading: boolean = false;
   errorMessage: string = '';
 
@@ -38,25 +43,32 @@ export class ResetPasswordComponent implements OnInit {
     this.langService.setLanguage(lang);
   }
 
+  toggleShowPassword(): void {
+    this.showPassword.update(v => !v);
+  }
+
+  toggleShowConfirmPassword(): void {
+    this.showConfirmPassword.update(v => !v);
+  }
+
   onSubmit(): void {
-    if (this.password !== this.confirmPassword) {
+    const pwd = this.password();
+    const confirmPwd = this.confirmPassword();
+
+    if (pwd !== confirmPwd) {
       this.errorMessage = this.langService.t('auth.passwordMismatch');
       return;
     }
 
-    if (this.password.length < 6) {
-      this.errorMessage = this.langService.lang() === 'ar' 
-        ? 'كلمة السر يجب أن تحتوي على 6 خانات على الأقل' 
-        : (this.langService.lang() === 'fr' 
-            ? 'Le mot de passe doit contenir au moins 6 caractères' 
-            : 'Password must be at least 6 characters');
+    if (pwd.length < 6) {
+      this.errorMessage = this.langService.t('auth.passwordTooShort');
       return;
     }
 
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.authService.resetPassword(this.email, this.resetToken, this.password).subscribe({
+    this.authService.resetPassword(this.email, this.resetToken, pwd).subscribe({
       next: () => {
         this.isLoading = false;
         // تنظيف البيانات المؤقتة
