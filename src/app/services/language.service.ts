@@ -524,7 +524,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.savingProgress': 'Enregistrement...',
     'prod.featured': 'Produit vedette',
     'prod.heroBanner': 'Bannière principale',
-    'prod.generatingAiImg': 'Génération d\'images par IA en cours...',
+    'prod.generatingAiImg': 'Génération d\'images par IA en cours...', 
 
     // QR Section
     'qr.title': 'Gestion des QR Codes',
