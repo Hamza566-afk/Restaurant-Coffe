@@ -227,6 +227,14 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.errorOccurred': 'حدث خطأ، يرجى المحاولة لاحقًا',
     'prod.btnAi': 'مساعد الذكاء الاصطناعي',
     'prod.generateAiImg': 'توليد بالذكاء الاصطناعي',
+    // المفاتيح الخاصة بالـ AI Modal
+    'prod.aiChatTab': 'محادثة الذكاء الاصطناعي',
+    'prod.aiOcrTab': 'قراءة المنيو (OCR)',
+    'prod.ocrTitle': 'استخراج المنيو تلقائياً',
+    'prod.ocrSub': 'قم برفع صورة المنيو لتحويلها إلى منتجات مباشرة',
+    'prod.importPhotoBtn': 'رفع صورة المنيو',
+    'prod.chatAi': 'المساعد الذكي',
+    'prod.chatPlaceholder': 'اسأل المساعد الذكي أي سؤال...',
 
     // QR Section
     'qr.title': 'للطاولات QR Code إدارة الـ',
@@ -479,6 +487,14 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.errorOccurred': 'Une erreur est survenue, veuillez réessayer',
     'prod.btnAi': 'Assistant AI',
     'prod.generateAiImg': 'Générer par IA',
+    // Keys pour le Modal AI
+    'prod.aiChatTab': 'Chat IA',
+    'prod.aiOcrTab': 'Menu OCR',
+    'prod.ocrTitle': 'Extraire le menu automatiquement',
+    'prod.ocrSub': 'Téléchargez une photo du menu pour la convertir en produits',
+    'prod.importPhotoBtn': 'Importer une photo',
+    'prod.chatAi': 'Assistant IA',
+    'prod.chatPlaceholder': 'Posez une question à l\'assistant IA...',
 
     // QR Section
     'qr.title': 'Gestion des QR Codes',
@@ -731,6 +747,14 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.errorOccurred': 'An error occurred, please try again',
     'prod.btnAi': 'AI Assistant',
     'prod.generateAiImg': 'Generate with AI',
+    // Keys for AI Modal
+    'prod.aiChatTab': 'AI Chat',
+    'prod.aiOcrTab': 'OCR Menu',
+    'prod.ocrTitle': 'Extract Menu Automatically',
+    'prod.ocrSub': 'Upload a menu photo to automatically convert it into products',
+    'prod.importPhotoBtn': 'Upload Menu Photo',
+    'prod.chatAi': 'AI Assistant',
+    'prod.chatPlaceholder': 'Ask the AI assistant anything...',
 
     // QR Section
     'qr.title': 'QR Codes Management',
