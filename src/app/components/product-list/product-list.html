@@ -86,7 +86,7 @@
     </div>
     
     <div class="filter-right">
-      <!-- 🗑️ Clear All / Clear Category Button (بجنب الـ Search) -->
+      <!-- 🗑️ Clear All / Clear Category Button -->
       @if (products().length > 0) {
         <button class="btn btn-danger-soft btn-clear-inline" (click)="clearAllProducts()">
           <i class="fas fa-trash-can"></i>
@@ -427,6 +427,14 @@
                     </div>
                     <div class="chat-bubble">
                       <span class="chat-sender-title">{{ msg.sender === 'user' ? t('prod.chatYou') : t('prod.chatAi') }}</span>
+                      
+                      <!-- 🌟 الإضافة هنا: عرض الجملة التوضيحية تحت اسم المساعد الذكي فقط -->
+                      @if (msg.sender === 'ai') {
+                        <span class="chat-sender-sub block text-xs text-slate-400 mb-1" style="font-size: 11px; opacity: 0.85;">
+                          {{ t('prod.chatSub') }}
+                        </span>
+                      }
+
                       <p class="chat-text">{{ msg.text }}</p>
 
                       <!-- Yes / No Buttons Prompt -->

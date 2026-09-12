@@ -225,16 +225,17 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.successAdd': 'تمت إضافة المنتج بنجاح',
     'prod.successUpdate': 'تم تحديث المنتج بنجاح',
     'prod.errorOccurred': 'حدث خطأ، يرجى المحاولة لاحقًا',
-    'prod.btnAi': 'مساعد الذكاء الاصطناعي',
+    'prod.btnAi': 'مساعدك الذكي',
     'prod.generateAiImg': 'توليد بالذكاء الاصطناعي',
     // المفاتيح الخاصة بالـ AI Modal
-    'prod.aiChatTab': 'محادثة الذكاء الاصطناعي',
+    'prod.aiChatTab': 'محادثة',
     'prod.aiOcrTab': 'قراءة المنيو (OCR)',
     'prod.ocrTitle': 'استخراج المنيو تلقائياً',
     'prod.ocrSub': 'قم برفع صورة المنيو لتحويلها إلى منتجات مباشرة',
     'prod.importPhotoBtn': 'رفع صورة المنيو',
-    'prod.chatAi': 'المساعد الذكي',
+    'prod.chatAi': 'مساعدك الذكي',
     'prod.chatPlaceholder': 'اسأل المساعد الذكي أي سؤال...',
+    'prod.chatSub': 'مساعدك الذكي - إضافة وتحديث المنتجات والوجبات',
 
     // QR Section
     'qr.title': 'للطاولات QR Code إدارة الـ',
@@ -495,6 +496,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.importPhotoBtn': 'Importer une photo',
     'prod.chatAi': 'Assistant IA',
     'prod.chatPlaceholder': 'Posez une question à l\'assistant IA...',
+    'prod.chatSub': 'Assistant IA - Ajouter et mettre à jour les produits et repas',
 
     // QR Section
     'qr.title': 'Gestion des QR Codes',
@@ -755,6 +757,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.importPhotoBtn': 'Upload Menu Photo',
     'prod.chatAi': 'AI Assistant',
     'prod.chatPlaceholder': 'Ask the AI assistant anything...',
+    'prod.chatSub': 'AI Assistant - Add and update products and meals',
 
     // QR Section
     'qr.title': 'QR Codes Management',
