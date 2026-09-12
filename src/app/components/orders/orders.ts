@@ -290,6 +290,7 @@ export class Orders implements OnInit {
   }
 }
 
+// ─── Utility Function ──────────────────────────────────
 function strToLower(val: string | undefined | null): string {
   return val ? String(val).toLowerCase() : '';
 }

@@ -172,6 +172,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'orders.emptySub': 'لم يتم العثور على طلبات في هذه الفئة',
     'orders.cancelledLabel': 'تم الإلغاء',
     'orders.tableUnknown': 'غير معينة',
+    'orders.all': 'الكل',
+    'orders.noOrders': 'لا توجد طلبات حالية',
+    'orders.noHistory': 'لا يوجد سجل طلبات سابق',
 
     // Products Section
     'prod.title': 'إدارة المنيو',
@@ -409,6 +412,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'orders.emptySub': 'Aucune commande trouvée dans cette catégorie',
     'orders.cancelledLabel': 'Annulée',
     'orders.tableUnknown': 'Non défini',
+    'orders.all': 'Tous',
+    'orders.noOrders': 'Aucune commande en cours',
+    'orders.noHistory': 'Aucun historique de commandes',
 
     // Products Section
     'prod.title': 'Gestion du Menu',
@@ -646,6 +652,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'orders.emptySub': 'No orders found in this category',
     'orders.cancelledLabel': 'Cancelled',
     'orders.tableUnknown': 'Not set',
+    'orders.all': 'All',
+    'orders.noOrders': 'No current orders',
+    'orders.noHistory': 'No order history available',
 
     // Products Section
     'prod.title': 'Menu Management',
