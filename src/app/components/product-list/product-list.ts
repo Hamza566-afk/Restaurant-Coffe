@@ -26,8 +26,16 @@ export class ProductListComponent implements OnInit {
   private aiService = inject(AIService);
   public languageService = inject(LanguageService);
 
-  // Helper Translation
-  protected t = (key: string): string => this.languageService.t(key);
+  // Helper Translation Method
+  protected t = (key: string, params?: Record<string, string>): string => {
+    let text = this.languageService.t(key);
+    if (params) {
+      Object.keys(params).forEach(pKey => {
+        text = text.replace(`{${pKey}}`, params[pKey]);
+      });
+    }
+    return text;
+  };
 
   // Dynamic RTL Checker for HTML Binding
   isRtl(): boolean {
@@ -61,9 +69,7 @@ export class ProductListComponent implements OnInit {
   imageGenProgress = signal({ current: 0, total: 0 });
   parsedProducts = signal<(ParsedProduct & { selected?: boolean; is_active?: boolean })[]>([]);
 
-  chatMessages = signal<ChatMessage[]>([
-    { sender: 'ai', text: 'أهلاً بك! أنا مساعدك الذكي. كيف أستطيع مساعدتك اليوم في إدارة مقهاك ومتابعة المبيعات؟' }
-  ]);
+  chatMessages = signal<ChatMessage[]>([]);
   chatInput = '';
   isChatting = signal(false);
 
@@ -78,6 +84,13 @@ export class ProductListComponent implements OnInit {
   ngOnInit(): void {
     this.loadCategories();
     this.loadProducts();
+    this.initAiChatWelcome();
+  }
+
+  initAiChatWelcome(): void {
+    this.chatMessages.set([
+      { sender: 'ai', text: this.t('prod.btnAi') + ' - ' + this.t('prod.sub') }
+    ]);
   }
 
   loadCategories(): void {
@@ -116,9 +129,9 @@ export class ProductListComponent implements OnInit {
           this.formModel.category_id = newCat.id;
         }
         this.newCategoryName = '';
-        this.showToast('Catégorie ajoutée avec succès', 'success');
+        this.showToast(this.t('prod.successAdd'), 'success');
       },
-      error: () => this.showToast('Erreur lors de l\'ajout de la catégorie', 'error')
+      error: () => this.showToast(this.t('prod.errorOccurred'), 'error')
     });
   }
 
@@ -137,17 +150,17 @@ export class ProductListComponent implements OnInit {
       next: (updated) => {
         this.categories.update(list => list.map(c => (c.id === updated.id ? { ...c, ...updated } : c)));
         this.showCategoryModal.set(false);
-        this.showToast('Catégorie renommée avec succès', 'success');
+        this.showToast(this.t('prod.successUpdate'), 'success');
       },
       error: (err) => {
-        const msg = err?.error?.message ?? 'Erreur lors de la modification de la catégorie';
+        const msg = err?.error?.message ?? this.t('prod.errorOccurred');
         this.showToast(msg, 'error');
       }
     });
   }
 
   deleteCategory(cat: Category): void {
-    if (!confirm(`Êtes-vous sûr de vouloir supprimer la catégorie '${cat.name}' ?`)) return;
+    if (!confirm(this.t('prod.confirmClearCat', { cat: cat.name }))) return;
 
     this.categoryService.deleteCategory(cat.id).subscribe({
       next: () => {
@@ -155,28 +168,55 @@ export class ProductListComponent implements OnInit {
         if (this.selectedCategory() === this.toStr(cat.id)) {
           this.selectedCategory.set('all');
         }
-        this.showToast('Catégorie supprimée avec succès', 'success');
+        this.showToast(this.t('prod.successClearCat'), 'success');
       },
       error: (err) => {
-        const msg = err?.error?.message ?? 'Impossible de supprimer cette catégorie.';
+        const msg = err?.error?.message ?? this.t('prod.errorOccurred');
         this.showToast(msg, 'error');
       }
     });
   }
 
+  // 🗑️ Clear All or Clear Selected Category
   clearAllProducts(): void {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer TOUS les produits ?')) return;
+    const isAll = this.selectedCategory() === 'all';
+    let targetCatName = '';
 
-    this.productService.clearAllProducts().subscribe({
-      next: () => {
-        this.products.set([]);
-        this.showToast('Tous les produits ont été supprimés', 'success');
-      },
-      error: (err) => {
-        const msg = err?.error?.message ?? 'Erreur lors de la suppression';
-        this.showToast(msg, 'error');
-      }
-    });
+    if (!isAll) {
+      const catObj = this.categories().find(c => this.toStr(c.id) === this.selectedCategory());
+      targetCatName = catObj ? catObj.name : '';
+    }
+
+    const confirmMsg = isAll
+      ? this.t('prod.confirmClearAll')
+      : this.t('prod.confirmClearCat', { cat: targetCatName });
+
+    if (!confirm(confirmMsg)) return;
+
+    if (isAll) {
+      this.productService.clearAllProducts().subscribe({
+        next: () => {
+          this.products.set([]);
+          this.showToast(this.t('prod.successClearAll'), 'success');
+        },
+        error: (err) => {
+          const msg = err?.error?.message ?? this.t('prod.errorOccurred');
+          this.showToast(msg, 'error');
+        }
+      });
+    } else {
+      const catId = Number(this.selectedCategory());
+      this.productService.deleteProductsByCategory(catId).subscribe({
+        next: () => {
+          this.products.update(list => list.filter(p => p.category_id !== catId));
+          this.showToast(this.t('prod.successClearCat'), 'success');
+        },
+        error: (err) => {
+          const msg = err?.error?.message ?? this.t('prod.errorOccurred');
+          this.showToast(msg, 'error');
+        }
+      });
+    }
   }
 
   private showToast(message: string, type: 'success' | 'error'): void {
@@ -190,7 +230,7 @@ export class ProductListComponent implements OnInit {
 
   generateAIImage(): void {
     if (!this.formModel.name?.trim()) {
-      this.showToast('Veuillez d\'abord saisir le nom du produit', 'error');
+      this.showToast(this.t('prod.modalName'), 'error');
       return;
     }
 
@@ -202,14 +242,14 @@ export class ProductListComponent implements OnInit {
           if (res.success && res.product?.image_url) {
             this.previewUrl.set(res.product.image_url);
             this.formModel.image_url = res.product.image_url;
-            this.showToast('Image générée et enregistrée avec succès', 'success');
+            this.showToast(this.t('prod.successUpdate'), 'success');
           } else {
-            this.showToast('Erreur lors de la génération', 'error');
+            this.showToast(this.t('prod.errorOccurred'), 'error');
           }
           this.isGeneratingImage.set(false);
         },
         error: () => {
-          this.showToast('Erreur lors de la génération de l\'image', 'error');
+          this.showToast(this.t('prod.errorOccurred'), 'error');
           this.isGeneratingImage.set(false);
         }
       });
@@ -218,12 +258,12 @@ export class ProductListComponent implements OnInit {
         next: (res) => {
           if (res.success && res.image_url) {
             this.previewUrl.set(res.image_url);
-            this.showToast('Image générée avec succès', 'success');
+            this.showToast(this.t('prod.successUpdate'), 'success');
           }
           this.isGeneratingImage.set(false);
         },
         error: () => {
-          this.showToast('Erreur lors de la génération de l\'image', 'error');
+          this.showToast(this.t('prod.errorOccurred'), 'error');
           this.isGeneratingImage.set(false);
         }
       });
@@ -257,14 +297,14 @@ export class ProductListComponent implements OnInit {
               is_active: true
             }));
             this.parsedProducts.set(productsWithSelection);
-            this.showToast('Menu analysé avec succès ! Vérifiez et modifiez les éléments.', 'success');
+            this.showToast(this.t('prod.successAdd'), 'success');
           } else {
-            this.showToast('Aucun produit n\'a pu être extrait de cette image.', 'error');
+            this.showToast(this.t('prod.empty'), 'error');
           }
           this.isParsingMenu.set(false);
         },
         error: (err: any) => {
-          const msg = err?.error?.message ?? 'Erreur lors de la lecture du menu';
+          const msg = err?.error?.message ?? this.t('prod.errorOccurred');
           this.showToast(msg, 'error');
           this.isParsingMenu.set(false);
         }
@@ -275,7 +315,7 @@ export class ProductListComponent implements OnInit {
   addParsedRow(): void {
     this.parsedProducts.update(list => [
       ...list,
-      { name: '', price: 0, category: 'Général', selected: true, is_active: true }
+      { name: '', price: 0, category: this.t('prod.uncategorized'), selected: true, is_active: true }
     ]);
   }
 
@@ -283,11 +323,10 @@ export class ProductListComponent implements OnInit {
     this.parsedProducts.update(list => list.filter((_, i) => i !== index));
   }
 
-  // 🚀 Step 1: Import Direct Without Images & Show AI Prompt
   confirmImportAndGenerateImages(): void {
     const selected = this.parsedProducts().filter(p => p.selected && p.name.trim() !== '');
     if (selected.length === 0) {
-      this.showToast('Veuillez sélectionner au moins un produit valide', 'error');
+      this.showToast(this.t('prod.empty'), 'error');
       return;
     }
 
@@ -302,50 +341,45 @@ export class ProductListComponent implements OnInit {
           this.loadCategories();
           this.parsedProducts.set([]);
 
-          // Switch tab to Chat
           this.aiTab.set('chat');
 
-          // Append AI question with Oui/Non Buttons
           this.chatMessages.update(msgs => [
             ...msgs,
             {
               sender: 'ai',
-              text: `تم استيراد ${createdProducts.length} منتجات بنجاح! هل تريد أن أقوم بتوليد صور خاصة بهذه المنتجات؟`,
+              text: `${this.t('prod.successAdd')} (${createdProducts.length}). ${this.t('prod.generateAiImg')}?`,
               isPrompt: true,
               importedProducts: createdProducts
             }
           ]);
 
-          this.showToast(`${createdProducts.length} produits enregistrés avec succès!`, 'success');
+          this.showToast(this.t('prod.successAdd'), 'success');
         }
       },
       error: (err) => {
         this.isImporting.set(false);
-        const msg = err?.error?.message ?? 'Erreur lors de l\'enregistrement des produits';
+        const msg = err?.error?.message ?? this.t('prod.errorOccurred');
         this.showToast(msg, 'error');
       }
     });
   }
 
-  // 🚀 Step 2: User Decision (Oui / Non)
   handleImageGenDecision(choice: 'oui' | 'non', msgIndex: number, createdProducts?: Product[]): void {
-    // Hide buttons from message
     this.chatMessages.update(msgs => msgs.map((m, idx) => idx === msgIndex ? { ...m, isPrompt: false } : m));
 
     if (choice === 'non') {
       this.chatMessages.update(msgs => [
         ...msgs,
-        { sender: 'user', text: 'لا' },
-        { sender: 'ai', text: 'حسناً، تم الاحتفاظ بالمنتجات بدون صور. يمكنك توليد الصور لاحقاً في أي وقت.' }
+        { sender: 'user', text: 'No' },
+        { sender: 'ai', text: 'OK.' }
       ]);
       return;
     }
 
-    // User chose OUI
     this.chatMessages.update(msgs => [
       ...msgs,
-      { sender: 'user', text: 'نعم' },
-      { sender: 'ai', text: 'ممتاز! جاري الآن توليد وجلب الصور الخاصة بالمنتجات...' }
+      { sender: 'user', text: 'Yes' },
+      { sender: 'ai', text: '...' }
     ]);
 
     if (createdProducts && createdProducts.length > 0) {
@@ -353,7 +387,6 @@ export class ProductListComponent implements OnInit {
     }
   }
 
-  // 🚀 Step 3: Sequential Image Generation
   async generateImagesForImportedProducts(createdProducts: Product[]): Promise<void> {
     this.isGeneratingBulkImages.set(true);
     this.imageGenProgress.set({ current: 0, total: createdProducts.length });
@@ -382,11 +415,7 @@ export class ProductListComponent implements OnInit {
     }
 
     this.isGeneratingBulkImages.set(false);
-    this.showToast('Toutes les images ont été générées et enregistrées avec succès !', 'success');
-    this.chatMessages.update(msgs => [
-      ...msgs,
-      { sender: 'ai', text: 'تمت العملية بنجاح! جميع الصور جاهزة ومحدثة الآن في القائمة.' }
-    ]);
+    this.showToast(this.t('prod.successUpdate'), 'success');
   }
 
   sendChatMessage(): void {
@@ -405,7 +434,7 @@ export class ProductListComponent implements OnInit {
         this.isChatting.set(false);
       },
       error: () => {
-        this.chatMessages.update(msgs => [...msgs, { sender: 'ai', text: 'عذراً، حدث خطأ أثناء الاتصال بالمساعد الذكي.' }]);
+        this.chatMessages.update(msgs => [...msgs, { sender: 'ai', text: this.t('prod.errorOccurred') }]);
         this.isChatting.set(false);
       }
     });
@@ -429,7 +458,7 @@ export class ProductListComponent implements OnInit {
 
   getCategoryName(id: number): string {
     const found = this.categories().find(c => c.id === id);
-    return found ? found.name : 'غير مصنف';
+    return found ? found.name : this.t('prod.uncategorized');
   }
 
   toStr(val: number): string {
@@ -516,7 +545,7 @@ export class ProductListComponent implements OnInit {
 
   saveProduct(): void {
     if (!this.formModel.name?.trim()) {
-      this.showToast('Le nom du produit est obligatoire', 'error');
+      this.showToast(this.t('prod.modalName'), 'error');
       return;
     }
 
@@ -559,11 +588,11 @@ export class ProductListComponent implements OnInit {
           this.loading.set(false);
           this.loadProducts();
           this.closeModal();
-          this.showToast('Produit mis à jour avec succès', 'success');
+          this.showToast(this.t('prod.successUpdate'), 'success');
         },
         error: (err) => {
           this.loading.set(false);
-          this.showToast(err?.error?.message ?? 'Erreur lors de la mise à jour', 'error');
+          this.showToast(err?.error?.message ?? this.t('prod.errorOccurred'), 'error');
         },
       });
     } else {
@@ -572,18 +601,18 @@ export class ProductListComponent implements OnInit {
           this.loading.set(false);
           this.loadProducts();
           this.closeModal();
-          this.showToast('Produit ajouté avec succès', 'success');
+          this.showToast(this.t('prod.successAdd'), 'success');
         },
         error: (err) => {
           this.loading.set(false);
-          this.showToast(err?.error?.message ?? 'Erreur lors de l\'ajout du produit', 'error');
+          this.showToast(err?.error?.message ?? this.t('prod.errorOccurred'), 'error');
         },
       });
     }
   }
 
   deleteProduct(product: Product): void {
-    if (!confirm(`تأكيد حذف "${product.name}"؟`)) return;
+    if (!confirm(this.t('prod.confirmDeleteOne'))) return;
 
     this.products.update(list => list.filter(p => p.id !== product.id));
 

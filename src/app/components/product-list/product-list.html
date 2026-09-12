@@ -10,7 +10,7 @@
       <!-- 🤖 Assistant AI Button -->
       <button class="btn btn-ai-assistant" (click)="openAiAssistantModal()">
         <i class="fas fa-robot text-amber-400"></i>
-        <span>Assistant AI</span>
+        <span>{{ t('prod.btnAi') }}</span>
       </button>
 
       <!-- Quick Add Category Form -->
@@ -24,14 +24,6 @@
           <i class="fas fa-plus"></i> {{ t('prod.addCatBtn') }}
         </button>
       </div>
-
-      <!-- Clear All Products Button -->
-      @if (products().length > 0) {
-        <button class="btn btn-danger-soft" (click)="clearAllProducts()">
-          <i class="fas fa-trash-can"></i>
-          <span>{{ t('prod.clearAll') }}</span>
-        </button>
-      }
 
       <!-- Add Product Button -->
       <button class="btn btn-primary-modern" (click)="openAddModal()">
@@ -47,7 +39,7 @@
       <div class="flex items-center justify-between mb-2">
         <div class="flex items-center gap-2">
           <i class="fas fa-wand-magic-sparkles text-indigo-600 fa-spin"></i>
-          <span class="text-sm font-bold text-indigo-900">Génération des visuels HD en cours...</span>
+          <span class="text-sm font-bold text-indigo-900">{{ t('prod.generatingAiImg') }}</span>
         </div>
         <span class="text-xs font-semibold text-indigo-700 bg-indigo-100 px-2 py-1 rounded-full">
           {{ imageGenProgress().current }} / {{ imageGenProgress().total }}
@@ -81,10 +73,10 @@
             {{ cat.name }}
             <span class="chip-count">{{ getProductCountByCategory(cat.id) }}</span>
             <span class="chip-actions" (click)="$event.stopPropagation()">
-              <span class="chip-action edit" (click)="openEditCategory(cat)" title="Renommer la catégorie" role="button">
+              <span class="chip-action edit" (click)="openEditCategory(cat)" [title]="t('prod.edit')" role="button">
                 <i class="fas fa-pen"></i>
               </span>
-              <span class="chip-action delete" (click)="deleteCategory(cat)" title="Supprimer la catégorie" role="button">
+              <span class="chip-action delete" (click)="deleteCategory(cat)" [title]="t('prod.delete')" role="button">
                 <i class="fas fa-xmark"></i>
               </span>
             </span>
@@ -94,6 +86,14 @@
     </div>
     
     <div class="filter-right">
+      <!-- 🗑️ Clear All / Clear Category Button (بجنب الـ Search) -->
+      @if (products().length > 0) {
+        <button class="btn btn-danger-soft btn-clear-inline" (click)="clearAllProducts()">
+          <i class="fas fa-trash-can"></i>
+          <span>{{ t('prod.clearAll') }}</span>
+        </button>
+      }
+
       <div class="filter-search">
         <i class="fas fa-search"></i>
         <input 
@@ -282,24 +282,24 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">Favorit</label>
+              <label class="form-label">{{ t('prod.featured') }}</label>
               <div class="checkbox-group">
                 <label class="toggle-switch">
                   <input type="checkbox" [(ngModel)]="formModel.is_featured">
                   <span class="toggle-slider"></span>
                 </label>
-                <span><i class="fas fa-star" style="color:#f59e0b;"></i> {{ formModel.is_featured ? 'Active' : 'Inactive' }}</span>
+                <span><i class="fas fa-star" style="color:#f59e0b;"></i> {{ formModel.is_featured ? t('prod.active') : t('prod.inactive') }}</span>
               </div>
             </div>
 
             <div class="form-group">
-              <label class="form-label">Hero Banner</label>
+              <label class="form-label">{{ t('prod.heroBanner') }}</label>
               <div class="checkbox-group">
                 <label class="toggle-switch">
                   <input type="checkbox" [(ngModel)]="formModel.is_hero">
                   <span class="toggle-slider"></span>
                 </label>
-                <span><i class="fas fa-crown" style="color:#c67c4e;"></i> {{ formModel.is_hero ? 'Active' : 'Inactive' }}</span>
+                <span><i class="fas fa-crown" style="color:#c67c4e;"></i> {{ formModel.is_hero ? t('prod.active') : t('prod.inactive') }}</span>
               </div>
             </div>
 
@@ -319,10 +319,10 @@
                   [disabled]="isGeneratingImage() || !formModel.name">
                   @if (isGeneratingImage()) {
                     <i class="fas fa-spinner fa-spin"></i>
-                    <span>Génération...</span>
+                    <span>{{ t('prod.generatingAiImg') }}</span>
                   } @else {
                     <i class="fas fa-wand-magic-sparkles"></i>
-                    <span>Générer AI</span>
+                    <span>{{ t('prod.generateAiImg') }}</span>
                   }
                 </button>
               </div>
@@ -360,14 +360,14 @@
     <div class="modal-overlay" (click)="showCategoryModal.set(false)">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h3>Renommer la catégorie</h3>
+          <h3>{{ t('prod.renameCatTitle') }}</h3>
           <button class="btn-icon" (click)="showCategoryModal.set(false)">
             <i class="fas fa-xmark"></i>
           </button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label class="form-label">Nom de la catégorie</label>
+            <label class="form-label">{{ t('prod.catNameLabel') }}</label>
             <input type="text" class="form-control" [ngModel]="categoryNameEditing()" (ngModelChange)="categoryNameEditing.set($event)" placeholder="Ex: Boissons">
           </div>
         </div>
@@ -387,7 +387,7 @@
       <div class="modal-content modal-lg ai-modal-styled" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h3>
-            <i class="fas fa-robot text-amber-500"></i> Assistant AI - Café SaaS
+            <i class="fas fa-robot text-amber-500"></i> {{ t('prod.btnAi') }}
           </h3>
           <button class="btn-icon" (click)="closeAiModal()" [disabled]="isImporting() || isGeneratingBulkImages()">
             <i class="fas fa-xmark"></i>
@@ -403,7 +403,7 @@
               [class.active]="aiTab() === 'chat'" 
               (click)="aiTab.set('chat')"
               [disabled]="isImporting() || isGeneratingBulkImages()">
-              <i class="fas fa-comments"></i> Chat & Assistant
+              <i class="fas fa-comments"></i> {{ t('prod.aiChatTab') }}
             </button>
 
             <button 
@@ -412,7 +412,7 @@
               [class.active]="aiTab() === 'ocr'" 
               (click)="aiTab.set('ocr')"
               [disabled]="isImporting() || isGeneratingBulkImages()">
-              <i class="fas fa-wand-magic-sparkles"></i> Extraction Menu (OCR)
+              <i class="fas fa-wand-magic-sparkles"></i> {{ t('prod.aiOcrTab') }}
             </button>
           </div>
 
@@ -426,10 +426,10 @@
                       <i class="fas" [class.fa-user]="msg.sender === 'user'" [class.fa-robot]="msg.sender === 'ai'"></i>
                     </div>
                     <div class="chat-bubble">
-                      <span class="chat-sender-title">{{ msg.sender === 'user' ? 'Vous' : 'Assistant AI' }}</span>
+                      <span class="chat-sender-title">{{ msg.sender === 'user' ? t('prod.chatYou') : t('prod.chatAi') }}</span>
                       <p class="chat-text">{{ msg.text }}</p>
 
-                      <!-- Oui / Non Buttons Prompt -->
+                      <!-- Yes / No Buttons Prompt -->
                       @if (msg.isPrompt) {
                         <div class="ai-prompt-actions mt-3 flex items-center gap-2">
                           <button 
@@ -437,14 +437,14 @@
                             class="btn-prompt-oui" 
                             (click)="handleImageGenDecision('oui', $index, msg.importedProducts)"
                             [disabled]="isGeneratingBulkImages()">
-                            <i class="fas fa-check"></i> Oui (نعم)
+                            <i class="fas fa-check"></i> {{ t('prod.yes') }}
                           </button>
                           <button 
                             type="button" 
                             class="btn-prompt-non" 
                             (click)="handleImageGenDecision('non', $index, msg.importedProducts)"
                             [disabled]="isGeneratingBulkImages()">
-                            <i class="fas fa-times"></i> Non (لا)
+                            <i class="fas fa-times"></i> {{ t('prod.no') }}
                           </button>
                         </div>
                       }
@@ -457,7 +457,7 @@
                 <input 
                   type="text" 
                   class="form-control" 
-                  placeholder="Posez une question ou demandez des conseils sur vos produits..." 
+                  [placeholder]="t('prod.chatPlaceholder')" 
                   [(ngModel)]="chatInput"
                   (keyup.enter)="sendChatMessage()">
                 <button type="button" class="btn btn-primary btn-send" (click)="sendChatMessage()" [disabled]="isChatting() || !chatInput.trim()">
@@ -478,11 +478,11 @@
                 <div class="upload-icon">
                   <i class="fas fa-file-invoice"></i>
                 </div>
-                <h4>Scanner un Menu / Une Liste de Produits</h4>
-                <p class="text-sm text-slate-500 mb-3">Téléchargez la photo d'un menu manuscrit ou imprimé pour extraire automatiquement les prix et les catégories.</p>
+                <h4>{{ t('prod.ocrTitle') }}</h4>
+                <p class="text-sm text-slate-500 mb-3">{{ t('prod.ocrSub') }}</p>
                 
                 <label class="btn btn-outline custom-file-btn">
-                  <i class="fas fa-upload"></i> Importer une photo
+                  <i class="fas fa-upload"></i> {{ t('prod.importPhotoBtn') }}
                   <input type="file" (change)="onMenuImageSelected($event)" accept="image/*" style="display: none;" [disabled]="isParsingMenu() || isImporting() || isGeneratingBulkImages()">
                 </label>
               </div>
@@ -491,8 +491,8 @@
               @if (isParsingMenu()) {
                 <div class="ai-loader-box">
                   <i class="fas fa-compact-disc fa-spin text-3xl text-indigo-600 mb-2"></i>
-                  <p class="font-semibold text-slate-700">Analyse de l'image en cours par l'IA...</p>
-                  <span class="text-xs text-slate-500">Extraction des titres, catégories et prix des boissons</span>
+                  <p class="font-semibold text-slate-700">{{ t('prod.parsingAiProgress') }}</p>
+                  <span class="text-xs text-slate-500">{{ t('prod.parsingAiSub') }}</span>
                 </div>
               }
 
@@ -501,11 +501,11 @@
                 <div class="parsed-results mt-4">
                   <div class="flex justify-between items-center mb-3">
                     <div>
-                      <h4 class="font-bold text-slate-800 text-base">Produits Détectés</h4>
-                      <p class="text-xs text-slate-500">Vérifiez les données avant de valider l'importation</p>
+                      <h4 class="font-bold text-slate-800 text-base">{{ t('prod.detectedProductsTitle') }}</h4>
+                      <p class="text-xs text-slate-500">{{ t('prod.detectedProductsSub') }}</p>
                     </div>
                     <button type="button" class="btn btn-sm btn-outline" (click)="addParsedRow()" [disabled]="isImporting() || isGeneratingBulkImages()">
-                      <i class="fas fa-plus"></i> Ajouter une ligne
+                      <i class="fas fa-plus"></i> {{ t('prod.addRowBtn') }}
                     </button>
                   </div>
                   
@@ -513,11 +513,11 @@
                     <table class="modern-table parsed-table">
                       <thead>
                         <tr>
-                          <th style="width: 40px; text-align: center;">Import</th>
-                          <th>Nom du Produit</th>
-                          <th style="width: 110px;">Prix (TND)</th>
-                          <th>Catégorie Suggested</th>
-                          <th style="width: 50px; text-align: center;">Action</th>
+                          <th style="width: 40px; text-align: center;">{{ t('prod.importCol') }}</th>
+                          <th>{{ t('prod.table.name') }}</th>
+                          <th style="width: 110px;">{{ t('prod.table.price') }}</th>
+                          <th>{{ t('prod.table.cat') }}</th>
+                          <th style="width: 50px; text-align: center;">{{ t('prod.table.actions') }}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -548,14 +548,14 @@
 
                   <div class="modal-footer-ai">
                     <button type="button" class="btn btn-outline" (click)="closeAiModal()" [disabled]="isImporting() || isGeneratingBulkImages()">
-                      Annuler
+                      {{ t('prod.cancel') }}
                     </button>
                     <!-- DIRECT IMPORT BUTTON -->
                     <button type="button" class="btn btn-primary" (click)="confirmImportAndGenerateImages()" [disabled]="isImporting() || isGeneratingBulkImages()">
                       @if (isImporting()) {
-                        <i class="fas fa-spinner fa-spin"></i> Enregistrement...
+                        <i class="fas fa-spinner fa-spin"></i> {{ t('prod.savingProgress') }}
                       } @else {
-                        <i class="fas fa-cloud-arrow-down"></i> Importer directement
+                        <i class="fas fa-cloud-arrow-down"></i> {{ t('prod.importDirectlyBtn') }}
                       }
                     </button>
                   </div>
