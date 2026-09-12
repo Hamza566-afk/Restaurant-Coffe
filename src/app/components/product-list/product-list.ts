@@ -24,8 +24,15 @@ export class ProductListComponent implements OnInit {
   private productService = inject(ProductService);
   private categoryService = inject(CategoryService);
   private aiService = inject(AIService);
-  protected languageService = inject(LanguageService);
+  public languageService = inject(LanguageService);
+
+  // Helper Translation
   protected t = (key: string): string => this.languageService.t(key);
+
+  // Dynamic RTL Checker for HTML Binding
+  isRtl(): boolean {
+    return this.languageService.isRtl();
+  }
 
   products = signal<Product[]>([]);
   categories = signal<Category[]>([]);

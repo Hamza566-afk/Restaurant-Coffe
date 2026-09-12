@@ -1,4 +1,4 @@
-<div class="products-page">
+<div class="products-page" [dir]="isRtl() ? 'rtl' : 'ltr'">
   <!-- 🌟 Header Section -->
   <div class="section-header-modern">
     <div class="header-title-block">
@@ -25,6 +25,14 @@
         </button>
       </div>
 
+      <!-- Clear All Products Button -->
+      @if (products().length > 0) {
+        <button class="btn btn-danger-soft" (click)="clearAllProducts()">
+          <i class="fas fa-trash-can"></i>
+          <span>{{ t('prod.clearAll') }}</span>
+        </button>
+      }
+
       <!-- Add Product Button -->
       <button class="btn btn-primary-modern" (click)="openAddModal()">
         <i class="fas fa-plus"></i>
@@ -33,7 +41,7 @@
     </div>
   </div>
 
-  <!-- 🚀 Main Page Bulk Progress Indicator -->
+  <!-- 🚀 Main Page Bulk Image Generation Progress -->
   @if (isGeneratingBulkImages()) {
     <div class="bulk-progress-card main-page-progress mb-4 p-4 bg-indigo-50 border border-indigo-200 rounded-xl shadow-sm">
       <div class="flex items-center justify-between mb-2">
@@ -54,7 +62,7 @@
     </div>
   }
 
-  <!-- 🔍 Filters & Search Bar -->
+  <!-- 🔍 Filters & Categories Bar -->
   <div class="filters-bar-modern">
     <div class="filter-group">
       <label class="filter-label">{{ t('prod.filterCat') }}</label>
@@ -86,18 +94,14 @@
     </div>
     
     <div class="filter-right">
-      <button class="btn-clear-all" (click)="clearAllProducts()" [disabled]="products().length === 0">
-        <i class="fas fa-trash-can"></i> {{ t('prod.clearAll') }}
-      </button>
       <div class="filter-search">
         <i class="fas fa-search"></i>
         <input 
           type="text" 
           class="form-control" 
           [placeholder]="t('prod.searchPlaceholder')" 
-          style="width: 240px; margin: 0;" 
-          [ngModel]="searchTerm()"
-          (ngModelChange)="searchTerm.set($event)">
+          [value]="searchTerm()"
+          (input)="searchTerm.set($any($event.target).value)">
       </div>
     </div>
   </div>
@@ -105,7 +109,7 @@
   <!-- Loading State -->
   @if (loading()) {
     <div class="loading-state">
-      <i class="fas fa-spinner fa-spin"></i>
+      <i class="fas fa-spinner fa-spin fa-2x"></i>
       <span>{{ t('prod.loading') }}</span>
     </div>
   }
@@ -204,7 +208,7 @@
     </div>
   }
 
-  <!-- Add/Edit Product Modal -->
+  <!-- ✏️ Add/Edit Product Modal -->
   @if (showModal()) {
     <div class="modal-overlay" (click)="closeModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
@@ -239,7 +243,7 @@
               <label class="form-label">{{ t('prod.sizeVariationsTitle') }}</label>
               <div class="checkbox-group">
                 <label class="toggle-switch">
-                  <input type="checkbox" [(ngModel)]="sizesEnabled">
+                  <input type="checkbox" [ngModel]="sizesEnabled()" (ngModelChange)="sizesEnabled.set($event)">
                   <span class="toggle-slider"></span>
                 </label>
                 <span>{{ t('prod.sizeVariationsToggle') }}</span>
@@ -364,7 +368,7 @@
         <div class="modal-body">
           <div class="form-group">
             <label class="form-label">Nom de la catégorie</label>
-            <input type="text" class="form-control" [(ngModel)]="categoryNameEditing" placeholder="Ex: Boissons">
+            <input type="text" class="form-control" [ngModel]="categoryNameEditing()" (ngModelChange)="categoryNameEditing.set($event)" placeholder="Ex: Boissons">
           </div>
         </div>
         <div class="modal-footer">
