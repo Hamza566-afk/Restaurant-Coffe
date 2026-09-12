@@ -89,7 +89,7 @@ export class ProductListComponent implements OnInit {
 
   initAiChatWelcome(): void {
     this.chatMessages.set([
-      { sender: 'ai', text: this.t('prod.btnAi') + ' - ' + this.t('prod.sub') }
+      { sender: 'ai', text: this.t('prod.chatSub') }
     ]);
   }
 
@@ -271,6 +271,9 @@ export class ProductListComponent implements OnInit {
   }
 
   openAiAssistantModal(): void {
+    if (this.chatMessages().length <= 1) {
+      this.initAiChatWelcome();
+    }
     this.showAiModal.set(true);
     document.body.style.overflow = 'hidden';
   }
@@ -370,7 +373,7 @@ export class ProductListComponent implements OnInit {
     if (choice === 'non') {
       this.chatMessages.update(msgs => [
         ...msgs,
-        { sender: 'user', text: 'No' },
+        { sender: 'user', text: this.t('prod.no') },
         { sender: 'ai', text: 'OK.' }
       ]);
       return;
@@ -378,7 +381,7 @@ export class ProductListComponent implements OnInit {
 
     this.chatMessages.update(msgs => [
       ...msgs,
-      { sender: 'user', text: 'Yes' },
+      { sender: 'user', text: this.t('prod.yes') },
       { sender: 'ai', text: '...' }
     ]);
 
@@ -510,6 +513,7 @@ export class ProductListComponent implements OnInit {
     this.previewUrl.set(null);
     this.sizesEnabled.set(false);
     this.formSizes.set([]);
+    this.formModel = this.emptyFormModel();
   }
 
   addSizeRow(): void {
