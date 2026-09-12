@@ -246,6 +246,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.no': 'لا',
     'prod.parsingAiProgress': 'جاري تحليل صورة المنيو...',
     'prod.parsingAiSub': 'يرجى الانتظار لحظات لاستخراج المنتجات والأسعار',
+    'prod.savingProgress': 'جاري الحفظ...',
+    'prod.featured': 'منتج مميز',
+    'prod.heroBanner': 'عرض في البانر الرئيسي',
 
     // QR Section
     'qr.title': 'للطاولات QR Code إدارة الـ',
@@ -275,6 +278,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorInvalidNumber': 'الرجاء إدخال عدد طاولات صحيح.',
     'qr.errorAddTables': 'تعذر إضافة الطاولات.',
     'qr.errorDeleteTables': 'فشل في حذف الطاولة.',
+    'prod.generatingAiImg': 'جاري توليد الصور بالذكاء الاصطناعي...',
   },
   fr: {
     // Auth Keys - Login & General
@@ -517,6 +521,10 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.no': 'Non',
     'prod.parsingAiProgress': 'Analyse du menu en cours...',
     'prod.parsingAiSub': 'Veuillez patienter pendant l\'extraction des produits',
+    'prod.savingProgress': 'Enregistrement...',
+    'prod.featured': 'Produit vedette',
+    'prod.heroBanner': 'Bannière principale',
+    'prod.generatingAiImg': 'Génération d\'images par IA en cours...',
 
     // QR Section
     'qr.title': 'Gestion des QR Codes',
@@ -788,6 +796,10 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.no': 'No',
     'prod.parsingAiProgress': 'Analyzing menu image...',
     'prod.parsingAiSub': 'Please wait while we extract products and prices',
+    'prod.savingProgress': 'Saving...',
+    'prod.featured': 'Featured Product',
+    'prod.heroBanner': 'Hero Banner',
+    'prod.generatingAiImg': 'Generating AI images...',
 
     // QR Section
     'qr.title': 'QR Codes Management',
