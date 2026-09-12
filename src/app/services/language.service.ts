@@ -242,6 +242,10 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.importCol': 'استيراد',
     'PROD.IMPORTCOL': 'استيراد',
     'prod.importDirectlyBtn': 'حفظ واستيراد المنتجات',
+    'prod.yes': 'نعم',
+    'prod.no': 'لا',
+    'prod.parsingAiProgress': 'جاري تحليل صورة المنيو...',
+    'prod.parsingAiSub': 'يرجى الانتظار لحظات لاستخراج المنتجات والأسعار',
 
     // QR Section
     'qr.title': 'للطاولات QR Code إدارة الـ',
@@ -509,6 +513,10 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.importCol': 'Importer',
     'PROD.IMPORTCOL': 'Importer',
     'prod.importDirectlyBtn': 'Enregistrer et importer',
+    'prod.yes': 'Oui',
+    'prod.no': 'Non',
+    'prod.parsingAiProgress': 'Analyse du menu en cours...',
+    'prod.parsingAiSub': 'Veuillez patienter pendant l\'extraction des produits',
 
     // QR Section
     'qr.title': 'Gestion des QR Codes',
@@ -776,6 +784,10 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.importCol': 'Import',
     'PROD.IMPORTCOL': 'Import',
     'prod.importDirectlyBtn': 'Save & Import Products',
+    'prod.yes': 'Yes',
+    'prod.no': 'No',
+    'prod.parsingAiProgress': 'Analyzing menu image...',
+    'prod.parsingAiSub': 'Please wait while we extract products and prices',
 
     // QR Section
     'qr.title': 'QR Codes Management',
