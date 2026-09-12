@@ -236,6 +236,12 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.chatAi': 'مساعدك الذكي',
     'prod.chatPlaceholder': 'اسأل المساعد الذكي أي سؤال...',
     'prod.chatSub': 'مساعدك الذكي - إضافة وتحديث المنتجات والوجبات',
+    'prod.detectedProductsTitle': 'المنتجات المستخرجة',
+    'prod.detectedProductsSub': 'تأكد من البيانات قبل الحفظ',
+    'prod.addRowBtn': 'إضافة سطر',
+    'prod.importCol': 'استيراد',
+    'PROD.IMPORTCOL': 'استيراد',
+    'prod.importDirectlyBtn': 'حفظ واستيراد المنتجات',
 
     // QR Section
     'qr.title': 'للطاولات QR Code إدارة الـ',
@@ -497,6 +503,12 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.chatAi': 'Assistant IA',
     'prod.chatPlaceholder': 'Posez une question à l\'assistant IA...',
     'prod.chatSub': 'Assistant IA - Ajouter et mettre à jour les produits et repas',
+    'prod.detectedProductsTitle': 'Produits détectés',
+    'prod.detectedProductsSub': 'Vérifiez les données avant de sauvegarder',
+    'prod.addRowBtn': 'Ajouter une ligne',
+    'prod.importCol': 'Importer',
+    'PROD.IMPORTCOL': 'Importer',
+    'prod.importDirectlyBtn': 'Enregistrer et importer',
 
     // QR Section
     'qr.title': 'Gestion des QR Codes',
@@ -758,6 +770,12 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.chatAi': 'AI Assistant',
     'prod.chatPlaceholder': 'Ask the AI assistant anything...',
     'prod.chatSub': 'AI Assistant - Add and update products and meals',
+    'prod.detectedProductsTitle': 'Detected Products',
+    'prod.detectedProductsSub': 'Review data before saving',
+    'prod.addRowBtn': 'Add Row',
+    'prod.importCol': 'Import',
+    'PROD.IMPORTCOL': 'Import',
+    'prod.importDirectlyBtn': 'Save & Import Products',
 
     // QR Section
     'qr.title': 'QR Codes Management',
