@@ -467,6 +467,8 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'dash.noProducts': 'Aucun produit',
     'dash.noQr': 'Aucun QR généré',
     'dash.pendingCountLabel': 'en attente',
+    'dash.lastModified': 'Dernière modification :',
+    'dash.onlineClients': 'clients en ligne',
     
 
     // Orders Section
