@@ -11,8 +11,8 @@ interface StatCard {
   titleKey: string;
   value: number;
   icon: string;
-  subtitle: string; // Texte dynamique affiché dans le pied de la carte
-  trendUp: boolean; // Contrôle l'icône flèche (haut / bas)
+  subtitle: string;
+  trendUp: boolean;
   color: string;
 }
 
@@ -24,48 +24,34 @@ interface StatCard {
   styleUrls: ['./home.css'],
 })
 export class Home implements OnInit {
-  // 🆕 Inject the language service for reactive translations
   protected langService = inject(LanguageService);
   protected t = (key: string): string => this.langService.t(key);
 
-  // 🆕 Inject the dashboard service (real API)
   private dashboardService = inject(DashboardService);
-
-  // 🆕 Auto-cleanup of the polling subscription on destroy
   private destroyRef = inject(DestroyRef);
 
-  // 🆕 Reactive state — null until the API responds
   stats = signal<DashboardStats | null>(null);
-
-  // 🆕 Loading / error flags
   loading = signal(true);
   error = signal(false);
-
-  // 🆕 QR active flag (kept from original UI)
   qrActive = signal(true);
 
-  // ─── Computed signals derived from API data (graceful fallbacks) ──
+  // ─── Computed signals ──────────────────────────────────────────
 
-/** Stat cards bound to real API values + dynamic subtitles. */
   statCards = computed<StatCard[]>(() => {
     const s = this.stats();
 
-    // Card 1 — Total produits : dernière modification d'un produit
     const lastProductMod = s?.last_product_updated_at
-      ? `Dernière modif: ${s.last_product_updated_at}`
-      : 'Aucun produit';
+      ? `${this.t('dash.lastModified')} ${s.last_product_updated_at}`
+      : this.t('dash.noProducts');
 
-    // Card 2 — Commandes actives : nombre réel de commandes en attente
-    const pendingText = `${s?.pending_orders_count ?? 0} en attente`;
+    const pendingText = `${s?.pending_orders_count ?? 0} ${this.t('dash.pendingCountLabel')}`;
 
-    // Card 3 — Visites du menu : nombre de visiteurs actifs en ce moment
     const liveUsers = s?.live_active_users ?? 0;
-    const menuViewsSubtitle = `${liveUsers} clients en ligne en ce moment`;
+    const menuViewsSubtitle = `${liveUsers} ${this.t('dash.onlineClients')}`;
 
-    // Card 4 — Statut du QR : dernière génération d'une table / QR
     const lastQrMod = s?.last_qr_updated_at
-      ? `Dernière modif: ${s.last_qr_updated_at}`
-      : 'Aucun QR généré';
+      ? `${this.t('dash.lastModified')} ${s.last_qr_updated_at}`
+      : this.t('dash.noQr');
 
     return [
       {
@@ -103,34 +89,26 @@ export class Home implements OnInit {
     ];
   });
 
-  /** Weekly sales array for the chart. */
   weeklySales = computed<WeeklySale[]>(() => this.stats()?.weekly_sales ?? []);
 
-  /** Max value for chart bar scaling. */
   maxWeeklyValue = computed<number>(() => {
     const values = this.weeklySales().map((w) => w.total);
     return values.length ? Math.max(...values) : 0;
   });
 
-  /** Recent orders for the activity table. */
   recentOrders = computed<RecentOrder[]>(() => this.stats()?.recent_orders ?? []);
 
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
-    // Authenticate first, then load dashboard stats.
     this.authService.checkAuth().subscribe({
       next: (user) => {
         if (user) {
-          console.log('Owner user:', user);
           this.loadDashboardStats();
 
-          // ⚡ Auto-refresh (polling) toutes les 2 secondes pour un suivi
-          //    quasi-instantané des vues du menu et des clients en ligne.
           interval(2000)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(() => {
-              console.log('🔄 Polling dashboard stats...');
               this.loadDashboardStats();
             });
         }
@@ -143,7 +121,6 @@ export class Home implements OnInit {
     });
   }
 
-  /** Fetch real stats from the API. */
   loadDashboardStats(): void {
     this.error.set(false);
 
@@ -164,29 +141,31 @@ export class Home implements OnInit {
     });
   }
 
-  // ─── Helpers for template ─────────────────────────────
+  // ─── Helpers ───────────────────────────────────────────────────
 
-  /** Map backend status → French label. */
   getStatusLabel(status: string): string {
-    switch (status) {
+    const s = status ? status.toLowerCase() : '';
+    switch (s) {
       case 'pending':
-        return 'En attente';
+        return this.t('orders.tabs.pending');
       case 'confirmed':
-        return 'Confirmée';
+        return this.t('orders.tabs.confirmed');
       case 'ready':
-        return 'Prête';
+        return this.t('orders.tabs.ready');
       case 'paid':
-        return 'Payée';
+      case 'paye':
+        return this.t('orders.tabs.paid');
       case 'cancelled':
-        return 'Annulée';
+      case 'annule':
+        return this.t('orders.cancelledLabel');
       default:
         return status;
     }
   }
 
-  /** Map backend status → badge CSS class. */
   getStatusClass(status: string): string {
-    switch (status) {
+    const s = status ? status.toLowerCase() : '';
+    switch (s) {
       case 'pending':
         return 'badge-warning';
       case 'confirmed':
@@ -194,18 +173,21 @@ export class Home implements OnInit {
       case 'ready':
         return 'badge-neutral';
       case 'paid':
+      case 'paye':
         return 'badge-success';
       case 'cancelled':
+      case 'annule':
         return 'badge-danger';
       default:
         return 'badge-neutral';
     }
   }
 
-  /** Clean dot color for the activity row. */
   getActivityDotColor(status: string): string {
-    switch (status) {
+    const s = status ? status.toLowerCase() : '';
+    switch (s) {
       case 'paid':
+      case 'paye':
         return 'var(--color-emerald-500)';
       case 'pending':
         return 'var(--color-warning)';
@@ -213,32 +195,34 @@ export class Home implements OnInit {
       case 'ready':
         return 'var(--color-blue-500)';
       case 'cancelled':
+      case 'annule':
         return 'var(--color-danger)';
       default:
         return 'var(--color-slate-400)';
     }
   }
 
-/** Bar height (percentage) for chart — proportional to max.
-   *  0 → barre invisible (0%), sinon hauteur proportionnelle. */
   getBarHeight(total: number): number {
     const max = this.maxWeeklyValue();
     if (!max || !total) return 0;
     return Math.max(4, Math.min(100, Math.round((total / max) * 100)));
   }
 
-  /** Short day label for chart (French). */
   getDayLabel(index: number): string {
-    const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-    return days[index] ?? '';
+    const dayKeys = [
+      'dash.days.mon',
+      'dash.days.tue',
+      'dash.days.wed',
+      'dash.days.thu',
+      'dash.days.fri',
+      'dash.days.sat',
+      'dash.days.sun'
+    ];
+    return this.t(dayKeys[index] || '');
   }
 
-  /** Format a currency amount in French locale. */
   formatCurrency(value: number): string {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'TND',
-      maximumFractionDigits: 2,
-    }).format(value ?? 0);
+    const currencySuffix = this.langService.isRtl() ? ' د.ت' : ' TND';
+    return `${(value ?? 0).toFixed(2)}${currencySuffix}`;
   }
 }
