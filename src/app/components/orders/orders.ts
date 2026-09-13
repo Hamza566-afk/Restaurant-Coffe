@@ -40,7 +40,7 @@ export interface Order {
   table?: {
     id: number;
     table_number: number;
-  };
+  } | null;
 }
 
 @Component({
@@ -99,6 +99,17 @@ export class Orders implements OnInit {
     }
     return activeOrders.filter(o => strToLower(o.status) === strToLower(filter));
   });
+
+  // Dynamic table headers computed signal for reactive language changes
+  tableHeaders = computed(() => [
+    { key: 'orderNo', label: this.t('orders.orderNo') },
+    { key: 'table', label: this.t('orders.table') },
+    { key: 'content', label: this.t('orders.content') },
+    { key: 'total', label: this.t('orders.total') },
+    { key: 'status', label: this.t('orders.status') },
+    { key: 'dateTime', label: this.t('orders.dateTime') },
+    { key: 'actions', label: this.t('orders.actions') }
+  ]);
 
   // ─── Event Listener to Close Popover on Outside Click ─────────
 
@@ -237,7 +248,7 @@ export class Orders implements OnInit {
   // ─── Actions ──────────────────────────────────────────
 
   cloturerJournee(): void {
-    if (!confirm(this.t('orders.cloturerConfirm') || 'Êtes-vous sûr de vouloir clôturer la journée ?')) {
+    if (!confirm(this.t('orders.cloturerConfirm') || 'هل أنت متأكد من إغلاق اليوم؟')) {
       return;
     }
 

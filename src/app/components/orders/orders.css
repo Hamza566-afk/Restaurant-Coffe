@@ -12,6 +12,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .btn-action {
@@ -124,12 +126,12 @@
   font-size: 0.75rem;
 }
 
-/* Table Design */
+/* Table Design RTL/LTR Adaptive */
 .table-container {
   background-color: #ffffff;
   border-radius: 0.75rem;
   border: 1px solid #e2e8f0;
-  overflow: visible;
+  overflow-x: auto;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   margin-top: 0.5rem;
 }
@@ -137,7 +139,7 @@
 .orders-table {
   width: 100%;
   border-collapse: collapse;
-  text-align: left;
+  text-align: inherit; /* يتكيف تلقائياً حسب اتجاه الصفحة */
 }
 
 .orders-table th {
@@ -147,6 +149,7 @@
   font-weight: 700;
   padding: 0.875rem 1rem;
   border-bottom: 1px solid #e2e8f0;
+  text-align: inherit;
 }
 
 .orders-table td {
@@ -155,6 +158,7 @@
   vertical-align: middle;
   font-size: 0.875rem;
   position: relative;
+  text-align: inherit;
 }
 
 .orders-table tr:hover td {
@@ -208,14 +212,14 @@
   text-transform: uppercase;
 }
 
-/* 📝 Item Notes */
+/* 📝 Item Notes - RTL/LTR Border Adaptive */
 .item-note {
   font-size: 0.75rem;
   color: #d97706;
   background-color: #fffbeb;
   padding: 0.15rem 0.4rem;
   border-radius: 0.25rem;
-  border-left: 2px solid #f59e0b;
+  border-inline-start: 2px solid #f59e0b; /* يتغير الاتجاه تلقائياً حسب لغة الواجهة */
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
@@ -237,7 +241,7 @@
 .note-dot {
   position: absolute;
   top: 1px;
-  right: 1px;
+  inset-inline-end: 1px;
   width: 7px;
   height: 7px;
   background-color: #ef4444;
@@ -248,7 +252,7 @@
 .note-popover {
   position: absolute;
   top: 120%;
-  left: 0;
+  inset-inline-start: 0;
   z-index: 50;
   width: 250px;
   background-color: #ffffff;
@@ -341,7 +345,7 @@
 }
 
 .btn-next-status:hover {
-  background-color: #4338ca;
+  background-color: #3730a3;
 }
 
 /* Empty State Card */

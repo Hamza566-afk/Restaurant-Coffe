@@ -2,19 +2,19 @@
   <!-- Header & Actions -->
   <div class="header-container">
     <div>
-      <h1 class="text-2xl font-bold text-slate-800">{{ t('orders.title') || 'Gestion des Commandes' }}</h1>
-      <p class="text-sm text-slate-500">{{ t('orders.subtitle') || 'Suivi et mise à jour des statuts des commandes' }}</p>
+      <h1 class="text-2xl font-bold text-slate-800">{{ t('orders.title') }}</h1>
+      <p class="text-sm text-slate-500">{{ t('orders.sub') }}</p>
     </div>
 
     <div class="flex items-center gap-3">
       <button (click)="loadOrders(true)" class="btn-action btn-refresh" [disabled]="loading()">
         <i class="fas fa-sync-alt" [class.fa-spin]="loading()"></i>
-        <span>{{ t('orders.refresh') || 'Actualiser' }}</span>
+        <span>{{ t('orders.refresh') }}</span>
       </button>
 
       <button (click)="cloturerJournee()" class="btn-action btn-cloture">
         <i class="fas fa-lock"></i>
-        <span>{{ t('orders.cloturerJournee') || 'Clôturer la journée' }}</span>
+        <span>{{ t('orders.cloturerJournee') }}</span>
       </button>
     </div>
   </div>
@@ -26,7 +26,7 @@
       class="tab-btn"
       [class.active]="activeTab() === 'active'">
       <i class="fas fa-fire"></i>
-      <span>{{ t('orders.activeOrders') || 'Commandes Actives' }}</span>
+      <span>{{ t('orders.activeOrders') }}</span>
       <span class="badge badge-amber">{{ orders().length }}</span>
     </button>
 
@@ -35,7 +35,7 @@
       class="tab-btn"
       [class.active]="activeTab() === 'history'">
       <i class="fas fa-history"></i>
-      <span>{{ t('orders.history') || 'Historique' }}</span>
+      <span>{{ t('orders.history') }}</span>
       <span class="badge badge-gray">{{ historyOrders().length }}</span>
     </button>
   </div>
@@ -48,7 +48,7 @@
         (click)="setFilter('all')"
         class="filter-chip"
         [class.active]="selectedFilter() === 'all'">
-        <span>{{ t('orders.all') || 'Toutes' }}</span>
+        <span>{{ t('orders.tabs.all') }}</span>
         <span class="chip-count">{{ getOrderCountByStatus('all') }}</span>
       </button>
 
@@ -58,7 +58,7 @@
           class="filter-chip"
           [class.active]="selectedFilter() === status.key">
           <i [class]="status.icon" [style.color]="selectedFilter() === status.key ? '#4338ca' : status.color"></i>
-          <span>{{ t(status.label) || status.key }}</span>
+          <span>{{ t(status.label) }}</span>
           <span class="chip-count">{{ getOrderCountByStatus(status.key) }}</span>
         </button>
       }
@@ -70,13 +70,13 @@
         <table class="orders-table">
           <thead>
             <tr>
-              <th>N° COMMANDE</th>
-              <th>TABLE</th>
-              <th>CONTENU</th>
-              <th>TOTAL</th>
-              <th>STATUT</th>
-              <th>DATE & HEURE</th>
-              <th>ACTION</th>
+              <th>{{ t('orders.orderNo') }}</th>
+              <th>{{ t('orders.table') }}</th>
+              <th>{{ t('orders.content') }}</th>
+              <th>{{ t('orders.total') }}</th>
+              <th>{{ t('orders.status') }}</th>
+              <th>{{ t('orders.dateTime') }}</th>
+              <th>{{ t('orders.actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -103,7 +103,7 @@
                             <div class="note-popover-header">
                               <span class="flex items-center gap-1.5">
                                 <i class="fas fa-sticky-note text-amber-500"></i>
-                                Note du client
+                                {{ t('orders.card.title') }} Note
                               </span>
                               <button (click)="toggleNote(order.id)" class="close-popover-btn">&times;</button>
                             </div>
@@ -117,11 +117,11 @@
                   </div>
                 </td>
 
-                <!-- TABLE Column -->
+                <!-- TABLE Column (مصلحة ومضمونة من غير Warnings) -->
                 <td>
                   <span class="table-pill">
                     <i class="fas fa-chair text-slate-400"></i>
-                    Table {{ order.table?.table_number || order.table_id || '-' }}
+                    {{ (order.table && order.table.table_number) ? (t('orders.card.tableNum') + ' ' + order.table.table_number) : (order.table_id ? (t('orders.card.tableNum') + ' ' + order.table_id) : t('orders.tableUnknown')) }}
                   </span>
                 </td>
 
@@ -150,7 +150,7 @@
 
                 <!-- TOTAL Column -->
                 <td class="font-bold text-slate-700">
-                  {{ order.total_price | number:'1.2-2' }} DT
+                  {{ order.total_price | number:'1.2-2' }} {{ t('orders.currency') }}
                 </td>
 
                 <!-- STATUT Column -->
@@ -160,7 +160,7 @@
                     [style.backgroundColor]="getStatusInfo(order.status).color + '20'"
                     [style.color]="getStatusInfo(order.status).color">
                     <i [class]="getStatusInfo(order.status).icon"></i>
-                    <span>{{ t(getStatusInfo(order.status).label) || order.status }}</span>
+                    <span>{{ t(getStatusInfo(order.status).label) }}</span>
                   </span>
                 </td>
 
@@ -176,7 +176,7 @@
                       (click)="progressOrder(order)"
                       [disabled]="inFlight()[order.id]"
                       class="btn-next-status">
-                      <span>{{ t(getNextStatusLabel(order.status)) || 'Suivant' }}</span>
+                      <span>{{ t(getNextStatusLabel(order.status)) }}</span>
                       <i class="fas" [class.fa-chevron-right]="!isRtl()" [class.fa-chevron-left]="isRtl()"></i>
                     </button>
                   }
@@ -189,7 +189,7 @@
     } @else {
       <div class="empty-card">
         <i class="fas fa-inbox text-4xl text-slate-300 mb-2"></i>
-        <p class="text-slate-500 font-medium">{{ t('orders.noOrders') || 'Aucune commande disponible' }}</p>
+        <p class="text-slate-500 font-medium">{{ t('orders.noOrders') }}</p>
       </div>
     }
   }
@@ -201,12 +201,12 @@
         <table class="orders-table">
           <thead>
             <tr>
-              <th>N° COMMANDE</th>
-              <th>TABLE</th>
-              <th>CONTENU</th>
-              <th>TOTAL</th>
-              <th>STATUT</th>
-              <th>DATE & HEURE</th>
+              <th>{{ t('orders.orderNo') }}</th>
+              <th>{{ t('orders.table') }}</th>
+              <th>{{ t('orders.content') }}</th>
+              <th>{{ t('orders.total') }}</th>
+              <th>{{ t('orders.status') }}</th>
+              <th>{{ t('orders.dateTime') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -229,7 +229,7 @@
                             <div class="note-popover-header">
                               <span class="flex items-center gap-1.5">
                                 <i class="fas fa-sticky-note text-amber-500"></i>
-                                Note du client
+                                {{ t('orders.card.title') }} Note
                               </span>
                               <button (click)="toggleNote(order.id)" class="close-popover-btn">&times;</button>
                             </div>
@@ -245,7 +245,7 @@
                 <td>
                   <span class="table-pill">
                     <i class="fas fa-chair text-slate-400"></i>
-                    Table {{ order.table?.table_number || order.table_id || '-' }}
+                    {{ (order.table && order.table.table_number) ? (t('orders.card.tableNum') + ' ' + order.table.table_number) : (order.table_id ? (t('orders.card.tableNum') + ' ' + order.table_id) : t('orders.tableUnknown')) }}
                   </span>
                 </td>
                 <td>
@@ -270,7 +270,7 @@
                   </div>
                 </td>
                 <td class="font-bold text-slate-700">
-                  {{ order.total_price | number:'1.2-2' }} DT
+                  {{ order.total_price | number:'1.2-2' }} {{ t('orders.currency') }}
                 </td>
                 <td>
                   <span 
@@ -278,7 +278,7 @@
                     [class.badge-paid]="isPaid(order.status)"
                     [class.badge-cancelled]="isCancelled(order.status)">
                     <i [class]="isPaid(order.status) ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
-                    <span>{{ isPaid(order.status) ? (t('orders.tabs.paid') || 'Payé') : (t('dash.cancelled') || 'Annulé') }}</span>
+                    <span>{{ isPaid(order.status) ? t('orders.tabs.paid') : t('orders.cancelledLabel') }}</span>
                   </span>
                 </td>
                 <td class="text-slate-500 text-xs">
@@ -292,7 +292,7 @@
     } @else {
       <div class="empty-card">
         <i class="fas fa-history text-4xl text-slate-300 mb-2"></i>
-        <p class="text-slate-500 font-medium">{{ t('orders.noHistory') || 'Aucun historique disponible' }}</p>
+        <p class="text-slate-500 font-medium">{{ t('orders.noHistory') }}</p>
       </div>
     }
   }

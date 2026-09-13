@@ -175,6 +175,12 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'orders.all': 'الكل',
     'orders.noOrders': 'لا توجد طلبات حالية',
     'orders.noHistory': 'لا يوجد سجل طلبات سابق',
+    'orders.orderNo': 'رقم الطلب',
+    'orders.table': 'الطاولة',
+    'orders.content': 'المحتوى',
+    'orders.total': 'المجموع',
+    'orders.status': 'الحالة',
+    'orders.dateTime': 'التاريخ والتوقيت',
 
     // Products Section
     'prod.title': 'إدارة المنيو',
@@ -249,6 +255,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.savingProgress': 'جاري الحفظ...',
     'prod.featured': 'منتج مميز',
     'prod.heroBanner': 'عرض في البانر الرئيسي',
+    'prod.chatYou': 'أنت',
 
     // QR Section
     'qr.title': 'للطاولات QR Code إدارة الـ',
@@ -450,6 +457,13 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'orders.all': 'Tous',
     'orders.noOrders': 'Aucune commande en cours',
     'orders.noHistory': 'Aucun historique de commandes',
+    'orders.orderNo': 'N° COMMANDE',
+    'orders.table': 'TABLE',
+    'orders.content': 'CONTENU',
+    'orders.total': 'TOTAL',
+    'orders.status': 'STATUT',
+    'orders.dateTime': 'DATE & HEURE',
+    
 
     // Products Section
     'prod.title': 'Gestion du Menu',
@@ -525,6 +539,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.featured': 'Produit vedette',
     'prod.heroBanner': 'Bannière principale',
     'prod.generatingAiImg': 'Génération d\'images par IA en cours...', 
+    'prod.chatYou': 'Vous',
 
     // QR Section
     'qr.title': 'Gestion des QR Codes',
@@ -725,6 +740,12 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'orders.all': 'All',
     'orders.noOrders': 'No current orders',
     'orders.noHistory': 'No order history available',
+    'orders.orderNo': 'ORDER NO',
+    'orders.table': 'TABLE',
+    'orders.content': 'CONTENT',
+    'orders.total': 'TOTAL',
+    'orders.status': 'STATUS',
+    'orders.dateTime': 'DATE & TIME',
 
     // Products Section
     'prod.title': 'Menu Management',
@@ -800,6 +821,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'prod.featured': 'Featured Product',
     'prod.heroBanner': 'Hero Banner',
     'prod.generatingAiImg': 'Generating AI images...',
+    'prod.chatYou': 'You',
 
     // QR Section
     'qr.title': 'QR Codes Management',
