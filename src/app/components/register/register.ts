@@ -28,6 +28,7 @@ export class RegisterComponent implements OnInit {
   };
 
   countries: any[] = [];
+  selectedPhoneCode: string = '';
   selectedLogo: File | null = null;
   showPassword = false;
   showConfirmPassword = false;
@@ -41,15 +42,28 @@ export class RegisterComponent implements OnInit {
   }
 
   loadCountries(): void {
-    // جلب قائمة البلدان المتاحة من الـ API
     this.authService.getCountries().subscribe({
       next: (res: any) => {
         this.countries = res?.data || res || [];
+
+        // اختيار تونس كبلد افتراضي إذا كانت موجودة في القائمة
+        const defaultCountry = this.countries.find(c => c.code === 'TN') || this.countries[0];
+        if (defaultCountry) {
+          this.userData.country_id = defaultCountry.id;
+          this.selectedPhoneCode = defaultCountry.phone_code;
+        }
       },
       error: (err) => {
         console.error('Erreur lors du chargement des pays:', err);
       }
     });
+  }
+
+  onCountryChange(): void {
+    const selected = this.countries.find(c => c.id == this.userData.country_id);
+    if (selected) {
+      this.selectedPhoneCode = selected.phone_code;
+    }
   }
 
   togglePassword(): void {

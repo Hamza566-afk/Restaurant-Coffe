@@ -50,23 +50,15 @@
           </div>
         </div>
 
-        <!-- Phone & Country (إجباريين) -->
+        <!-- Phone & Country -->
         <div class="form-row">
-          <div class="form-group">
-            <label>* {{ langService.t('auth.phoneLabel') || 'رقم الهاتف' }}</label>
-            <input 
-              [(ngModel)]="userData.phone" 
-              name="phone" 
-              type="tel" 
-              placeholder="e.g. 20123456" 
-              required 
-            />
-          </div>
+          <!-- Country Selection -->
           <div class="form-group">
             <label>* {{ langService.t('auth.countryLabel') || 'البلد' }}</label>
             <select 
               [(ngModel)]="userData.country_id" 
               name="country_id" 
+              (change)="onCountryChange()"
               required
               class="form-select"
             >
@@ -77,6 +69,24 @@
                 {{ country.flag }} {{ country.name }} ({{ country.currency_code }})
               </option>
             </select>
+          </div>
+
+          <!-- Phone Number with Dynamic Phone Code Prefix -->
+          <div class="form-group">
+            <label>* {{ langService.t('auth.phoneLabel') || 'رقم الهاتف' }}</label>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <span style="padding: 10px 14px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 600; font-size: 14px; color: #334155; white-space: nowrap;">
+                {{ selectedPhoneCode || '+...' }}
+              </span>
+              <input 
+                [(ngModel)]="userData.phone" 
+                name="phone" 
+                type="tel" 
+                placeholder="20123456" 
+                required 
+                style="flex: 1;"
+              />
+            </div>
           </div>
         </div>
 
