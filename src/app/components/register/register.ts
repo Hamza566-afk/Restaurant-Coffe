@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -13,18 +13,21 @@ import { LanguageService } from '../../services/language.service';
   templateUrl: './register.html',
   styleUrls: ['./register.css']
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   public langService = inject(LanguageService);
 
   userData = {
     name: '',
     email: '',
+    phone: '',
+    country_id: null as number | null,
     password: '',
     password_confirmation: '',
     shop_name: '',
     subdomain: ''
   };
 
+  countries: any[] = [];
   selectedLogo: File | null = null;
   showPassword = false;
   showConfirmPassword = false;
@@ -32,6 +35,22 @@ export class RegisterComponent {
   isLoading = false;
 
   constructor(private authService: AuthService, private router: Router) {}
+
+  ngOnInit(): void {
+    this.loadCountries();
+  }
+
+  loadCountries(): void {
+    // جلب قائمة البلدان المتاحة من الـ API
+    this.authService.getCountries().subscribe({
+      next: (res: any) => {
+        this.countries = res?.data || res || [];
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des pays:', err);
+      }
+    });
+  }
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;
@@ -57,6 +76,11 @@ export class RegisterComponent {
   onRegister(): void {
     if (!this.isCaptchaValid) return;
 
+    if (!this.userData.country_id) {
+      alert(this.langService.t('auth.countryRequired') || 'يرجى اختيار البلد');
+      return;
+    }
+
     if (this.userData.password !== this.userData.password_confirmation) {
       alert(this.langService.t('auth.passwordMismatch'));
       return;
@@ -68,6 +92,8 @@ export class RegisterComponent {
         const payload = new FormData();
         payload.append('name', this.userData.name);
         payload.append('email', this.userData.email);
+        payload.append('phone', this.userData.phone);
+        payload.append('country_id', String(this.userData.country_id));
         payload.append('password', this.userData.password);
         payload.append('password_confirmation', this.userData.password_confirmation);
         payload.append('shop_name', this.userData.shop_name);

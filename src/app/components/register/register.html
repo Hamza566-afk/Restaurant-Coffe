@@ -28,9 +28,10 @@
 
       <form (submit)="onRegister()" #regForm="ngForm">
         
+        <!-- Full Name & Email -->
         <div class="form-row">
           <div class="form-group">
-            <label>* {{ langService.t('auth.fullNameLabel') }}</label>
+            <label>* {{ langService.t('auth.fullNameLabel') || 'الاسم الكامل' }}</label>
             <input 
               [(ngModel)]="userData.name" 
               name="name" 
@@ -39,7 +40,7 @@
             />
           </div>
           <div class="form-group">
-            <label>* {{ langService.t('auth.emailLabel') }}</label>
+            <label>* {{ langService.t('auth.emailLabel') || 'البريد الإلكتروني' }}</label>
             <input 
               [(ngModel)]="userData.email" 
               name="email" 
@@ -49,6 +50,37 @@
           </div>
         </div>
 
+        <!-- Phone & Country (إجباريين) -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>* {{ langService.t('auth.phoneLabel') || 'رقم الهاتف' }}</label>
+            <input 
+              [(ngModel)]="userData.phone" 
+              name="phone" 
+              type="tel" 
+              placeholder="e.g. 20123456" 
+              required 
+            />
+          </div>
+          <div class="form-group">
+            <label>* {{ langService.t('auth.countryLabel') || 'البلد' }}</label>
+            <select 
+              [(ngModel)]="userData.country_id" 
+              name="country_id" 
+              required
+              class="form-select"
+            >
+              <option [ngValue]="null" disabled selected>
+                {{ langService.t('auth.selectCountry') || 'اختر البلد' }}
+              </option>
+              <option *ngFor="let country of countries" [value]="country.id">
+                {{ country.flag }} {{ country.name }} ({{ country.currency_code }})
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Shop Name & Subdomain -->
         <div class="form-row">
           <div class="form-group">
             <label>* {{ langService.t('auth.cafeNameLabel') }}</label>
@@ -70,8 +102,9 @@
           </div>
         </div>
 
+        <!-- Passwords -->
         <div class="form-row">
-          <!-- Password Field with SVG Eye -->
+          <!-- Password Field -->
           <div class="form-group">
             <label>* {{ langService.t('auth.passwordLabel') }}</label>
             <div class="password-input-wrapper">
@@ -94,7 +127,7 @@
             </div>
           </div>
 
-          <!-- Confirm Password Field with SVG Eye -->
+          <!-- Confirm Password Field -->
           <div class="form-group">
             <label>* {{ langService.t('auth.confirmPasswordLabel') }}</label>
             <div class="password-input-wrapper">

@@ -52,6 +52,13 @@ export class AuthService {
   }
 
   /**
+   * 🆕 جلب قائمة البلدان المتاحة للتسجيل
+   */
+  getCountries(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/countries`, { withCredentials: true });
+  }
+
+  /**
    * 🆕 Synchronous helper: returns current user value from signal.
    */
   getUser(): any {
@@ -71,6 +78,21 @@ export class AuthService {
   }
 
   /**
+   * حفظ إعدادات العملة والـ Locale الخاصة ببلد المقهى
+   */
+  private syncCountrySettings(userPayload: any): void {
+    const country = userPayload?.shop?.country || userPayload?.country;
+    if (country) {
+      if (country.currency_code) {
+        localStorage.setItem('currency_code', country.currency_code);
+      }
+      if (country.locale) {
+        localStorage.setItem('app_locale', country.locale);
+      }
+    }
+  }
+
+  /**
    * 2. عملية تسجيل دخول الـ Admin
    */
   login(credentials: any): Observable<any> {
@@ -81,6 +103,7 @@ export class AuthService {
       tap((res: any) => {
         const user = res?.user ?? res;
         this.currentUser.set(user);
+        this.syncCountrySettings(user);
       })
     );
   }
@@ -117,6 +140,7 @@ export class AuthService {
       tap((res: any) => {
         const user = res?.user ?? res;
         this.currentUser.set(user);
+        this.syncCountrySettings(user);
       })
     );
   }
@@ -138,6 +162,7 @@ export class AuthService {
       tap((res: any) => {
         const user = res?.user ?? res;
         this.currentUser.set(user);
+        this.syncCountrySettings(user);
       }),
       catchError(() => {
         this.currentUser.set(null);
@@ -193,24 +218,33 @@ export class AuthService {
       sessionStorage.clear();
     } catch {}
   }
-forgotPassword(email: string) {
-  return this.http.post(`${this.apiUrl}/auth/forgot-password`, { email });
-}
 
-// 2. التحقق من الـ OTP الخاص بإعادة التعيين
-verifyResetOtp(email: string, otp: string) {
-  return this.http.post<{ message: string; reset_token: string }>(
-    `${this.apiUrl}/auth/verify-reset-otp`, 
-    { email, otp }
-  );
-}
+  // 1. طلب إعادة تعيين كلمة السر (نسيت كلمة السر)
+  forgotPassword(email: string): Observable<any> {
+    return this.prepareCsrf().pipe(
+      switchMap(() => this.http.post(`${this.apiUrl}/auth/forgot-password`, { email }, { withCredentials: true }))
+    );
+  }
 
-// 3. إعادة تعيين كلمة السر الجديدة
-resetPassword(email: string, reset_token: string, password: string) {
-  return this.http.post(`${this.apiUrl}/auth/reset-password`, {
-    email,
-    reset_token,
-    password
-  });
-}
+  // 2. التحقق من الـ OTP الخاص بإعادة التعيين
+  verifyResetOtp(email: string, otp: string): Observable<{ message: string; reset_token: string }> {
+    return this.prepareCsrf().pipe(
+      switchMap(() => this.http.post<{ message: string; reset_token: string }>(
+        `${this.apiUrl}/auth/verify-reset-otp`, 
+        { email, otp },
+        { withCredentials: true }
+      ))
+    );
+  }
+
+  // 3. إعادة تعيين كلمة السر الجديدة
+  resetPassword(email: string, reset_token: string, password: string): Observable<any> {
+    return this.prepareCsrf().pipe(
+      switchMap(() => this.http.post(`${this.apiUrl}/auth/reset-password`, {
+        email,
+        reset_token,
+        password
+      }, { withCredentials: true }))
+    );
+  }
 }
