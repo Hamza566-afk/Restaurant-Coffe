@@ -77,6 +77,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'auth.passwordTooShort': 'كلمة السر يجب أن تحتوي على 6 خانات على الأقل',
     'auth.phonelabel': 'رقم الهاتف',
     'auth.countryLabel': 'البلد',
+    'auth.selectCountry': 'اختر البلد',
 
     // Legal & Dashboard
     'legal.title': 'الشروط العامة والملكية الفكرية',
@@ -391,6 +392,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'auth.phonelabel': 'Numéro de téléphone',
     'auth.countryLabel': 'Pays',
     'auth.passwordTooShort': 'Le mot de passe doit contenir au moins 6 caractères',
+    'auth.selectCountry': 'Sélectionnez un pays',
 
     // Legal & Dashboard
     'legal.title': 'Conditions Générales & Propriété Intellectuelle',
@@ -705,6 +707,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'auth.phonelabel': 'Phone Number',
     'auth.countryLabel': 'Country',
     'auth.passwordTooShort': 'Password must be at least 6 characters long',
+    'auth.selectCountry': 'Select a country',
 
     // Legal & Dashboard
     'legal.title': 'Terms of Service & Intellectual Property',
