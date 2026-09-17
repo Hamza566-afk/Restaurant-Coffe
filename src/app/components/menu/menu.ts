@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ClientMenuService, ActiveOrderResponse } from '../../services/client-menu';
 import { LanguageService } from '../../services/language.service';
+import { CurrencyFormatPipe } from '../../pipes/currency-format-pipe';
 
 interface CartItem {
   product: any;
@@ -18,7 +19,7 @@ interface CartItem {
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CurrencyFormatPipe],
   templateUrl: './menu.html',
   styleUrl: './menu.css'
 })
@@ -32,6 +33,10 @@ export class MenuComponent implements OnInit, OnDestroy {
   menuData: any = null;
   loading: boolean = true;
   errorMessage: string = '';
+
+  // Localization and Currency Properties
+  currencyCode: string = 'TND';
+  locale: string = 'ar-TN';
 
   currentView: 'main' | 'details' | 'cart' | 'tracking' = 'main';
 
@@ -56,7 +61,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   private eventSources: { [orderId: number]: EventSource } = {};
   private orderPollers: { [orderId: number]: any } = {};
 
-  backendUrl: string = 'https://restaurant-coffe-backend-production.up.railway.app';
+  backendUrl: string = 'https://restaurant-coffe-backend-production-3fce.up.railway.app';
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit(): void {
@@ -96,6 +101,8 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.menuService.getMenu(this.shopSlug).subscribe({
       next: (res) => {
         this.menuData = res;
+        this.currencyCode = res?.currency_code || 'TND';
+        this.locale = res?.locale || 'ar-TN';
         this.loading = false;
       },
       error: (err) => {

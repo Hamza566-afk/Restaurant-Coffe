@@ -204,6 +204,12 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'orders.actions': 'الإجراءات',
     'orders.card.tableNum': 'طاولة رقم:',
     'orders.cancelledLabel': 'ملغى',
+    'orders.statusMsg.pending': 'طلبك قيد الانتظار ⏳',
+    'orders.statusMsg.preparing': 'طلبك قيد التحضير الآن 👨‍🍳',
+    'orders.statusMsg.ready': 'طلبك جاهز! يمكنك الاستلام الآن ☕🎉',
+    'orders.statusMsg.paid': 'تم خلاص الطلب، شكراً لزيارتكم! ❤️',
+    'orders.statusMsg.cancelled': 'تم إلغاء الطلب ❌',
+    'orders.statusMsg.tracking': 'طلبك قيد المتابعة...',
 
     // Products Section
     'prod.title': 'إدارة المنيو',
@@ -508,7 +514,12 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'orders.status': 'STATUT',
     'orders.dateTime': 'DATE & HEURE',
     'orders.actions': 'ACTIONS',
-    
+    'orders.statusMsg.pending': 'Commande en attente ⏳',
+    'orders.statusMsg.preparing': 'Commande en cours de préparation 👨‍🍳',
+    'orders.statusMsg.ready': 'Commande prête ! Vous pouvez la récupérer ☕🎉',
+    'orders.statusMsg.paid': 'Commande payée, merci pour votre visite ! ❤️',
+    'orders.statusMsg.cancelled': 'Commande annulée ❌',
+    'orders.statusMsg.tracking': 'Suivi de votre commande...',
     
 
     // Products Section
@@ -813,6 +824,12 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'orders.status': 'STATUS',
     'orders.dateTime': 'DATE & TIME',
     'orders.actions': 'ACTIONS',
+    'orders.statusMsg.pending': 'Your order is pending ⏳',
+    'orders.statusMsg.preparing': 'Your order is being prepared 👨‍🍳',
+    'orders.statusMsg.ready': 'Your order is ready! You can pick it up ☕🎉',
+    'orders.statusMsg.paid': 'Order paid, thank you for your visit! ❤️',
+    'orders.statusMsg.cancelled': 'Order cancelled ❌',
+    'orders.statusMsg.tracking': 'Tracking your order...',
 
     // Products Section
     'prod.title': 'Menu Management',

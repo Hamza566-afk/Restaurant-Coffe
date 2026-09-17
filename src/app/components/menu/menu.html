@@ -43,7 +43,7 @@
           {{ getFeaturedProduct().description }}
         </p>
         <div class="hero-footer">
-          <span class="hero-price">DT {{ getFeaturedProduct().price }}</span>
+          <span class="hero-price">{{ getFeaturedProduct().price | currencyFormat: currencyCode : locale }}</span>
           <button class="hero-add-btn" (click)="quickAddToCart(getFeaturedProduct())"><i class="fas fa-plus"></i> إضافة</button>
         </div>
       </div>
@@ -65,7 +65,7 @@
           <h4>{{ product.name }}</h4>
           <p class="short-desc" *ngIf="product.description && product.description.trim() !== ''">{{ product.description }}</p>
           <div class="card-footer">
-            <span class="price">DT {{ product.price }}</span>
+            <span class="price">{{ product.price | currencyFormat: currencyCode : locale }}</span>
             <button class="add-btn" (click)="$event.stopPropagation(); quickAddToCart(product)">+</button>
           </div>
         </div>
@@ -104,7 +104,7 @@
             [class.active]="selectedSize === size.size_name"
             (click)="selectSize(size)">
             <span class="size-name">{{ size.size_name }}</span>
-            <span class="size-price">DT {{ size.price }}</span>
+            <span class="size-price">{{ size.price | currencyFormat: currencyCode : locale }}</span>
           </button>
         </div>
       </div>
@@ -123,7 +123,7 @@
       <div class="action-footer">
         <div class="price-box">
           <span>السعر الإجمالي</span>
-          <h3>DT {{ getSelectedTotalPrice() | number:'1.2-2' }}</h3>
+          <h3>{{ getSelectedTotalPrice() | currencyFormat: currencyCode : locale }}</h3>
         </div>
         <button class="primary-btn" (click)="addToCart()">إضافة إلى السلة</button>
       </div>
@@ -141,7 +141,7 @@
         <div class="item-meta">
           <h4>{{ item.product.name }}</h4>
           <p *ngIf="item.size || item.size_name">الحجم: {{ item.size || item.size_name }}</p>
-          <span class="item-price">DT {{ item.totalPrice | number:'1.2-2' }}</span>
+          <span class="item-price">{{ item.totalPrice | currencyFormat: currencyCode : locale }}</span>
         </div>
         <div class="item-counter">
           <button (click)="updateCartQuantity(i, -1)">-</button>
@@ -153,7 +153,7 @@
         </div>
       </div>
 
-      <!-- 💬 إضافة حقل ملاحظة الطلب العامة (Order Note) -->
+      <!-- 💬 حقل ملاحظة الطلب -->
       <div class="order-note-input-box" style="margin-top: 15px;">
         <label style="font-size: 13px; font-weight: bold; color: #475569; display: block; margin-bottom: 5px;">
           <i class="fas fa-comment-dots"></i> ملاحظات خاصة بالطلب (اختياري)
@@ -167,10 +167,10 @@
 
       <!-- Invoice Details -->
       <div class="invoice-box" style="margin-top: 15px;">
-        <div class="invoice-row"><span>المجموع الفرعي:</span> <strong>DT {{ getCartTotal() | number:'1.2-2' }}</strong></div>
-        <div class="invoice-row"><span>رسوم الخدمة / الطاولة:</span> <strong>DT 0.00</strong></div>
+        <div class="invoice-row"><span>المجموع الفرعي:</span> <strong>{{ getCartTotal() | currencyFormat: currencyCode : locale }}</strong></div>
+        <div class="invoice-row"><span>رسوم الخدمة / الطاولة:</span> <strong>{{ 0 | currencyFormat: currencyCode : locale }}</strong></div>
         <hr>
-        <div class="invoice-row total"><span>الحساب الإجمالي:</span> <strong>DT {{ getCartTotal() | number:'1.2-2' }}</strong></div>
+        <div class="invoice-row total"><span>الحساب الإجمالي:</span> <strong>{{ getCartTotal() | currencyFormat: currencyCode : locale }}</strong></div>
       </div>
 
       <div class="action-footer">
@@ -184,14 +184,14 @@
     </div>
   </div>
 
-  <!-- 🛑 4. VIEW: LIVE ORDER TRACKING (عرض كل الطلبات النشطة) -->
+  <!-- 🛑 4. VIEW: LIVE ORDER TRACKING -->
   <div class="view-panel tracking-view" *ngIf="currentView === 'tracking'">
     <div class="back-nav" (click)="currentView = 'main'">⟨ العودة للمنيو</div>
 
     <div *ngIf="activeOrders && activeOrders.length > 0">
       <div class="tracking-card" *ngFor="let order of activeOrders" style="margin-bottom: 20px;">
         
-        <!-- Header مع الترقيم اليومي للطلب -->
+        <!-- Header -->
         <div class="tracking-header">
           <div>
             <h3>طلب رقم #{{ order.display_number || order.daily_order_number || order.id }}</h3>
@@ -199,9 +199,8 @@
           </div>
         </div>
 
-        <!-- 🚀 Dynamic Status & Queue Position Alert Box -->
+        <!-- Dynamic Status Alert Box -->
         <div class="queue-info-card" style="background: #fff8e7; border: 1px solid #ffe0b2; border-radius: 12px; padding: 12px; margin: 15px 0; text-align: center;">
-          <!-- 1. حالة الطلب قيد التحضير أو جاهز -->
           <div *ngIf="order.status === 'confirmed' || order.status === 'en_preparation'" style="color: #2e7d32; font-weight: bold; font-size: 15px;">
             🔥 {{ getClientStatusAlert(order.status) }}
           </div>
@@ -209,7 +208,6 @@
             ☕ {{ getClientStatusAlert(order.status) }}
           </div>
 
-          <!-- 2. حالة الطلب قيد الانتظار مع عرض طابور الانتظار -->
           <div *ngIf="order.status === 'pending' || order.status === 'en_attente'">
             <div *ngIf="order.queue_position === 0 || order.queue_position === 1" style="color: #d84315; font-weight: bold; font-size: 15px;">
               ⏳ أنت التالي في طابور الانتظار!
@@ -223,7 +221,7 @@
           </div>
         </div>
 
-        <!-- Stepper / Status Progress Bar -->
+        <!-- Stepper -->
         <div class="status-stepper">
           <div class="step" [class.completed]="getStatusProgressStep(order.status) >= 1" [class.active]="getStatusProgressStep(order.status) === 1">
             <div class="step-icon"><i class="fas fa-clock"></i></div>
@@ -247,11 +245,10 @@
         <div class="tracking-items">
           <h4>محتوى الطلب:</h4>
           <div class="track-item" *ngFor="let item of order.items">
-         <span>{{ item.quantity }} × {{ item.product?.name || 'منتج' }} <small *ngIf="item.size_name">({{ item.size_name }})</small></span>
-            <strong>DT {{ (item.price * item.quantity) | number:'1.2-2' }}</strong>
+            <span>{{ item.quantity }} × {{ item.product?.name || 'منتج' }} <small *ngIf="item.size_name">({{ item.size_name }})</small></span>
+            <strong>{{ (item.price * item.quantity) | currencyFormat: currencyCode : locale }}</strong>
           </div>
 
-          <!-- 💬 عرض الملاحظة المسجلة للطلب إن وجدت -->
           <div *ngIf="order.note" style="margin-top: 10px; padding: 8px; background: #fff8e7; border-radius: 6px; font-size: 12px; color: #b45309;">
             💬 <strong>ملاحظتك:</strong> {{ order.note }}
           </div>
@@ -259,11 +256,11 @@
           <hr>
           <div class="track-total">
             <span>المجموع الكلي:</span>
-            <strong>DT {{ order.total_price | number:'1.2-2' }}</strong>
+            <strong>{{ order.total_price | currencyFormat: currencyCode : locale }}</strong>
           </div>
         </div>
 
-        <!-- Actions (تظهر فقط إذا كان الطلب قيد الانتظار) -->
+        <!-- Actions -->
         <div class="tracking-actions" *ngIf="order.status === 'pending' || order.status === 'en_attente'" style="display: flex; gap: 10px; margin-top: 15px;">
           <button class="secondary-btn" (click)="editOrder(order)" style="flex: 1; background: #f0a500; color: #fff; border: none; padding: 10px; border-radius: 8px;">
             <i class="fas fa-pen"></i> تعديل الطلب
