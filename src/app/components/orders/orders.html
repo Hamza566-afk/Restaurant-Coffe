@@ -117,7 +117,7 @@
                   </div>
                 </td>
 
-                <!-- TABLE Column (مصلحة ومضمونة من غير Warnings) -->
+                <!-- TABLE Column -->
                 <td>
                   <span class="table-pill">
                     <i class="fas fa-chair text-slate-400"></i>
@@ -148,9 +148,9 @@
                   </div>
                 </td>
 
-                <!-- TOTAL Column -->
+                <!-- في العمود 153 والعمود 274 -->
                 <td class="font-bold text-slate-700">
-                  {{ order.total_price | number:'1.2-2' }} {{ t('orders.currency') }}
+                  {{ order.total_price | currencyFormat: currencyCode() : (isRtl() ? 'ar' : 'en') }}
                 </td>
 
                 <!-- STATUT Column -->
@@ -269,8 +269,9 @@
                     }
                   </div>
                 </td>
+                <!-- في العمود 153 والعمود 274 -->
                 <td class="font-bold text-slate-700">
-                  {{ order.total_price | number:'1.2-2' }} {{ t('orders.currency') }}
+                  {{ order.total_price | currencyFormat: currencyCode() : (isRtl() ? 'ar' : 'en') }}
                 </td>
                 <td>
                   <span 

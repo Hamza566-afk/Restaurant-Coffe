@@ -983,4 +983,28 @@ export class LanguageService {
     } catch {}
     return 'fr';
   }
+  // أضف هذه الخريطة داخل LanguageService
+private currencyTranslations: Record<string, { ar: string; en: string; fr: string }> = {
+  'TND': { ar: 'د.ت', en: 'TND', fr: 'DT' },
+  'SAR': { ar: 'ر.س', en: 'SAR', fr: 'SAR' },
+  'USD': { ar: 'د.إ', en: '$', fr: '$' },
+  'EUR': { ar: 'أورو', en: '€', fr: '€' },
+  'AED': { ar: 'د.إ', en: 'AED', fr: 'AED' },
+  'QAR': { ar: 'ر.ق', en: 'QAR', fr: 'QAR' },
+  'DZD': { ar: 'د.ج', en: 'DZD', fr: 'DZD' },
+  'MAD': { ar: 'د.م', en: 'MAD', fr: 'MAD' }
+};
+
+/**
+ * ميثود جديدة لترجمة رمز العملة حسب اللغة الحالية
+ */
+getCurrencySymbol(code: string): string {
+  const curr = (code || 'TND').toUpperCase();
+  const lang = this.lang?.() || (this.isRtl() ? 'ar' : 'en');
+  
+  if (this.currencyTranslations[curr]) {
+    return this.currencyTranslations[curr][lang as 'ar' | 'en' | 'fr'] || curr;
+  }
+  return curr;
+}
 }

@@ -1,25 +1,25 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform, inject } from '@angular/core';
+import { LanguageService } from '../services/language.service';
 
 @Pipe({
   name: 'currencyFormat',
   standalone: true
 })
 export class CurrencyFormatPipe implements PipeTransform {
+  private languageService = inject(LanguageService);
 
   transform(
     value: number | string | null | undefined, 
     currencyCode?: string, 
-    locale?: string
+    langCode?: string
   ): string {
     if (value === null || value === undefined || value === '') {
       return '';
     }
 
-    // تبديل الفاصلة (,) بالنقطة (.) وتحويل النص إلى رقم صحيح
     let numericValue: number;
     if (typeof value === 'string') {
-      const sanitized = value.replace(',', '.');
-      numericValue = parseFloat(sanitized);
+      numericValue = parseFloat(value.replace(',', '.'));
     } else {
       numericValue = value;
     }
@@ -28,28 +28,22 @@ export class CurrencyFormatPipe implements PipeTransform {
       return '';
     }
 
-    // العملة الافتراضية
-    const curr = currencyCode || 'TND';
+    const curr = (currencyCode || 'TND').toUpperCase();
+    const isAr = langCode ? langCode.startsWith('ar') : this.languageService.isRtl();
 
-    // استخدام 'en-US' دائماً لتثبيت الأرقام اللاتينية (0-9) ومنع تحولها إلى أرقام هندية
-    const formattingLocale = 'en-US';
+    // عدد الأرقام بعد الفاصلة
+    const fractionDigits = curr === 'TND' ? 3 : 2;
 
-    try {
-      // تحديد عدد الأرقام بعد الفاصلة (تونس 3 أرقام، باقي العملات مثل SAR ورقمين)
-      const fractionDigits = curr.toUpperCase() === 'TND' ? 3 : 2;
+    // تنسيق الرقم بـ en-US دائماً لضمان الأرقام اللاتينية العادية (0-9)
+    const formattedNumber = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits
+    }).format(numericValue);
 
-      const formattedNumber = new Intl.NumberFormat(formattingLocale, {
-        minimumFractionDigits: fractionDigits,
-        maximumFractionDigits: fractionDigits
-      }).format(numericValue);
+    // جلب رمز العملة المترجم من LanguageService
+    const symbol = this.languageService.getCurrencySymbol(curr);
 
-      // إرجاع النتيجة بالشكل الصحيح: "SAR 5.50" أو "TND 5.500"
-      return `${curr} ${formattedNumber}`;
-    } catch (error) {
-      // Fallback في حالة وجود خطأ
-      const fractionDigits = curr.toUpperCase() === 'TND' ? 3 : 2;
-      return `${curr} ${numericValue.toFixed(fractionDigits)}`;
-    }
+    // إذا كانت العربية تظهر "5.50 ر.س" وإذا غير ذلك تظهر "SAR 5.50"
+    return isAr ? `${formattedNumber} ${symbol}` : `${symbol} ${formattedNumber}`;
   }
-
 }

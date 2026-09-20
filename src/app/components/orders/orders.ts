@@ -4,6 +4,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval } from 'rxjs';
 import { OrderService, OrderStatus } from '../../services/order';
 import { LanguageService } from '../../services/language.service';
+import { AuthService } from '../../services/auth';
+import { CurrencyFormatPipe } from '../../pipes/currency-format-pipe';
 
 export interface StatusFlowItem {
   key: OrderStatus;
@@ -46,14 +48,20 @@ export interface Order {
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CurrencyFormatPipe],
   templateUrl: './orders.html',
   styleUrl: './orders.css',
 })
 export class Orders implements OnInit {
   private orderService = inject(OrderService);
+  private authService = inject(AuthService);
   private destroyRef = inject(DestroyRef);
   public languageService = inject(LanguageService);
+
+  // Currency & Locale Signals
+  currencyCode = signal<string>('TND');
+  locale = signal<string>('ar-TN');
+
   protected t = (key: string): string => this.languageService.t(key);
 
   /** Core reactive lists */
@@ -123,6 +131,7 @@ export class Orders implements OnInit {
   // ─── Lifecycle ────────────────────────────────────────
 
   ngOnInit(): void {
+    this.loadShopSettings();
     this.loadOrders(true);
     this.loadHistoryOrders();
 
@@ -132,6 +141,14 @@ export class Orders implements OnInit {
       .subscribe(() => {
         this.loadOrders(false);
       });
+  }
+
+  loadShopSettings(): void {
+    const shop = this.authService.currentShop?.() || this.authService.getUserShop();
+    if (shop) {
+      this.currencyCode.set(shop.currency_code || shop.currencyCode || 'TND');
+      this.locale.set(shop.locale || 'ar-TN');
+    }
   }
 
   // ─── Note Popover Logic ───────────────────────────────
