@@ -15,30 +15,40 @@ export class CurrencyFormatPipe implements PipeTransform {
       return '';
     }
 
-    const numericValue = typeof value === 'string' ? parseFloat(value) : value;
+    // تبديل الفاصلة (,) بالنقطة (.) وتحويل النص إلى رقم صحيح
+    let numericValue: number;
+    if (typeof value === 'string') {
+      const sanitized = value.replace(',', '.');
+      numericValue = parseFloat(sanitized);
+    } else {
+      numericValue = value;
+    }
 
     if (isNaN(numericValue)) {
       return '';
     }
 
-    // Default values
+    // العملة الافتراضية
     const curr = currencyCode || 'TND';
-    const loc = locale || 'ar-TN';
+
+    // استخدام 'en-US' دائماً لتثبيت الأرقام اللاتينية (0-9) ومنع تحولها إلى أرقام هندية
+    const formattingLocale = 'en-US';
 
     try {
-      // ضبط عدد الأرقام بعد الفاصلة تلقائياً (تونس 3 أرقام، البقية رقمين)
+      // تحديد عدد الأرقام بعد الفاصلة (تونس 3 أرقام، باقي العملات مثل SAR ورقمين)
       const fractionDigits = curr.toUpperCase() === 'TND' ? 3 : 2;
 
-      return new Intl.NumberFormat(loc, {
-        style: 'currency',
-        currency: curr,
+      const formattedNumber = new Intl.NumberFormat(formattingLocale, {
         minimumFractionDigits: fractionDigits,
         maximumFractionDigits: fractionDigits
       }).format(numericValue);
+
+      // إرجاع النتيجة بالشكل الصحيح: "SAR 5.50" أو "TND 5.500"
+      return `${curr} ${formattedNumber}`;
     } catch (error) {
-      // Fallback في حالة كود عملة أو locale غير معروف
+      // Fallback في حالة وجود خطأ
       const fractionDigits = curr.toUpperCase() === 'TND' ? 3 : 2;
-      return `${numericValue.toFixed(fractionDigits)} ${curr}`;
+      return `${curr} ${numericValue.toFixed(fractionDigits)}`;
     }
   }
 
