@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
@@ -8,17 +8,21 @@ import { environment } from '../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  // 🚀 استخدام رابط Railway API من environment.ts
   private apiUrl = environment.apiUrl; 
-  // 🚀 استخراج الرابط الأساسي للسيرفر (Sanctum CSRF Cookie)
   private serverUrl = environment.apiUrl.replace(/\/api\/?$/, '');
 
-  /**
-   * 🆕 Reactive signal holding the currently authenticated user payload
-   */
+  /** Reactive signal holding the currently authenticated user payload */
   readonly currentUser = signal<any>(null);
 
-  /** In-memory CSRF token for cross-origin requests (vercel.app → railway.app). */
+  /** Reactive signal holding the current shop details */
+  readonly currentShop = computed(() => this.currentUser()?.shop ?? null);
+
+  /** Signal/Getter for current shop currency (Fallback to currency_code, currencyCode, or TND) */
+  readonly currentCurrency = computed(() => {
+    const shop = this.currentShop();
+    return shop?.currency_code || shop?.currencyCode || localStorage.getItem('currency_code') || 'TND';
+  });
+
   private xsrfToken: string | null = null;
 
   constructor(private http: HttpClient, private router: Router) {}
@@ -27,9 +31,6 @@ export class AuthService {
     return this.xsrfToken;
   }
 
-  /**
-   * 1. Establish Sanctum session cookie, then fetch CSRF token as JSON.
-   */
   prepareCsrf(): Observable<string> {
     return this.http
       .get(`${this.serverUrl}/sanctum/csrf-cookie`, { withCredentials: true })
@@ -46,55 +47,60 @@ export class AuthService {
       );
   }
 
-  /** @deprecated Use prepareCsrf() */
   getCsrfCookie(): Observable<any> {
     return this.prepareCsrf();
   }
 
-  /**
-   * 🆕 جلب قائمة البلدان المتاحة للتسجيل
-   */
   getCountries(): Observable<any> {
     return this.http.get(`${this.apiUrl}/countries`, { withCredentials: true });
   }
 
-  /**
-   * 🆕 Synchronous helper: returns current user value from signal.
-   */
   getUser(): any {
     return this.currentUser();
+  }
+
+  /** Synchronous helper for the current shop profile */
+  getShop(): any {
+    return this.currentShop();
+  }
+
+  /** Added getUserShop() for direct component compatibility */
+  getUserShop(): any {
+    return this.currentShop();
+  }
+
+  /** Get currency code directly */
+  getCurrency(): string {
+    return this.currentCurrency();
   }
 
   getProducts(): Observable<any> {
     return this.http.get(`${this.apiUrl}/products`, { withCredentials: true });
   }
 
-  /**
-   * 🆕 Get the owner's display name from the stored user payload.
-   */
   getOwnerName(): string {
     const user = this.currentUser();
     return user?.name ?? '';
   }
 
   /**
-   * حفظ إعدادات العملة والـ Locale الخاصة ببلد المقهى
+   * Synchronize Currency and Locale into localStorage & state
    */
   private syncCountrySettings(userPayload: any): void {
-    const country = userPayload?.shop?.country || userPayload?.country;
-    if (country) {
-      if (country.currency_code) {
-        localStorage.setItem('currency_code', country.currency_code);
-      }
-      if (country.locale) {
-        localStorage.setItem('app_locale', country.locale);
-      }
+    const shop = userPayload?.shop;
+    const country = shop?.country || userPayload?.country;
+
+    const currencyCode = shop?.currency_code || shop?.currencyCode || country?.currency_code || country?.currencyCode;
+    const locale = shop?.locale || country?.locale;
+
+    if (currencyCode) {
+      localStorage.setItem('currency_code', currencyCode);
+    }
+    if (locale) {
+      localStorage.setItem('app_locale', locale);
     }
   }
 
-  /**
-   * 2. عملية تسجيل دخول الـ Admin
-   */
   login(credentials: any): Observable<any> {
     return this.prepareCsrf().pipe(
       switchMap(() => this.http.post(`${this.apiUrl}/login`, credentials, { withCredentials: true })),
@@ -108,27 +114,18 @@ export class AuthService {
     );
   }
 
-  /**
-   * 2b. عملية تسجيل دخول الـ Owner (ترجع الـ Response لمعرفة طلب الـ OTP)
-   */
   loginOwner(credentials: any): Observable<any> {
     return this.prepareCsrf().pipe(
       switchMap(() => this.http.post(`${this.apiUrl}/login-owner`, credentials, { withCredentials: true }))
     );
   }
 
-  /**
-   * 🔑 2c. إرسال أو إعادة إرسال كود الـ OTP
-   */
   sendOtp(email: string): Observable<any> {
     return this.prepareCsrf().pipe(
       switchMap(() => this.http.post(`${this.apiUrl}/auth/send-otp`, { email }, { withCredentials: true }))
     );
   }
 
-  /**
-   * 🔑 2d. التثبت من صحة الـ OTP وتسجيل الدخول
-   */
   verifyOtp(email: string, otpCode: string): Observable<any> {
     return this.prepareCsrf().pipe(
       switchMap(() => this.http.post(`${this.apiUrl}/auth/verify-otp`, { 
@@ -145,18 +142,12 @@ export class AuthService {
     );
   }
 
-  /**
-   * 2e. عملية تسجيل حساب جديد للـ Owner
-   */
   register(userData: any): Observable<any> {
     return this.prepareCsrf().pipe(
       switchMap(() => this.http.post(`${this.apiUrl}/register`, userData, { withCredentials: true }))
     );
   }
 
-  /**
-   * 3. التحقق من حالة المستخدم (User Profile)
-   */
   checkAuth(): Observable<any> {
     return this.http.get(`${this.apiUrl}/user`, { withCredentials: true }).pipe(
       tap((res: any) => {
@@ -171,16 +162,10 @@ export class AuthService {
     );
   }
 
-  /**
-   * 3b. التثبت من حالة الـ Owner والـ Shop متاعو
-   */
   checkCurrentUserStatus(): Observable<any> {
     return this.checkAuth();
   }
 
-  /**
-   * 4. عملية الخروج
-   */
   logout(): Observable<any> {
     return this.http.post(`${this.apiUrl}/logout`, {}, { withCredentials: true });
   }
@@ -189,9 +174,6 @@ export class AuthService {
     return this.logout();
   }
 
-  /**
-   * 5. تنفيذ الخروج وتنظيف الـ State
-   */
   performLogout(role: 'admin' | 'owner'): void {
     this.currentUser.set(null);
     this.xsrfToken = null;
@@ -219,14 +201,12 @@ export class AuthService {
     } catch {}
   }
 
-  // 1. طلب إعادة تعيين كلمة السر (نسيت كلمة السر)
   forgotPassword(email: string): Observable<any> {
     return this.prepareCsrf().pipe(
       switchMap(() => this.http.post(`${this.apiUrl}/auth/forgot-password`, { email }, { withCredentials: true }))
     );
   }
 
-  // 2. التحقق من الـ OTP الخاص بإعادة التعيين
   verifyResetOtp(email: string, otp: string): Observable<{ message: string; reset_token: string }> {
     return this.prepareCsrf().pipe(
       switchMap(() => this.http.post<{ message: string; reset_token: string }>(
@@ -237,7 +217,6 @@ export class AuthService {
     );
   }
 
-  // 3. إعادة تعيين كلمة السر الجديدة
   resetPassword(email: string, reset_token: string, password: string): Observable<any> {
     return this.prepareCsrf().pipe(
       switchMap(() => this.http.post(`${this.apiUrl}/auth/reset-password`, {

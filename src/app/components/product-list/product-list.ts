@@ -5,6 +5,8 @@ import { ProductService, Product, ProductSize } from '../../services/product';
 import { CategoryService, Category } from '../../services/category';
 import { LanguageService } from '../../services/language.service';
 import { AIService, ParsedProduct } from '../../services/ai.service';
+import { AuthService } from '../../services/auth';
+import { CurrencyFormatPipe } from '../../pipes/currency-format-pipe';
 
 interface ChatMessage {
   sender: 'user' | 'ai';
@@ -16,7 +18,7 @@ interface ChatMessage {
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CurrencyFormatPipe],
   templateUrl: './product-list.html',
   styleUrls: ['./product-list.css']
 })
@@ -24,7 +26,12 @@ export class ProductListComponent implements OnInit {
   private productService = inject(ProductService);
   private categoryService = inject(CategoryService);
   private aiService = inject(AIService);
+  private authService = inject(AuthService);
   public languageService = inject(LanguageService);
+
+  // Currency & Locale Signals
+  currencyCode = signal<string>('TND');
+  locale = signal<string>('ar-TN');
 
   // Helper Translation Method
   protected t = (key: string, params?: Record<string, string>): string => {
@@ -82,9 +89,18 @@ export class ProductListComponent implements OnInit {
   formSizes = signal<ProductSize[]>([]);
 
   ngOnInit(): void {
+    this.loadShopSettings();
     this.loadCategories();
     this.loadProducts();
     this.initAiChatWelcome();
+  }
+
+  loadShopSettings(): void {
+    const shop = this.authService.currentShop?.() || this.authService.getUserShop();
+    if (shop) {
+      this.currencyCode.set(shop.currency_code || shop.currencyCode || 'TND');
+      this.locale.set(shop.locale || 'ar-TN');
+    }
   }
 
   initAiChatWelcome(): void {
@@ -177,7 +193,6 @@ export class ProductListComponent implements OnInit {
     });
   }
 
-  // 🗑️ Clear All or Clear Selected Category
   clearAllProducts(): void {
     const isAll = this.selectedCategory() === 'all';
     let targetCatName = '';

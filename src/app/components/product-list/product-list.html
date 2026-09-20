@@ -165,12 +165,12 @@
                 @if (product.sizes && product.sizes.length > 0) {
                   <div class="product-sizes-cell">
                     @for (size of product.sizes; track size.id ?? size.size_name) {
-                      <span class="size-tag">{{ size.size_name }} · {{ size.price }} {{ t('orders.currency') }}</span>
+                      <span class="size-tag">{{ size.size_name }} · {{ size.price | currencyFormat: currencyCode() : locale() }}</span>
                     }
                   </div>
                 } @else {
                   <span class="product-price">
-                    {{ product.price }} {{ t('orders.currency') }}
+                    {{ product.price | currencyFormat: currencyCode() : locale() }}
                   </span>
                 }
               </td>
