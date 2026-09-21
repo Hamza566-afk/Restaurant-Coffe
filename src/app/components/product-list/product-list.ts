@@ -6,7 +6,7 @@ import { CategoryService, Category } from '../../services/category';
 import { LanguageService } from '../../services/language.service';
 import { AIService, ParsedProduct } from '../../services/ai.service';
 import { AuthService } from '../../services/auth';
-import { CurrencyFormatPipe } from '../../pipes/currency-format-pipe';
+import { CurrencyFormatPipe } from '../../pipes/currency-format-pipe'; // أو '../../pipes/currency-format.pipe' حسب إسم ملفك
 
 interface ChatMessage {
   sender: 'user' | 'ai';

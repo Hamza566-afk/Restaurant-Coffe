@@ -984,10 +984,11 @@ export class LanguageService {
     return 'fr';
   }
   // أضف هذه الخريطة داخل LanguageService
+// أضف هذه الخريطة داخل LanguageService
 private currencyTranslations: Record<string, { ar: string; en: string; fr: string }> = {
   'TND': { ar: 'د.ت', en: 'TND', fr: 'DT' },
   'SAR': { ar: 'ر.س', en: 'SAR', fr: 'SAR' },
-  'USD': { ar: 'د.إ', en: '$', fr: '$' },
+  'USD': { ar: 'دولار', en: '$', fr: '$' }, // 👈 تصليح USD
   'EUR': { ar: 'أورو', en: '€', fr: '€' },
   'AED': { ar: 'د.إ', en: 'AED', fr: 'AED' },
   'QAR': { ar: 'ر.ق', en: 'QAR', fr: 'QAR' },
@@ -996,14 +997,14 @@ private currencyTranslations: Record<string, { ar: string; en: string; fr: strin
 };
 
 /**
- * ميثود جديدة لترجمة رمز العملة حسب اللغة الحالية
+ * ميثود لترجمة رمز العملة حسب اللغة الحالية
  */
 getCurrencySymbol(code: string): string {
   const curr = (code || 'TND').toUpperCase();
-  const lang = this.lang?.() || (this.isRtl() ? 'ar' : 'en');
+  const lang = this.lang(); // 👈 استعمال مباشر للـ Signal
   
   if (this.currencyTranslations[curr]) {
-    return this.currencyTranslations[curr][lang as 'ar' | 'en' | 'fr'] || curr;
+    return this.currencyTranslations[curr][lang] || curr;
   }
   return curr;
 }

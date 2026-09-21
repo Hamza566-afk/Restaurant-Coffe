@@ -3,7 +3,8 @@ import { LanguageService } from '../services/language.service';
 
 @Pipe({
   name: 'currencyFormat',
-  standalone: true
+  standalone: true,
+  pure: false // 👈 هذي هي اللي باش تخليه يتجاوب فوراً مع تغيير اللغة بلا Refresh!
 })
 export class CurrencyFormatPipe implements PipeTransform {
   private languageService = inject(LanguageService);
@@ -43,7 +44,7 @@ export class CurrencyFormatPipe implements PipeTransform {
     // جلب رمز العملة المترجم من LanguageService
     const symbol = this.languageService.getCurrencySymbol(curr);
 
-    // إذا كانت العربية تظهر "5.50 ر.س" وإذا غير ذلك تظهر "SAR 5.50"
+    // الترتيب: في العربية "4.50 أورو" وفي الإنجليزية/الفرنسية "€ 4.50" أو "4.50 €"
     return isAr ? `${formattedNumber} ${symbol}` : `${symbol} ${formattedNumber}`;
   }
 }
