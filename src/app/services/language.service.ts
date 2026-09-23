@@ -328,6 +328,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'menu.cancelOrder': 'إلغاء الطلب',
     'menu.confirmCancelOrder': 'هل أنت تأكد من إلغاء هذا الطلب؟',
     'menu.orderCancelledSuccess': 'تم إلغاء الطلب بنجاح',
+    'menu.confirmEditOrder': 'هل أنت متأكد من أنك تريد تعديل هذا الطلب؟',
 
     // Dialog / Modal Actions
     'menu.dialog.confirm': 'نعم، إلغاء',
@@ -723,6 +724,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'menu.cancelOrder': 'Annuler la commande',
     'menu.confirmCancelOrder': 'Êtes-vous sûr de vouloir annuler cette commande ?',
     'menu.orderCancelledSuccess': 'Commande annulée avec succès',
+    'menu.confirmEditOrder': 'Êtes-vous sûr de vouloir modifier cette commande ?',
 
     // Dialog / Modal Actions
     'menu.dialog.confirm': 'Oui, Annuler',
@@ -1086,6 +1088,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'menu.cancelOrder': 'Cancel Order',
     'menu.confirmCancelOrder': 'Are you sure you want to cancel this order?',
     'menu.orderCancelledSuccess': 'Order cancelled successfully',
+    'menu.confirmEditOrder': 'Are you sure you want to edit this order?',
 
     // Dialog / Modal Actions
     'menu.dialog.confirm': 'Yes, Cancel',
@@ -1449,6 +1452,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'menu.cancelOrder': 'Annulla ordine',
     'menu.confirmCancelOrder': 'Sei sicuro di voler annullare questo ordine?',
     'menu.orderCancelledSuccess': 'Ordine annullato con successo',
+    'menu.confirmEditOrder': 'Sei sicuro di voler modificare questo ordine?',
 
     // Dialog / Modal Actions
     'menu.dialog.confirm': 'Sì, Annulla',
