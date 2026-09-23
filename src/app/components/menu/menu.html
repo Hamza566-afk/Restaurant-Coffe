@@ -1,5 +1,37 @@
 <div class="app-mobile-container">
 
+  <!-- 🛑 TOP CUSTOM ALERT MODAL (CONFIRM / SUCCESS / ERROR / INFO) -->
+  <div class="custom-alert-backdrop" *ngIf="customAlert.show" (click)="handleAlertCancel()">
+    <div class="custom-alert-card" [class]="customAlert.type" (click)="$event.stopPropagation()">
+      <div class="alert-icon-wrap">
+        <i class="fas fa-question-circle" *ngIf="customAlert.type === 'confirm'"></i>
+        <i class="fas fa-check-circle" *ngIf="customAlert.type === 'success'"></i>
+        <i class="fas fa-exclamation-triangle" *ngIf="customAlert.type === 'error'"></i>
+        <i class="fas fa-info-circle" *ngIf="customAlert.type === 'info'"></i>
+      </div>
+
+      <div class="alert-content">
+        <h4 class="alert-title" *ngIf="customAlert.titleKey">{{ t(customAlert.titleKey) }}</h4>
+        <p class="alert-message" *ngIf="customAlert.messageKey">{{ t(customAlert.messageKey) }}</p>
+        <p class="alert-message" *ngIf="customAlert.rawMessage && !customAlert.messageKey">{{ customAlert.rawMessage }}</p>
+      </div>
+
+      <div class="alert-actions">
+        <button 
+          *ngIf="customAlert.type === 'confirm'" 
+          class="alert-btn cancel-btn" 
+          (click)="handleAlertCancel()">
+          {{ t(customAlert.cancelBtnKey || 'menu.dialog.dismiss') }}
+        </button>
+        <button 
+          class="alert-btn confirm-btn" 
+          (click)="handleAlertConfirm()">
+          {{ customAlert.type === 'confirm' ? t(customAlert.confirmBtnKey || 'menu.dialog.confirm') : 'OK' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- 🛑 1. VIEW: MAIN MENU -->
   <div class="view-panel main-view" *ngIf="currentView === 'main' && !loading && !errorMessage">
     <header class="app-header">
@@ -11,21 +43,36 @@
           </div>
         </div>
         <div class="shop-name-wrap">
-          <span class="shop-greeting">Bienvenue chez</span>
+          <span class="shop-greeting">{{ t('menu.welcome') }}</span>
           <span class="shop-name">{{ getShopName() }}</span>
         </div>
+      </div>
+
+      <!-- Language Switcher Dropdown -->
+      <div class="lang-picker-wrap">
+        <select 
+          class="lang-select" 
+          [ngModel]="languageService.lang()" 
+          (ngModelChange)="languageService.setLanguage($event)">
+          <option value="ar">🇸🇦 العربية</option>
+          <option value="en">🇬🇧 English</option>
+          <option value="fr">🇫🇷 Français</option>
+          <option value="it">🇮🇹 Italiano</option>
+        </select>
       </div>
     </header>
 
     <!-- Search Bar -->
     <div class="search-box">
       <span class="search-icon">🔍</span>
-      <input type="text" [(ngModel)]="searchQuery" placeholder="إبحث عن قهوتك المفضلة...">
+      <input type="text" [(ngModel)]="searchQuery" [placeholder]="t('menu.searchPlaceholder')">
     </div>
 
     <!-- Categories Tab -->
     <div class="categories-tabs" *ngIf="menuData?.data?.categories?.length > 0">
-      <button class="category-btn" [class.active]="selectedCategoryId === null" (click)="selectedCategoryId = null">ALL</button>
+      <button class="category-btn" [class.active]="selectedCategoryId === null" (click)="selectedCategoryId = null">
+        {{ t('menu.all') }}
+      </button>
       <button class="category-btn" *ngFor="let cat of menuData.data.categories" [class.active]="selectedCategoryId === cat.id" (click)="selectedCategoryId = cat.id">
         {{ cat.name }}
       </button>
@@ -44,14 +91,16 @@
         </p>
         <div class="hero-footer">
           <span class="hero-price">{{ getFeaturedProduct().price | currencyFormat: currencyCode : locale }}</span>
-          <button class="hero-add-btn" (click)="quickAddToCart(getFeaturedProduct())"><i class="fas fa-plus"></i> إضافة</button>
+          <button class="hero-add-btn" (click)="quickAddToCart(getFeaturedProduct())">
+            <i class="fas fa-plus"></i> {{ t('menu.addToCart') }}
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Favorites section title -->
     <div class="favorites-title" *ngIf="showFavorites">
-      <i class="fas fa-star"></i> المفضلة / الأكثر طلباً
+      <i class="fas fa-star"></i> {{ t('menu.favoritesTitle') }}
     </div>
 
     <!-- Products Grid (2 Columns) -->
@@ -72,12 +121,12 @@
       </div>
     </div>
 
-    <div class="empty-msg" *ngIf="getFilteredProducts().length === 0">لم نجد أي منتج يطابق بحثك.</div>
+    <div class="empty-msg" *ngIf="getFilteredProducts().length === 0">{{ t('menu.noProductsFound') }}</div>
   </div>
 
   <!-- 🛑 2. VIEW: PRODUCT DETAILS -->
   <div class="view-panel details-view" *ngIf="currentView === 'details' && selectedProduct">
-    <div class="back-nav" (click)="currentView = 'main'">⟨ العودة للمنيو</div>
+    <div class="back-nav" (click)="currentView = 'main'">⟨ {{ t('menu.backToMenu') }}</div>
 
     <div class="details-hero-img">
       <img [src]="getImageUrl(selectedProduct.image_path)" alt="coffee">
@@ -97,7 +146,7 @@
 
       <!-- Sizes Selection -->
       <div class="size-section" *ngIf="hasSizes">
-        <h4>الحجم (Size)</h4>
+        <h4>Size</h4>
         <div class="size-options">
           <button
             *ngFor="let size of getProductSizes()"
@@ -111,7 +160,7 @@
 
       <!-- Quantity Counter -->
       <div class="qty-section">
-        <h4>الكمية</h4>
+        <h4>{{ t('menu.quantity') }}</h4>
         <div class="counter">
           <button (click)="detailQuantity = detailQuantity > 1 ? detailQuantity - 1 : 1">-</button>
           <span>{{ detailQuantity }}</span>
@@ -122,71 +171,71 @@
       <!-- Footer Action -->
       <div class="action-footer">
         <div class="price-box">
-          <span>السعر الإجمالي</span>
+          <span>{{ t('menu.totalPrice') }}</span>
           <h3>{{ getSelectedTotalPrice() | currencyFormat: currencyCode : locale }}</h3>
         </div>
-        <button class="primary-btn" (click)="addToCart()">إضافة إلى السلة</button>
+        <button class="primary-btn" (click)="addToCart()">{{ t('menu.addToCart') }}</button>
       </div>
     </div>
   </div>
 
   <!-- 🛑 3. VIEW: REVIEW ORDER / CART -->
   <div class="view-panel cart-view" *ngIf="currentView === 'cart'">
-    <div class="back-nav" (click)="currentView = 'main'">⟨ إضافة المزيد من المنتجات</div>
-    <h2 class="view-title">مراجعة الطلب (Review Order)</h2>
+    <div class="back-nav" (click)="currentView = 'main'">⟨ {{ t('menu.addMoreProducts') }}</div>
+    <h2 class="view-title">{{ t('menu.reviewOrder') }}</h2>
 
     <div class="cart-items-list" *ngIf="cart.length > 0">
       <div class="cart-item-card" *ngFor="let item of cart; let i = index">
         <img [src]="getImageUrl(item.product.image_path)" alt="coffee">
         <div class="item-meta">
           <h4>{{ item.product.name }}</h4>
-          <p *ngIf="item.size || item.size_name">الحجم: {{ item.size || item.size_name }}</p>
+          <p *ngIf="item.size || item.size_name">Size: {{ item.size || item.size_name }}</p>
           <span class="item-price">{{ item.totalPrice | currencyFormat: currencyCode : locale }}</span>
         </div>
         <div class="item-counter">
           <button (click)="updateCartQuantity(i, -1)">-</button>
           <span>{{ item.quantity }}</span>
           <button (click)="updateCartQuantity(i, 1)">+</button>
-          <button class="delete-btn" (click)="removeFromCart(i)" title="حذف">
+          <button class="delete-btn" (click)="removeFromCart(i)">
             <i class="fas fa-trash-can"></i>
           </button>
         </div>
       </div>
 
-      <!-- 💬 حقل ملاحظة الطلب -->
+      <!-- 💬 Note -->
       <div class="order-note-input-box" style="margin-top: 15px;">
         <label style="font-size: 13px; font-weight: bold; color: #475569; display: block; margin-bottom: 5px;">
-          <i class="fas fa-comment-dots"></i> ملاحظات خاصة بالطلب (اختياري)
+          <i class="fas fa-comment-dots"></i> {{ t('menu.specialNotes') }}
         </label>
         <textarea 
           [(ngModel)]="orderNote" 
-          placeholder="مثال: بدون سكر، القهوة ساخنة جداً..." 
+          [placeholder]="t('menu.notesPlaceholder')" 
           style="width: 100%; height: 70px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; resize: none; background: #fff;">
         </textarea>
       </div>
 
       <!-- Invoice Details -->
       <div class="invoice-box" style="margin-top: 15px;">
-        <div class="invoice-row"><span>المجموع الفرعي:</span> <strong>{{ getCartTotal() | currencyFormat: currencyCode : locale }}</strong></div>
-        <div class="invoice-row"><span>رسوم الخدمة / الطاولة:</span> <strong>{{ 0 | currencyFormat: currencyCode : locale }}</strong></div>
+        <div class="invoice-row"><span>{{ t('menu.subtotal') }}:</span> <strong>{{ getCartTotal() | currencyFormat: currencyCode : locale }}</strong></div>
+        <div class="invoice-row"><span>{{ t('menu.serviceFee') }}:</span> <strong>{{ 0 | currencyFormat: currencyCode : locale }}</strong></div>
         <hr>
-        <div class="invoice-row total"><span>الحساب الإجمالي:</span> <strong>{{ getCartTotal() | currencyFormat: currencyCode : locale }}</strong></div>
+        <div class="invoice-row total"><span>{{ t('menu.total') }}:</span> <strong>{{ getCartTotal() | currencyFormat: currencyCode : locale }}</strong></div>
       </div>
 
       <div class="action-footer">
-        <button class="primary-btn block-btn" (click)="checkout()">تأكيد وإرسال الطلب</button>
+        <button class="primary-btn block-btn" (click)="checkout()">{{ t('menu.confirmAndSend') }}</button>
       </div>
     </div>
 
     <div class="empty-cart-state" *ngIf="cart.length === 0">
-      <p>سلتك فارغة حالياً 🛒</p>
-      <button class="primary-btn" (click)="goHome()">تصفح المنيو</button>
+      <p>🛒</p>
+      <button class="primary-btn" (click)="goHome()">{{ t('menu.backToMenu') }}</button>
     </div>
   </div>
 
   <!-- 🛑 4. VIEW: LIVE ORDER TRACKING -->
   <div class="view-panel tracking-view" *ngIf="currentView === 'tracking'">
-    <div class="back-nav" (click)="currentView = 'main'">⟨ العودة للمنيو</div>
+    <div class="back-nav" (click)="currentView = 'main'">⟨ {{ t('menu.backToMenu') }}</div>
 
     <div *ngIf="activeOrders && activeOrders.length > 0">
       <div class="tracking-card" *ngFor="let order of activeOrders" style="margin-bottom: 20px;">
@@ -194,8 +243,8 @@
         <!-- Header -->
         <div class="tracking-header">
           <div>
-            <h3>طلب رقم #{{ order.display_number || order.daily_order_number || order.id }}</h3>
-            <span class="table-badge">طاولة رقم {{ order.table?.table_number || order.table_id }}</span>
+            <h3>{{ t('menu.orderNumber') }}{{ order.display_number || order.daily_order_number || order.id }}</h3>
+            <span class="table-badge">{{ t('menu.tableNumber') }} {{ order.table?.table_number || order.table_id }}</span>
           </div>
         </div>
 
@@ -207,13 +256,16 @@
           <div *ngIf="order.status === 'ready' || order.status === 'prete'" style="color: #1565c0; font-weight: bold; font-size: 15px;">
             ☕ {{ getClientStatusAlert(order.status) }}
           </div>
+          <div *ngIf="order.status === 'paid' || order.status === 'paye'" style="color: #2e7d32; font-weight: bold; font-size: 15px;">
+            ❤️ {{ getClientStatusAlert(order.status) }}
+          </div>
 
           <div *ngIf="order.status === 'pending' || order.status === 'en_attente'">
             <div *ngIf="order.queue_position === 0 || order.queue_position === 1" style="color: #d84315; font-weight: bold; font-size: 15px;">
-              ⏳ أنت التالي في طابور الانتظار!
+              {{ t('menu.nextInQueue') }}
             </div>
             <div *ngIf="order.queue_position && order.queue_position > 1" style="color: #e65100; font-size: 14px;">
-              ⏳ ترتيبك في الانتظار: <strong style="font-size: 18px; color: #d84315;">#{{ order.queue_position }}</strong> (قبلك {{ order.queue_position - 1 }} طلبات)
+              ⏳ #{{ order.queue_position }}
             </div>
             <div *ngIf="!order.queue_position" style="color: #e65100; font-weight: bold; font-size: 14px;">
               ⏳ {{ getClientStatusAlert(order.status) }}
@@ -225,37 +277,37 @@
         <div class="status-stepper">
           <div class="step" [class.completed]="getStatusProgressStep(order.status) >= 1" [class.active]="getStatusProgressStep(order.status) === 1">
             <div class="step-icon"><i class="fas fa-clock"></i></div>
-            <span>قيد الإنتظار</span>
+            <span>{{ t('menu.status.pending') }}</span>
           </div>
           <div class="step" [class.completed]="getStatusProgressStep(order.status) >= 2" [class.active]="getStatusProgressStep(order.status) === 2">
             <div class="step-icon"><i class="fas fa-fire"></i></div>
-            <span>قيد التحضير</span>
+            <span>{{ t('menu.status.preparing') }}</span>
           </div>
           <div class="step" [class.completed]="getStatusProgressStep(order.status) >= 3" [class.active]="getStatusProgressStep(order.status) === 3">
             <div class="step-icon"><i class="fas fa-mug-hot"></i></div>
-            <span>جاهز</span>
+            <span>{{ t('menu.status.ready') }}</span>
           </div>
           <div class="step" [class.completed]="getStatusProgressStep(order.status) >= 4" [class.active]="getStatusProgressStep(order.status) === 4">
             <div class="step-icon"><i class="fas fa-check-circle"></i></div>
-            <span>تم الخلاص</span>
+            <span>{{ t('menu.status.completed') }}</span>
           </div>
         </div>
 
         <!-- Items List Summary -->
         <div class="tracking-items">
-          <h4>محتوى الطلب:</h4>
+          <h4>{{ t('menu.orderContent') }}</h4>
           <div class="track-item" *ngFor="let item of order.items">
-            <span>{{ item.quantity }} × {{ item.product?.name || 'منتج' }} <small *ngIf="item.size_name">({{ item.size_name }})</small></span>
+            <span>{{ item.quantity }} × {{ item.product?.name || 'Item' }} <small *ngIf="item.size_name">({{ item.size_name }})</small></span>
             <strong>{{ (item.price * item.quantity) | currencyFormat: currencyCode : locale }}</strong>
           </div>
 
           <div *ngIf="order.note" style="margin-top: 10px; padding: 8px; background: #fff8e7; border-radius: 6px; font-size: 12px; color: #b45309;">
-            💬 <strong>ملاحظتك:</strong> {{ order.note }}
+            💬 <strong>Note:</strong> {{ order.note }}
           </div>
 
           <hr>
           <div class="track-total">
-            <span>المجموع الكلي:</span>
+            <span>{{ t('menu.grandTotal') }}</span>
             <strong>{{ order.total_price | currencyFormat: currencyCode : locale }}</strong>
           </div>
         </div>
@@ -263,18 +315,17 @@
         <!-- Actions -->
         <div class="tracking-actions" *ngIf="order.status === 'pending' || order.status === 'en_attente'" style="display: flex; gap: 10px; margin-top: 15px;">
           <button class="secondary-btn" (click)="editOrder(order)" style="flex: 1; background: #f0a500; color: #fff; border: none; padding: 10px; border-radius: 8px;">
-            <i class="fas fa-pen"></i> تعديل الطلب
+            <i class="fas fa-pen"></i> {{ t('menu.editOrder') }}
           </button>
           <button class="danger-btn" (click)="cancelActiveOrder(order.id)" style="flex: 1; background: #e74c3c; color: #fff; border: none; padding: 10px; border-radius: 8px;">
-            <i class="fas fa-trash-can"></i> إلغاء الطلب
+            <i class="fas fa-trash-can"></i> {{ t('menu.cancelOrder') }}
           </button>
         </div>
       </div>
     </div>
 
     <div class="empty-cart-state" *ngIf="!activeOrders || activeOrders.length === 0">
-      <p>لا يوجد طلب نشط حالياً.</p>
-      <button class="primary-btn" (click)="goHome()">العودة للمنيو</button>
+      <button class="primary-btn" (click)="goHome()">{{ t('menu.backToMenu') }}</button>
     </div>
   </div>
 
@@ -284,20 +335,20 @@
 <nav class="bottom-nav">
   <button class="nav-btn" [class.active]="showFavorites" (click)="toggleFavorites()">
     <i class="fas fa-star"></i>
-    <span>favoris</span>
+    <span>{{ t('menu.nav.favorites') }}</span>
   </button>
   <button class="nav-btn home-btn" [class.active]="!showFavorites && currentView === 'main'" (click)="goHome()">
     <i class="fas fa-house"></i>
-    <span>Home</span>
+    <span>{{ t('menu.nav.home') }}</span>
   </button>
   <button class="nav-btn" [class.has-items]="cart.length > 0 || (activeOrders && activeOrders.length > 0)" (click)="openCart()">
     <i class="fas fa-cart-shopping"></i>
     <span class="nav-badge" *ngIf="cart.length > 0">{{ cart.length }}</span>
     <span class="nav-badge live-badge" *ngIf="cart.length === 0 && activeOrders && activeOrders.length > 0">🔴</span>
-    <span>Orders</span>
+    <span>{{ t('menu.nav.orders') }}</span>
   </button>
 </nav>
 
 <!-- Utilities States -->
-<div class="loading-full" *ngIf="loading"><div class="spinner"></div><p>جاري تحميل منيو المقهى...</p></div>
+<div class="loading-full" *ngIf="loading"><div class="spinner"></div></div>
 <div class="error-full" *ngIf="!loading && errorMessage"><p>{{ errorMessage }}</p></div>

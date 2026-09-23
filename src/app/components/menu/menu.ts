@@ -16,6 +16,18 @@ interface CartItem {
   totalPrice: number;
 }
 
+interface CustomAlertConfig {
+  show: boolean;
+  type: 'confirm' | 'info' | 'error' | 'success';
+  titleKey?: string;
+  messageKey?: string;
+  rawMessage?: string;
+  confirmBtnKey?: string;
+  cancelBtnKey?: string;
+  onConfirm?: () => void;
+  onCancel?: () => void;
+}
+
 @Component({
   selector: 'app-menu',
   standalone: true,
@@ -52,9 +64,15 @@ export class MenuComponent implements OnInit, OnDestroy {
   detailQuantity: number = 1;
 
   cart: CartItem[] = [];
-  orderNote: string = ''; // 💬 ملاحظات الحريف الخاصة بالطلب
+  orderNote: string = '';
   tableNumber: number | null = null;
   shopSlug: string | null = null;
+
+  // Top Custom Alert State
+  customAlert: CustomAlertConfig = {
+    show: false,
+    type: 'info'
+  };
 
   // Active Orders Live Tracking
   activeOrders: ActiveOrderResponse[] = [];
@@ -101,7 +119,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.menuService.getMenu(this.shopSlug).subscribe({
       next: (res) => {
         this.menuData = res;
-        this.currencyCode = res?.currency_code || 'TND';
+        this.currencyCode = res?.currency_code || res?.currency || 'TND';
         this.locale = res?.locale || 'ar-TN';
         this.loading = false;
       },
@@ -140,6 +158,42 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.closeAllSseConnections();
     this.stopAllPollers();
     this.menuService.leaveMenu(this.shopSlug);
+  }
+
+  // ─── Custom Top Alert Methods ──────────────────────────────
+
+  showAlert(config: Partial<CustomAlertConfig>): void {
+    this.customAlert = {
+      show: true,
+      type: config.type || 'info',
+      titleKey: config.titleKey,
+      messageKey: config.messageKey,
+      rawMessage: config.rawMessage,
+      confirmBtnKey: config.confirmBtnKey || 'menu.dialog.confirm',
+      cancelBtnKey: config.cancelBtnKey || 'menu.dialog.dismiss',
+      onConfirm: config.onConfirm,
+      onCancel: config.onCancel
+    };
+    this.cd.detectChanges();
+  }
+
+  closeAlert(): void {
+    this.customAlert.show = false;
+    this.cd.detectChanges();
+  }
+
+  handleAlertConfirm(): void {
+    if (this.customAlert.onConfirm) {
+      this.customAlert.onConfirm();
+    }
+    this.closeAlert();
+  }
+
+  handleAlertCancel(): void {
+    if (this.customAlert.onCancel) {
+      this.customAlert.onCancel();
+    }
+    this.closeAlert();
   }
 
   // ─── Live Tracking (SSE) & LocalStorage ──────────────────────
@@ -299,63 +353,84 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   cancelActiveOrder(orderId: number): void {
-    if (confirm(this.t('menu.confirmCancelOrder') || 'هل أنت متأكد من إلغاء هذا الطلب؟')) {
-      this.loading = true;
-      this.menuService.cancelOrder(orderId).subscribe({
-        next: () => {
-          this.loading = false;
-          alert(this.t('menu.orderCancelledSuccess') || 'تم إلغاء الطلب بنجاح');
-          this.activeOrders = this.activeOrders.filter(o => o.id !== orderId);
-          this.removeOrderIdFromStorage(orderId);
-          this.closeSseConnection(orderId);
-          this.stopPolling(orderId);
-          if (this.activeOrders.length === 0) {
-            this.currentView = 'main';
+    this.showAlert({
+      type: 'confirm',
+      messageKey: 'menu.confirmCancelOrder',
+      confirmBtnKey: 'menu.dialog.confirm',
+      cancelBtnKey: 'menu.dialog.dismiss',
+      onConfirm: () => {
+        this.loading = true;
+        this.menuService.cancelOrder(orderId).subscribe({
+          next: () => {
+            this.loading = false;
+            this.showAlert({
+              type: 'success',
+              messageKey: 'menu.orderCancelledSuccess'
+            });
+            this.activeOrders = this.activeOrders.filter(o => o.id !== orderId);
+            this.removeOrderIdFromStorage(orderId);
+            this.closeSseConnection(orderId);
+            this.stopPolling(orderId);
+            if (this.activeOrders.length === 0) {
+              this.currentView = 'main';
+            }
+          },
+          error: (err) => {
+            this.loading = false;
+            this.showAlert({
+              type: 'error',
+              rawMessage: err.error?.message || 'تعذر إلغاء الطلب حالياً.'
+            });
           }
-        },
-        error: (err) => {
-          this.loading = false;
-          alert(err.error?.message || 'تعذر إلغاء الطلب حالياً.');
-        }
-      });
-    }
+        });
+      }
+    });
   }
 
   editOrder(order: any): void {
-    if (confirm(this.t('menu.confirmEditOrder') || 'سيتم إلغاء الطلب الحالي وإرجاع محتوياته للسلة للتعديل. هل تريد الاستمرار؟')) {
-      this.loading = true;
-      this.menuService.cancelOrder(order.id).subscribe({
-        next: () => {
-          this.loading = false;
-          
-          if (order.items && Array.isArray(order.items)) {
-            order.items.forEach((item: any) => {
-              const productObj = item.product || { id: item.product_id, name: 'منتج', image_path: '' };
-              this.cart.push({
-                product: productObj,
-                quantity: item.quantity,
-                size: item.size_name || null,
-                size_name: item.size_name || null,
-                unitPrice: Number(item.price) || 0,
-                totalPrice: (Number(item.price) || 0) * item.quantity
+    this.showAlert({
+      type: 'confirm',
+      messageKey: 'menu.confirmEditOrder',
+      confirmBtnKey: 'menu.dialog.confirm',
+      cancelBtnKey: 'menu.dialog.dismiss',
+      onConfirm: () => {
+        this.loading = true;
+        this.menuService.cancelOrder(order.id).subscribe({
+          next: () => {
+            this.loading = false;
+            
+            if (order.items && Array.isArray(order.items)) {
+              order.items.forEach((item: any) => {
+                const productObj = item.product || { id: item.product_id, name: 'منتج', image_path: '' };
+                this.cart.push({
+                  product: productObj,
+                  quantity: item.quantity,
+                  size: item.size_name || null,
+                  size_name: item.size_name || null,
+                  unitPrice: Number(item.price) || 0,
+                  totalPrice: (Number(item.price) || 0) * item.quantity
+                });
               });
+            }
+
+            this.activeOrders = this.activeOrders.filter(o => o.id !== order.id);
+            this.removeOrderIdFromStorage(order.id);
+            this.closeSseConnection(order.id);
+            this.stopPolling(order.id);
+            
+            this.currentView = 'cart';
+            this.cd.detectChanges();
+          },
+          error: (err) => {
+            this.loading = false;
+            this.showAlert({
+              type: 'error',
+              rawMessage: err.error?.message || 'تعذر تعديل الطلب حالياً.'
             });
           }
-
-          this.activeOrders = this.activeOrders.filter(o => o.id !== order.id);
-          this.removeOrderIdFromStorage(order.id);
-          this.closeSseConnection(order.id);
-          this.stopPolling(order.id);
-          
-          this.currentView = 'cart';
-          this.cd.detectChanges();
-        },
-        error: (err) => {
-          this.loading = false;
-          alert(err.error?.message || 'تعذر تعديل الطلب حالياً.');
-        }
-      });
-    }
+        });
+      }
+    });
   }
 
   getStatusProgressStep(status?: string): number {
@@ -378,16 +453,16 @@ export class MenuComponent implements OnInit, OnDestroy {
     switch (s) {
       case 'pending':
       case 'en_attente':
-        return 'طلبك قيد الانتظار ⏳';
+        return this.t('menu.preparingNow') || 'طلبك قيد الانتظار ⏳';
       case 'confirmed':
       case 'en_preparation':
-        return 'طلبك قيد التحضير الآن 👨‍🍳';
+        return this.t('menu.preparingNow') || 'طلبك قيد التحضير الآن 👨‍🍳';
       case 'ready':
       case 'prete':
-        return 'طلبك جاهز! يمكنك الاستلام الآن ☕🎉';
+        return this.t('menu.readyForPickup') || 'طلبك جاهز! يمكنك الاستلام الآن ☕🎉';
       case 'paid':
       case 'paye':
-        return 'تم خلاص الطلب، شكراً لزيارتكم! ❤️';
+        return this.t('menu.orderCompleted') || 'تم خلاص الطلب، شكراً لزيارتكم! ❤️';
       case 'cancelled':
       case 'annule':
         return 'تم إلغاء الطلب ❌';
@@ -606,7 +681,11 @@ export class MenuComponent implements OnInit, OnDestroy {
     if (this.cart.length === 0) return;
 
     if (!this.tableNumber) {
-      alert(this.t('menu.scanQrError') || 'الرجاء مسح رمز الـ QR Code الخاص بالطاولة أولاً لإتمام الطلب!');
+      this.showAlert({
+        type: 'error',
+        messageKey: 'menu.scanQrError',
+        rawMessage: 'الرجاء مسح رمز الـ QR Code الخاص بالطاولة أولاً لإتمام الطلب!'
+      });
       return;
     }
 
@@ -639,7 +718,10 @@ export class MenuComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Order submission failed', err);
         this.loading = false;
-        alert(this.t('menu.orderSendError') || 'حدث خطأ أثناء إرسال الطلب، الرجاء المحاولة مرة أخرى.');
+        this.showAlert({
+          type: 'error',
+          rawMessage: err.error?.message || this.t('menu.orderSendError') || 'حدث خطأ أثناء إرسال الطلب، الرجاء المحاولة مرة أخرى.'
+        });
       }
     });
   }
