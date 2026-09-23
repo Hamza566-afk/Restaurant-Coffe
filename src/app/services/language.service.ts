@@ -1088,7 +1088,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'menu.cancelOrder': 'Cancel Order',
     'menu.confirmCancelOrder': 'Are you sure you want to cancel this order?',
     'menu.orderCancelledSuccess': 'Order cancelled successfully',
-    'menu.confirmEditOrder': 'Are you sure you want to edit this order?',
+    'menu.confirmEditOrder': '? Are you sure you want to edit this order',
 
     // Dialog / Modal Actions
     'menu.dialog.confirm': 'Yes, Cancel',
