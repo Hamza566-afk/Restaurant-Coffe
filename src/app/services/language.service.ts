@@ -685,7 +685,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorAddTables': 'Impossible d\'ajouter les tables.',
     'qr.errorDeleteTables': 'Échec de la suppression de la table.',// Top Bar & Header
     'menu.welcome': 'Bienvenue chez',
-    'menu.searchPlaceholder': 'Recherchez votre café préféré...',
+    'menu.searchPlaceholder': '...Recherchez votre café préféré',
     'menu.all': 'TOUT',
 
     // Favorites & Product Details
@@ -1049,7 +1049,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorAddTables': 'Failed to add tables.',
     'qr.errorDeleteTables': 'Failed to delete the table.',
     'menu.welcome': 'Welcome to',
-    'menu.searchPlaceholder': 'Search for your favorite coffee...',
+    'menu.searchPlaceholder': '...Search for your favorite coffee',
     'menu.all': 'ALL',
 
     // Favorites & Product Details
@@ -1413,7 +1413,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorDeleteTables': 'Impossibile eliminare il tavolo.',
     // Top Bar & Header
     'menu.welcome': 'Benvenuto da',
-    'menu.searchPlaceholder': 'Cerca il tuo caffè preferito...',
+    'menu.searchPlaceholder': '...Cerca il tuo caffè preferito',
     'menu.all': 'TUTTI',
 
     // Favorites & Product Details
