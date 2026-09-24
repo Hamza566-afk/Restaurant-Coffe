@@ -167,6 +167,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'dash.noProducts': 'لا يوجد منتجات',
     'dash.noQr': 'لم يتم إنشاء أي رمز QR',
     'dash.pendingCountLabel': 'قيد الانتظار',
+    'dash.loading': 'جاري تحميل الصفحة الرئيسية...',
     
 
     // Orders Section
@@ -212,6 +213,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'orders.statusMsg.paid': 'تم خلاص الطلب، شكراً لزيارتكم! ❤️',
     'orders.statusMsg.cancelled': 'تم إلغاء الطلب ❌',
     'orders.statusMsg.tracking': 'طلبك قيد المتابعة...',
+    
 
     // Products Section
     'prod.title': 'إدارة المنيو',
@@ -369,6 +371,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorAddTables': 'تعذر إضافة الطاولات.',
     'qr.errorDeleteTables': 'فشل في حذف الطاولة.',
     'prod.generatingAiImg': 'جاري توليد الصور بالذكاء الاصطناعي...',
+    'qrcode.loading': 'جاري تحميل الطاولات ورموز QR code ...',
     
   },
   fr: {
@@ -534,6 +537,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'dash.pendingCountLabel': 'en attente',
     'dash.lastModified': 'Dernière modification :',
     'dash.onlineClients': 'clients en ligne',
+    'dash.loading': 'Chargement de la page d\'accueil ...',
     
 
     // Orders Section
@@ -685,6 +689,8 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorInvalidNumber': 'Veuillez saisir un nombre de tables valide.',
     'qr.errorAddTables': 'Impossible d\'ajouter les tables.',
     'qr.errorDeleteTables': 'Échec de la suppression de la table.',// Top Bar & Header
+    'qrcode.loading': 'Chargement des tables et codes QR ...',
+
     'menu.welcome': 'Bienvenue chez',
     'menu.searchPlaceholder': '...Recherchez votre café préféré',
     'menu.all': 'TOUT',
@@ -901,6 +907,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'dash.noProducts': 'No products',
     'dash.noQr': 'No QR codes generated',
     'dash.pendingCountLabel': 'pending',
+    'dash.loading': 'Loading home page...',
 
     // Orders Section
     'orders.title': 'Orders Management',
@@ -1050,6 +1057,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorInvalidNumber': 'Please enter a valid number of tables.',
     'qr.errorAddTables': 'Failed to add tables.',
     'qr.errorDeleteTables': 'Failed to delete the table.',
+    'qrcode.loading': 'Loading tables and QR codes...',
+
+
     'menu.welcome': 'Welcome to',
     'menu.searchPlaceholder': '...Search for your favorite coffee',
     'menu.all': 'ALL',
@@ -1265,6 +1275,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'dash.noProducts': 'Nessun prodotto',
     'dash.noQr': 'Nessun codice QR generato',
     'dash.pendingCountLabel': 'in attesa',
+    'dash.loading': 'Caricamento della pagina principale...',
 
     // Orders Section
     'orders.title': 'Gestione Ordini',
@@ -1414,6 +1425,9 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'qr.errorInvalidNumber': 'Inserisci un numero valido di tavoli.',
     'qr.errorAddTables': 'Impossibile aggiungere tavoli.',
     'qr.errorDeleteTables': 'Impossibile eliminare il tavolo.',
+    'qrcode.loading': 'Caricamento tavoli e codici QR...',
+
+
     // Top Bar & Header
     'menu.welcome': 'Benvenuto da',
     'menu.searchPlaceholder': '...Cerca il tuo caffè preferito',

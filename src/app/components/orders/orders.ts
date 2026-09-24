@@ -45,6 +45,11 @@ export interface Order {
   } | null;
 }
 
+// ─── Helper Utility Function ───────────────────────────
+function strToLower(val: string | undefined | null): string {
+  return val ? String(val).toLowerCase() : '';
+}
+
 @Component({
   selector: 'app-orders',
   standalone: true,
@@ -62,6 +67,7 @@ export class Orders implements OnInit {
   currencyCode = signal<string>('TND');
   locale = signal<string>('ar-TN');
 
+  /** Reactive translation wrapper */
   protected t = (key: string): string => this.languageService.t(key);
 
   /** Core reactive lists */
@@ -108,7 +114,7 @@ export class Orders implements OnInit {
     return activeOrders.filter(o => strToLower(o.status) === strToLower(filter));
   });
 
-  // Dynamic table headers computed signal for reactive language changes
+  // Reactive table headers computed signal for instant i18n switching
   tableHeaders = computed(() => [
     { key: 'orderNo', label: this.t('orders.orderNo') },
     { key: 'table', label: this.t('orders.table') },
@@ -316,9 +322,4 @@ export class Orders implements OnInit {
       },
     });
   }
-}
-
-// ─── Utility Function ──────────────────────────────────
-function strToLower(val: string | undefined | null): string {
-  return val ? String(val).toLowerCase() : '';
 }

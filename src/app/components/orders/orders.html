@@ -19,282 +19,289 @@
     </div>
   </div>
 
-  <!-- Tabs (Commandes Actives vs Historique) -->
-  <div class="main-tabs">
-    <button
-      (click)="switchTab('active')"
-      class="tab-btn"
-      [class.active]="activeTab() === 'active'">
-      <i class="fas fa-fire"></i>
-      <span>{{ t('orders.activeOrders') }}</span>
-      <span class="badge badge-amber">{{ orders().length }}</span>
-    </button>
-
-    <button
-      (click)="switchTab('history')"
-      class="tab-btn"
-      [class.active]="activeTab() === 'history'">
-      <i class="fas fa-history"></i>
-      <span>{{ t('orders.history') }}</span>
-      <span class="badge badge-gray">{{ historyOrders().length }}</span>
-    </button>
-  </div>
-
-  <!-- Main Content: Active Tab -->
-  @if (activeTab() === 'active') {
-    <!-- Filter Chips -->
-    <div class="filter-bar">
+  <!-- Loading State (Spinner) -->
+  @if (loading() && orders().length === 0 && historyOrders().length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm border border-slate-100 my-4">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+      <p class="text-slate-500 font-medium">{{ t('orders.loading') }}</p>
+    </div>
+  } @else {
+    <!-- Tabs (Commandes Actives vs Historique) -->
+    <div class="main-tabs">
       <button
-        (click)="setFilter('all')"
-        class="filter-chip"
-        [class.active]="selectedFilter() === 'all'">
-        <span>{{ t('orders.tabs.all') }}</span>
-        <span class="chip-count">{{ getOrderCountByStatus('all') }}</span>
+        (click)="switchTab('active')"
+        class="tab-btn"
+        [class.active]="activeTab() === 'active'">
+        <i class="fas fa-fire"></i>
+        <span>{{ t('orders.activeOrders') }}</span>
+        <span class="badge badge-amber">{{ orders().length }}</span>
       </button>
 
-      @for (status of statusFlow; track status.key) {
-        <button
-          (click)="setFilter(status.key)"
-          class="filter-chip"
-          [class.active]="selectedFilter() === status.key">
-          <i [class]="status.icon" [style.color]="selectedFilter() === status.key ? '#4338ca' : status.color"></i>
-          <span>{{ t(status.label) }}</span>
-          <span class="chip-count">{{ getOrderCountByStatus(status.key) }}</span>
-        </button>
-      }
+      <button
+        (click)="switchTab('history')"
+        class="tab-btn"
+        [class.active]="activeTab() === 'history'">
+        <i class="fas fa-history"></i>
+        <span>{{ t('orders.history') }}</span>
+        <span class="badge badge-gray">{{ historyOrders().length }}</span>
+      </button>
     </div>
 
-    <!-- Active Orders Table -->
-    @if (filteredOrders().length > 0) {
-      <div class="table-container">
-        <table class="orders-table">
-          <thead>
-            <tr>
-              <th>{{ t('orders.orderNo') }}</th>
-              <th>{{ t('orders.table') }}</th>
-              <th>{{ t('orders.content') }}</th>
-              <th>{{ t('orders.total') }}</th>
-              <th>{{ t('orders.status') }}</th>
-              <th>{{ t('orders.dateTime') }}</th>
-              <th>{{ t('orders.actions') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (order of filteredOrders(); track order.id) {
+    <!-- Main Content: Active Tab -->
+    @if (activeTab() === 'active') {
+      <!-- Filter Chips -->
+      <div class="filter-bar">
+        <button
+          (click)="setFilter('all')"
+          class="filter-chip"
+          [class.active]="selectedFilter() === 'all'">
+          <span>{{ t('orders.tabs.all') }}</span>
+          <span class="chip-count">{{ getOrderCountByStatus('all') }}</span>
+        </button>
+
+        @for (status of statusFlow; track status.key) {
+          <button
+            (click)="setFilter(status.key)"
+            class="filter-chip"
+            [class.active]="selectedFilter() === status.key">
+            <i [class]="status.icon" [style.color]="selectedFilter() === status.key ? '#4338ca' : status.color"></i>
+            <span>{{ t(status.label) }}</span>
+            <span class="chip-count">{{ getOrderCountByStatus(status.key) }}</span>
+          </button>
+        }
+      </div>
+
+      <!-- Active Orders Table -->
+      @if (filteredOrders().length > 0) {
+        <div class="table-container">
+          <table class="orders-table">
+            <thead>
               <tr>
-                <!-- N° COMMANDE Column + Interactive Note Icon -->
-                <td class="font-bold">
-                  <div class="flex items-center gap-2">
-                    <span>#{{ order.display_number || order.daily_order_number || order.id }}</span>
-                    
-                    @if (order.note) {
-                      <div class="relative inline-block">
-                        <button 
-                          (click)="toggleNote(order.id); $event.stopPropagation()"
-                          type="button" 
-                          [title]="order.note"
-                          class="btn-note-icon">
-                          <i class="fas fa-comment-alt text-amber-500 text-base hover:scale-110 transition-transform"></i>
-                          <span class="note-dot"></span>
-                        </button>
+                <th>{{ t('orders.orderNo') }}</th>
+                <th>{{ t('orders.table') }}</th>
+                <th>{{ t('orders.content') }}</th>
+                <th>{{ t('orders.total') }}</th>
+                <th>{{ t('orders.status') }}</th>
+                <th>{{ t('orders.dateTime') }}</th>
+                <th>{{ t('orders.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of filteredOrders(); track order.id) {
+                <tr>
+                  <!-- N° COMMANDE Column + Interactive Note Icon -->
+                  <td class="font-bold">
+                    <div class="flex items-center gap-2">
+                      <span>#{{ order.display_number || order.daily_order_number || order.id }}</span>
+                      
+                      @if (order.note) {
+                        <div class="relative inline-block">
+                          <button 
+                            (click)="toggleNote(order.id); $event.stopPropagation()"
+                            type="button" 
+                            [title]="order.note"
+                            class="btn-note-icon">
+                            <i class="fas fa-comment-alt text-amber-500 text-base hover:scale-110 transition-transform"></i>
+                            <span class="note-dot"></span>
+                          </button>
 
-                        @if (activeNoteOrderId() === order.id) {
-                          <div class="note-popover animate-fade-in" (click)="$event.stopPropagation()">
-                            <div class="note-popover-header">
-                              <span class="flex items-center gap-1.5">
-                                <i class="fas fa-sticky-note text-amber-500"></i>
-                                {{ t('orders.card.title') }} Note
-                              </span>
-                              <button (click)="toggleNote(order.id)" class="close-popover-btn">&times;</button>
+                          @if (activeNoteOrderId() === order.id) {
+                            <div class="note-popover animate-fade-in" (click)="$event.stopPropagation()">
+                              <div class="note-popover-header">
+                                <span class="flex items-center gap-1.5">
+                                  <i class="fas fa-sticky-note text-amber-500"></i>
+                                  {{ t('orders.card.title') }}
+                                </span>
+                                <button (click)="toggleNote(order.id)" class="close-popover-btn">&times;</button>
+                              </div>
+                              <div class="note-popover-body">
+                                {{ order.note }}
+                              </div>
                             </div>
-                            <div class="note-popover-body">
-                              {{ order.note }}
-                            </div>
-                          </div>
-                        }
-                      </div>
-                    }
-                  </div>
-                </td>
-
-                <!-- TABLE Column -->
-                <td>
-                  <span class="table-pill">
-                    <i class="fas fa-chair text-slate-400"></i>
-                    {{ (order.table && order.table.table_number) ? (t('orders.card.tableNum') + ' ' + order.table.table_number) : (order.table_id ? (t('orders.card.tableNum') + ' ' + order.table_id) : t('orders.tableUnknown')) }}
-                  </span>
-                </td>
-
-                <!-- CONTENU Column -->
-                <td>
-                  <div class="items-list">
-                    @for (item of order.items; track item.id || $index) {
-                      <div class="item-row-wrapper">
-                        <div class="item-row">
-                          <span class="qty">{{ item.quantity }}x</span>
-                          <span class="name">{{ item.product_name || item.product?.name }}</span>
-                          @if (item.size_name) {
-                            <span class="size-badge">{{ item.size_name }}</span>
                           }
                         </div>
-                        @if (item.notes) {
-                          <div class="item-note">
-                            <i class="fas fa-pen text-amber-500"></i>
-                            <span>{{ item.notes }}</span>
+                      }
+                    </div>
+                  </td>
+
+                  <!-- TABLE Column -->
+                  <td>
+                    <span class="table-pill">
+                      <i class="fas fa-chair text-slate-400"></i>
+                      {{ (order.table && order.table.table_number) ? (t('orders.card.tableNum') + ' ' + order.table.table_number) : (order.table_id ? (t('orders.card.tableNum') + ' ' + order.table_id) : t('orders.tableUnknown')) }}
+                    </span>
+                  </td>
+
+                  <!-- CONTENU Column -->
+                  <td>
+                    <div class="items-list">
+                      @for (item of order.items; track item.id || $index) {
+                        <div class="item-row-wrapper">
+                          <div class="item-row">
+                            <span class="qty">{{ item.quantity }}x</span>
+                            <span class="name">{{ item.product_name || item.product?.name }}</span>
+                            @if (item.size_name) {
+                              <span class="size-badge">{{ item.size_name }}</span>
+                            }
                           </div>
-                        }
-                      </div>
+                          @if (item.notes) {
+                            <div class="item-note">
+                              <i class="fas fa-pen text-amber-500"></i>
+                              <span>{{ item.notes }}</span>
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </td>
+
+                  <!-- TOTAL Column -->
+                  <td class="font-bold text-slate-700">
+                    {{ order.total_price | currencyFormat: currencyCode() : (isRtl() ? 'ar' : 'en') }}
+                  </td>
+
+                  <!-- STATUT Column -->
+                  <td>
+                    <span 
+                      class="status-badge"
+                      [style.backgroundColor]="getStatusInfo(order.status).color + '20'"
+                      [style.color]="getStatusInfo(order.status).color">
+                      <i [class]="getStatusInfo(order.status).icon"></i>
+                      <span>{{ t(getStatusInfo(order.status).label) }}</span>
+                    </span>
+                  </td>
+
+                  <!-- DATE & HEURE Column -->
+                  <td class="text-slate-500 text-xs">
+                    {{ order.created_at | date:'dd/MM/yyyy - HH:mm' }}
+                  </td>
+
+                  <!-- ACTION Column -->
+                  <td>
+                    @if (canProgress(order.status)) {
+                      <button 
+                        (click)="progressOrder(order)"
+                        [disabled]="inFlight()[order.id]"
+                        class="btn-next-status">
+                        <span>{{ t(getNextStatusLabel(order.status)) }}</span>
+                        <i class="fas" [class.fa-chevron-right]="!isRtl()" [class.fa-chevron-left]="isRtl()"></i>
+                      </button>
                     }
-                  </div>
-                </td>
-
-                <!-- في العمود 153 والعمود 274 -->
-                <td class="font-bold text-slate-700">
-                  {{ order.total_price | currencyFormat: currencyCode() : (isRtl() ? 'ar' : 'en') }}
-                </td>
-
-                <!-- STATUT Column -->
-                <td>
-                  <span 
-                    class="status-badge"
-                    [style.backgroundColor]="getStatusInfo(order.status).color + '20'"
-                    [style.color]="getStatusInfo(order.status).color">
-                    <i [class]="getStatusInfo(order.status).icon"></i>
-                    <span>{{ t(getStatusInfo(order.status).label) }}</span>
-                  </span>
-                </td>
-
-                <!-- DATE & HEURE Column -->
-                <td class="text-slate-500 text-xs">
-                  {{ order.created_at | date:'dd/MM/yyyy - HH:mm' }}
-                </td>
-
-                <!-- ACTION Column -->
-                <td>
-                  @if (canProgress(order.status)) {
-                    <button 
-                      (click)="progressOrder(order)"
-                      [disabled]="inFlight()[order.id]"
-                      class="btn-next-status">
-                      <span>{{ t(getNextStatusLabel(order.status)) }}</span>
-                      <i class="fas" [class.fa-chevron-right]="!isRtl()" [class.fa-chevron-left]="isRtl()"></i>
-                    </button>
-                  }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    } @else {
-      <div class="empty-card">
-        <i class="fas fa-inbox text-4xl text-slate-300 mb-2"></i>
-        <p class="text-slate-500 font-medium">{{ t('orders.noOrders') }}</p>
-      </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty-card">
+          <i class="fas fa-inbox text-4xl text-slate-300 mb-2"></i>
+          <p class="text-slate-500 font-medium">{{ t('orders.noOrders') }}</p>
+        </div>
+      }
     }
-  }
 
-  <!-- Main Content: History Tab -->
-  @if (activeTab() === 'history') {
-    @if (historyOrders().length > 0) {
-      <div class="table-container">
-        <table class="orders-table">
-          <thead>
-            <tr>
-              <th>{{ t('orders.orderNo') }}</th>
-              <th>{{ t('orders.table') }}</th>
-              <th>{{ t('orders.content') }}</th>
-              <th>{{ t('orders.total') }}</th>
-              <th>{{ t('orders.status') }}</th>
-              <th>{{ t('orders.dateTime') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (order of historyOrders(); track order.id) {
+    <!-- Main Content: History Tab -->
+    @if (activeTab() === 'history') {
+      @if (historyOrders().length > 0) {
+        <div class="table-container">
+          <table class="orders-table">
+            <thead>
               <tr>
-                <td class="font-bold">
-                  <div class="flex items-center gap-2">
-                    <span>#{{ order.display_number || order.daily_order_number || order.id }}</span>
-                    @if (order.note) {
-                      <div class="relative inline-block">
-                        <button 
-                          (click)="toggleNote(order.id); $event.stopPropagation()"
-                          type="button" 
-                          [title]="order.note"
-                          class="btn-note-icon">
-                          <i class="fas fa-comment-alt text-amber-500 text-base"></i>
-                        </button>
-                        @if (activeNoteOrderId() === order.id) {
-                          <div class="note-popover animate-fade-in" (click)="$event.stopPropagation()">
-                            <div class="note-popover-header">
-                              <span class="flex items-center gap-1.5">
-                                <i class="fas fa-sticky-note text-amber-500"></i>
-                                {{ t('orders.card.title') }} Note
-                              </span>
-                              <button (click)="toggleNote(order.id)" class="close-popover-btn">&times;</button>
+                <th>{{ t('orders.orderNo') }}</th>
+                <th>{{ t('orders.table') }}</th>
+                <th>{{ t('orders.content') }}</th>
+                <th>{{ t('orders.total') }}</th>
+                <th>{{ t('orders.status') }}</th>
+                <th>{{ t('orders.dateTime') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of historyOrders(); track order.id) {
+                <tr>
+                  <td class="font-bold">
+                    <div class="flex items-center gap-2">
+                      <span>#{{ order.display_number || order.daily_order_number || order.id }}</span>
+                      @if (order.note) {
+                        <div class="relative inline-block">
+                          <button 
+                            (click)="toggleNote(order.id); $event.stopPropagation()"
+                            type="button" 
+                            [title]="order.note"
+                            class="btn-note-icon">
+                            <i class="fas fa-comment-alt text-amber-500 text-base"></i>
+                          </button>
+                          @if (activeNoteOrderId() === order.id) {
+                            <div class="note-popover animate-fade-in" (click)="$event.stopPropagation()">
+                              <div class="note-popover-header">
+                                <span class="flex items-center gap-1.5">
+                                  <i class="fas fa-sticky-note text-amber-500"></i>
+                                  {{ t('orders.card.title') }}
+                                </span>
+                                <button (click)="toggleNote(order.id)" class="close-popover-btn">&times;</button>
+                              </div>
+                              <div class="note-popover-body">
+                                {{ order.note }}
+                              </div>
                             </div>
-                            <div class="note-popover-body">
-                              {{ order.note }}
-                            </div>
-                          </div>
-                        }
-                      </div>
-                    }
-                  </div>
-                </td>
-                <td>
-                  <span class="table-pill">
-                    <i class="fas fa-chair text-slate-400"></i>
-                    {{ (order.table && order.table.table_number) ? (t('orders.card.tableNum') + ' ' + order.table.table_number) : (order.table_id ? (t('orders.card.tableNum') + ' ' + order.table_id) : t('orders.tableUnknown')) }}
-                  </span>
-                </td>
-                <td>
-                  <div class="items-list">
-                    @for (item of order.items; track item.id || $index) {
-                      <div class="item-row-wrapper">
-                        <div class="item-row">
-                          <span class="qty">{{ item.quantity }}x</span>
-                          <span class="name">{{ item.product_name || item.product?.name }}</span>
-                          @if (item.size_name) {
-                            <span class="size-badge">{{ item.size_name }}</span>
                           }
                         </div>
-                        @if (item.notes) {
-                          <div class="item-note">
-                            <i class="fas fa-pen text-amber-500"></i>
-                            <span>{{ item.notes }}</span>
+                      }
+                    </div>
+                  </td>
+                  <td>
+                    <span class="table-pill">
+                      <i class="fas fa-chair text-slate-400"></i>
+                      {{ (order.table && order.table.table_number) ? (t('orders.card.tableNum') + ' ' + order.table.table_number) : (order.table_id ? (t('orders.card.tableNum') + ' ' + order.table_id) : t('orders.tableUnknown')) }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="items-list">
+                      @for (item of order.items; track item.id || $index) {
+                        <div class="item-row-wrapper">
+                          <div class="item-row">
+                            <span class="qty">{{ item.quantity }}x</span>
+                            <span class="name">{{ item.product_name || item.product?.name }}</span>
+                            @if (item.size_name) {
+                              <span class="size-badge">{{ item.size_name }}</span>
+                            }
                           </div>
-                        }
-                      </div>
-                    }
-                  </div>
-                </td>
-                <!-- في العمود 153 والعمود 274 -->
-                <td class="font-bold text-slate-700">
-                  {{ order.total_price | currencyFormat: currencyCode() : (isRtl() ? 'ar' : 'en') }}
-                </td>
-                <td>
-                  <span 
-                    class="status-badge"
-                    [class.badge-paid]="isPaid(order.status)"
-                    [class.badge-cancelled]="isCancelled(order.status)">
-                    <i [class]="isPaid(order.status) ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
-                    <span>{{ isPaid(order.status) ? t('orders.tabs.paid') : t('orders.cancelledLabel') }}</span>
-                  </span>
-                </td>
-                <td class="text-slate-500 text-xs">
-                  {{ order.created_at | date:'dd/MM/yyyy - HH:mm' }}
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    } @else {
-      <div class="empty-card">
-        <i class="fas fa-history text-4xl text-slate-300 mb-2"></i>
-        <p class="text-slate-500 font-medium">{{ t('orders.noHistory') }}</p>
-      </div>
+                          @if (item.notes) {
+                            <div class="item-note">
+                              <i class="fas fa-pen text-amber-500"></i>
+                              <span>{{ item.notes }}</span>
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </td>
+                  <td class="font-bold text-slate-700">
+                    {{ order.total_price | currencyFormat: currencyCode() : (isRtl() ? 'ar' : 'en') }}
+                  </td>
+                  <td>
+                    <span 
+                      class="status-badge"
+                      [class.badge-paid]="isPaid(order.status)"
+                      [class.badge-cancelled]="isCancelled(order.status)">
+                      <i [class]="isPaid(order.status) ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                      <span>{{ isPaid(order.status) ? t('orders.tabs.paid') : t('orders.cancelledLabel') }}</span>
+                    </span>
+                  </td>
+                  <td class="text-slate-500 text-xs">
+                    {{ order.created_at | date:'dd/MM/yyyy - HH:mm' }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty-card">
+          <i class="fas fa-history text-4xl text-slate-300 mb-2"></i>
+          <p class="text-slate-500 font-medium">{{ t('orders.noHistory') }}</p>
+        </div>
+      }
     }
   }
 </div>
