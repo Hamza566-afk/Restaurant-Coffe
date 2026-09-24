@@ -332,6 +332,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
 
     // Dialog / Modal Actions
     'menu.dialog.confirm': 'نعم، إلغاء',
+    'menu.dialog.confirmEdit': 'نعم، تعديل',
     'menu.dialog.dismiss': 'الإبقاء على الطلب',
 
     // Navigation Tabs
@@ -728,6 +729,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
 
     // Dialog / Modal Actions
     'menu.dialog.confirm': 'Oui, Annuler',
+    'menu.dialog.confirmEdit': 'Oui, modifier',
     'menu.dialog.dismiss': 'Garder la commande',
 
     // Navigation Tabs
@@ -1092,6 +1094,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
 
     // Dialog / Modal Actions
     'menu.dialog.confirm': 'Yes, Cancel',
+    'menu.dialog.confirmEdit': 'Yes, Edit',
     'menu.dialog.dismiss': 'Keep Order',
 
     // Navigation Tabs
@@ -1456,6 +1459,7 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
 
     // Dialog / Modal Actions
     'menu.dialog.confirm': 'Sì, Annulla',
+    'menu.dialog.confirmEdit': 'Sì, Modifica',
     'menu.dialog.dismiss': 'Mantieni ordine',
 
     // Navigation Tabs

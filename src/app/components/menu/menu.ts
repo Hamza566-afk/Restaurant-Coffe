@@ -355,6 +355,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   cancelActiveOrder(orderId: number): void {
     this.showAlert({
       type: 'confirm',
+      titleKey: 'menu.cancelOrder',
       messageKey: 'menu.confirmCancelOrder',
       confirmBtnKey: 'menu.dialog.confirm',
       cancelBtnKey: 'menu.dialog.dismiss',
@@ -390,8 +391,9 @@ export class MenuComponent implements OnInit, OnDestroy {
   editOrder(order: any): void {
     this.showAlert({
       type: 'confirm',
+      titleKey: 'menu.editOrder',
       messageKey: 'menu.confirmEditOrder',
-      confirmBtnKey: 'menu.dialog.confirm',
+      confirmBtnKey: 'menu.dialog.confirmEdit',
       cancelBtnKey: 'menu.dialog.dismiss',
       onConfirm: () => {
         this.loading = true;
@@ -401,7 +403,7 @@ export class MenuComponent implements OnInit, OnDestroy {
             
             if (order.items && Array.isArray(order.items)) {
               order.items.forEach((item: any) => {
-                const productObj = item.product || { id: item.product_id, name: 'منتج', image_path: '' };
+                const productObj = item.product || { id: item.product_id, name: item.product_name || 'منتج', image_path: item.image_path || '' };
                 this.cart.push({
                   product: productObj,
                   quantity: item.quantity,
@@ -411,6 +413,10 @@ export class MenuComponent implements OnInit, OnDestroy {
                   totalPrice: (Number(item.price) || 0) * item.quantity
                 });
               });
+            }
+
+            if (order.note) {
+              this.orderNote = order.note;
             }
 
             this.activeOrders = this.activeOrders.filter(o => o.id !== order.id);
