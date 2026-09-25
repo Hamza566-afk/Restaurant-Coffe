@@ -29,13 +29,18 @@
   border: none;
 }
 
+.btn-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .btn-refresh {
   background-color: #ffffff;
   border: 1px solid #cbd5e1;
   color: #334155;
 }
 
-.btn-refresh:hover {
+.btn-refresh:hover:not(:disabled) {
   background-color: #f8fafc;
   border-color: #94a3b8;
 }
@@ -139,7 +144,7 @@
 .orders-table {
   width: 100%;
   border-collapse: collapse;
-  text-align: inherit; /* يتكيف تلقائياً حسب اتجاه الصفحة */
+  text-align: inherit;
 }
 
 .orders-table th {
@@ -201,7 +206,7 @@
   color: #4f46e5;
 }
 
-/* 🍕 Size Badge */
+/* Size Badge */
 .size-badge {
   background-color: #e0e7ff;
   color: #4338ca;
@@ -212,21 +217,21 @@
   text-transform: uppercase;
 }
 
-/* 📝 Item Notes - RTL/LTR Border Adaptive */
+/* Item Notes - RTL/LTR Border Adaptive */
 .item-note {
   font-size: 0.75rem;
   color: #d97706;
   background-color: #fffbeb;
   padding: 0.15rem 0.4rem;
   border-radius: 0.25rem;
-  border-inline-start: 2px solid #f59e0b; /* يتغير الاتجاه تلقائياً حسب لغة الواجهة */
+  border-inline-start: 2px solid #f59e0b;
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
   width: fit-content;
 }
 
-/* 💬 Note Popover & Trigger Button */
+/* Note Popover & Trigger Button */
 .btn-note-icon {
   background: transparent;
   border: none;
@@ -291,23 +296,6 @@
   font-weight: 400;
 }
 
-/* Animations */
-@keyframes ping {
-  75%, 100% {
-    transform: scale(2);
-    opacity: 0;
-  }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.15s ease-out forwards;
-}
-
 /* Status Badges & Buttons */
 .status-badge {
   display: inline-flex;
@@ -348,7 +336,7 @@
   background-color: #3730a3;
 }
 
-/* Empty State Card */
+/* Empty State Card & Loading Card */
 .empty-card {
   background-color: #ffffff;
   padding: 3.5rem 1.5rem;
@@ -357,4 +345,50 @@
   border: 1px solid #e2e8f0;
   margin-top: 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+/* Loading State Specific Styles */
+.loading-card {
+  background-color: #ffffff;
+  padding: 4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  border: 1px solid #f1f5f9;
+  margin-top: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.spinner-circle {
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 3px solid #e0e7ff;
+  border-bottom-color: #4f46e5;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 0.875rem;
+}
+
+/* Animations */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.15s ease-out forwards;
 }
