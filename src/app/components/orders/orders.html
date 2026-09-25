@@ -67,7 +67,7 @@
     <!-- Active Orders Area -->
     @if (loading()) {
       <div class="loading-card">
-        <i class="fas fa-circle-notch fa-spin spinner-icon"></i>
+        <i class="fas fa-spinner fa-spin spinner-icon"></i>
         <p class="text-slate-500 font-medium">{{ t('orders.loading') }}</p>
       </div>
     } @else if (filteredOrders().length > 0) {
@@ -196,7 +196,7 @@
   @if (activeTab() === 'history') {
     @if (loading()) {
       <div class="loading-card">
-        <i class="fas fa-circle-notch fa-spin spinner-icon"></i>
+        <i class="fas fa-spinner fa-spin spinner-icon"></i>
         <p class="text-slate-500 font-medium">{{ t('orders.loading') }}</p>
       </div>
     } @else if (historyOrders().length > 0) {

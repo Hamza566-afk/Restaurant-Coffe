@@ -347,7 +347,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
-/* Loading State Specific Styles */
+/* Loading State Specific Styles - Identical to Home */
 .loading-card {
   background-color: #ffffff;
   padding: 4rem 1.5rem;
@@ -363,8 +363,8 @@
 }
 
 .spinner-icon {
-  font-size: 2.25rem;
-  color: #6366f1;
+  font-size: 2rem;
+  color: #475569; /* نفس اللون الرمادي الخفيف متاع صفحة الرئيسية */
   margin-bottom: 0.75rem;
 }
 
