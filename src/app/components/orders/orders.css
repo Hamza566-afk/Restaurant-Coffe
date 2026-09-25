@@ -356,27 +356,19 @@
   align-items: center;
   justify-content: center;
   border-radius: 0.75rem;
-  border: 1px solid #f1f5f9;
+  border: 1px solid #e2e8f0;
   margin-top: 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  width: 100%;
 }
 
-.spinner-circle {
-  width: 2.75rem;
-  height: 2.75rem;
-  border: 3px solid #e0e7ff;
-  border-bottom-color: #4f46e5;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-bottom: 0.875rem;
+.spinner-icon {
+  font-size: 2.25rem;
+  color: #6366f1;
+  margin-bottom: 0.75rem;
 }
 
 /* Animations */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
 @keyframes ping {
   75%, 100% {
     transform: scale(2);

@@ -19,7 +19,7 @@
     </div>
   </div>
 
-  <!-- Tabs (Commandes Actives vs Historique) - Y99dou DIMA thahrin -->
+  <!-- Tabs (Commandes Actives vs Historique) -->
   <div class="main-tabs">
     <button
       (click)="switchTab('active')"
@@ -42,7 +42,7 @@
 
   <!-- Main Content: Active Tab -->
   @if (activeTab() === 'active') {
-    <!-- Filter Chips - Y99dou DIMA thahrin -->
+    <!-- Filter Chips -->
     <div class="filter-bar">
       <button
         (click)="setFilter('all')"
@@ -64,10 +64,10 @@
       }
     </div>
 
-    <!-- Active Orders Area (Loading Spinner / Table / Empty State) -->
+    <!-- Active Orders Area -->
     @if (loading()) {
-      <div class="flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm border border-slate-100 my-4">
-        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mb-3"></div>
+      <div class="loading-card">
+        <i class="fas fa-circle-notch fa-spin spinner-icon"></i>
         <p class="text-slate-500 font-medium">{{ t('orders.loading') }}</p>
       </div>
     } @else if (filteredOrders().length > 0) {
@@ -87,7 +87,6 @@
           <tbody>
             @for (order of filteredOrders(); track order.id) {
               <tr>
-                <!-- N° COMMANDE Column + Interactive Note Icon -->
                 <td class="font-bold">
                   <div class="flex items-center gap-2">
                     <span>#{{ order.display_number || order.daily_order_number || order.id }}</span>
@@ -122,7 +121,6 @@
                   </div>
                 </td>
 
-                <!-- TABLE Column -->
                 <td>
                   <span class="table-pill">
                     <i class="fas fa-chair text-slate-400"></i>
@@ -130,7 +128,6 @@
                   </span>
                 </td>
 
-                <!-- CONTENU Column -->
                 <td>
                   <div class="items-list">
                     @for (item of order.items; track item.id || $index) {
@@ -153,12 +150,10 @@
                   </div>
                 </td>
 
-                <!-- TOTAL Column -->
                 <td class="font-bold text-slate-700">
                   {{ order.total_price | currencyFormat: currencyCode() : (isRtl() ? 'ar' : 'en') }}
                 </td>
 
-                <!-- STATUT Column -->
                 <td>
                   <span 
                     class="status-badge"
@@ -169,12 +164,10 @@
                   </span>
                 </td>
 
-                <!-- DATE & HEURE Column -->
                 <td class="text-slate-500 text-xs">
                   {{ order.created_at | date:'dd/MM/yyyy - HH:mm' }}
                 </td>
 
-                <!-- ACTION Column -->
                 <td>
                   @if (canProgress(order.status)) {
                     <button 
@@ -202,8 +195,8 @@
   <!-- Main Content: History Tab -->
   @if (activeTab() === 'history') {
     @if (loading()) {
-      <div class="flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm border border-slate-100 my-4">
-        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mb-3"></div>
+      <div class="loading-card">
+        <i class="fas fa-circle-notch fa-spin spinner-icon"></i>
         <p class="text-slate-500 font-medium">{{ t('orders.loading') }}</p>
       </div>
     } @else if (historyOrders().length > 0) {
