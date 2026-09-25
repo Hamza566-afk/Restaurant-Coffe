@@ -54,76 +54,81 @@
     </div>
   </div>
 
-  <!-- 📋 شبكة الطاولات الديناميكية المزدوجة الـ QR -->
-  <div class="qr-grid">
-    @for (table of tables(); track table.id) {
-      <div class="qr-card">
-        <div class="qr-card-header">
-          <div class="qr-card-icon menu">
-            <i class="fas fa-chair"></i>
-          </div>
-          <div>
-            <h3>{{ t('qr.card.title') }} {{ table.table_number }}</h3>
-            <p class="text-muted">{{ t('qr.card.sub') }}</p>
-          </div>
-        </div>
-
-        <!-- عرض الـ QR Codes جنباً إلى جنب للعميل والسرور -->
-        <div style="display: flex; gap: 16px; padding: 20px 20px 10px;">
-          
-          <!-- 📱 QR العميل (المنيو) -->
-          <div class="qr-display" style="flex: 1; padding: 0; display: flex; flex-direction: column; align-items: center;">
-            <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-emerald-600); margin-bottom: 6px;">{{ t('qr.card.clientMenu') }}</span>
-            
-            <div id="qr-client-{{ table.id }}" class="qr-image-wrapper" style="width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; background: #fafafa;">
-              <qrcode 
-                [qrdata]="table.qr_code_url || generateDynamicQrUrl(table, 'client')" 
-                [width]="130" 
-                [errorCorrectionLevel]="'M'">
-              </qrcode>
+  <!-- 📋 منطقة العرض: Loading / Tables Grid / Empty State -->
+  @if (loading()) {
+    <div class="loading-card" style="background-color: #ffffff; padding: 4rem 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 0.75rem; border: 1px solid #e2e8f0; margin-bottom: 28px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02); width: 100%;">
+      <i class="fas fa-spinner fa-spin spinner-icon" style="font-size: 2rem; color: #475569; margin-bottom: 0.75rem;"></i>
+      <p style="color: #64748b; font-weight: 500;">{{ t('qrcode.loading') }}</p>
+    </div>
+  } @else if (tables().length > 0) {
+    <div class="qr-grid">
+      @for (table of tables(); track table.id) {
+        <div class="qr-card">
+          <div class="qr-card-header">
+            <div class="qr-card-icon menu">
+              <i class="fas fa-chair"></i>
             </div>
+            <div>
+              <h3>{{ t('qr.card.title') }} {{ table.table_number }}</h3>
+              <p class="text-muted">{{ t('qr.card.sub') }}</p>
+            </div>
+          </div>
+
+          <!-- عرض الـ QR Codes جنباً إلى جنب للعميل والسرور -->
+          <div style="display: flex; gap: 16px; padding: 20px 20px 10px;">
             
-            <div class="qr-url-display" style="margin-top: 8px; width: 100%;">
-              <button class="btn btn-primary" (click)="downloadQr(table, 'client')" style="width: 100%; justify-content: center; font-size: 0.75rem; padding: 6px;">
-                <i class="fas fa-download"></i> {{ t('qr.card.download') }}
+            <!-- 📱 QR العميل (المنيو) -->
+            <div class="qr-display" style="flex: 1; padding: 0; display: flex; flex-direction: column; align-items: center;">
+              <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-emerald-600); margin-bottom: 6px;">{{ t('qr.card.clientMenu') }}</span>
+              
+              <div id="qr-client-{{ table.id }}" class="qr-image-wrapper" style="width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; background: #fafafa;">
+                <qrcode 
+                  [qrdata]="table.qr_code_url || generateDynamicQrUrl(table, 'client')" 
+                  [width]="130" 
+                  [errorCorrectionLevel]="'M'">
+                </qrcode>
+              </div>
+              
+              <div class="qr-url-display" style="margin-top: 8px; width: 100%;">
+                <button class="btn btn-primary" (click)="downloadQr(table, 'client')" style="width: 100%; justify-content: center; font-size: 0.75rem; padding: 6px;">
+                  <i class="fas fa-download"></i> {{ t('qr.card.download') }}
+                </button>
+              </div>
+            </div>
+
+            <!-- 💼 QR السرور (الخلاص) -->
+            <div class="qr-display" style="flex: 1; padding: 0; display: flex; flex-direction: column; align-items: center;">
+              <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-blue-600); margin-bottom: 6px;">{{ t('qr.card.waiterCall') }}</span>
+              
+              <div id="qr-server-{{ table.id }}" class="qr-image-wrapper" style="width: 100%; height: 150px; border-color: var(--color-blue-200); display: flex; align-items: center; justify-content: center; background: #fafafa;">
+                <qrcode 
+                  [qrdata]="table.server_qr_code_url || generateDynamicQrUrl(table, 'server')" 
+                  [width]="130" 
+                  [errorCorrectionLevel]="'M'">
+                </qrcode>
+              </div>
+              
+              <div class="qr-url-display" style="margin-top: 8px; width: 100%;">
+                <button class="btn btn-primary" (click)="downloadQr(table, 'server')" style="width: 100%; justify-content: center; font-size: 0.75rem; padding: 6px; background: linear-gradient(135deg, var(--color-blue-500), var(--color-blue-700));">
+                  <i class="fas fa-download"></i> {{ t('qr.card.download') }}
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="qr-card-footer">
+            <div class="qr-info" style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+              <span class="text-muted" style="font-size: 0.75rem;">{{ t('qr.footerText') }}</span>
+              <button class="btn-icon toggle-btn" (click)="deleteTable(table.id)" [title]="t('qr.deleteTitle')" style="border-color: #ffc9c9; color: #dc3545; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: none; cursor: pointer;">
+                <i class="fas fa-trash-alt"></i>
               </button>
             </div>
           </div>
-
-          <!-- 💼 QR السرور (الخلاص) -->
-          <div class="qr-display" style="flex: 1; padding: 0; display: flex; flex-direction: column; align-items: center;">
-            <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-blue-600); margin-bottom: 6px;">{{ t('qr.card.waiterCall') }}</span>
-            
-            <div id="qr-server-{{ table.id }}" class="qr-image-wrapper" style="width: 100%; height: 150px; border-color: var(--color-blue-200); display: flex; align-items: center; justify-content: center; background: #fafafa;">
-              <qrcode 
-                [qrdata]="table.server_qr_code_url || generateDynamicQrUrl(table, 'server')" 
-                [width]="130" 
-                [errorCorrectionLevel]="'M'">
-              </qrcode>
-            </div>
-            
-            <div class="qr-url-display" style="margin-top: 8px; width: 100%;">
-              <button class="btn btn-primary" (click)="downloadQr(table, 'server')" style="width: 100%; justify-content: center; font-size: 0.75rem; padding: 6px; background: linear-gradient(135deg, var(--color-blue-500), var(--color-blue-700));">
-                <i class="fas fa-download"></i> {{ t('qr.card.download') }}
-              </button>
-            </div>
-          </div>
-
         </div>
-
-        <div class="qr-card-footer">
-          <div class="qr-info" style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-            <span class="text-muted" style="font-size: 0.75rem;">{{ t('qr.footerText') }}</span>
-            <button class="btn-icon toggle-btn" (click)="deleteTable(table.id)" [title]="t('qr.deleteTitle')" style="border-color: #ffc9c9; color: #dc3545; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: none; cursor: pointer;">
-              <i class="fas fa-trash-alt"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    }
-  </div>
-
-  @if (tables().length === 0) {
+      }
+    </div>
+  } @else {
     <div style="text-align: center; padding: 40px; color: var(--color-slate-400); background: white; border: 1px dashed var(--color-slate-200); border-radius: var(--radius-lg); margin-bottom: 28px;">
       <i class="fas fa-qrcode" style="font-size: 3rem; margin-bottom: 10px;"></i>
       <p style="font-weight: 600;">{{ t('qr.empty') }}</p>

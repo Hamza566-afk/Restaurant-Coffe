@@ -21,6 +21,7 @@ export class QrCode implements OnInit {
   private readonly tableService = inject(TableService);
 
   tables = signal<Table[]>([]);
+  loading = signal<boolean>(true); // ⬅️ Signal الـ Loading
 
   // متغيّرات الـ Form
   addMode = signal<'bulk' | 'single'>('bulk');
@@ -36,13 +37,16 @@ export class QrCode implements OnInit {
   }
 
   loadTables(): void {
+    this.loading.set(true);
     this.tableService.getTables().subscribe({
       next: (res) => {
         if (res.success) this.tables.set(res.data);
+        this.loading.set(false);
       },
       error: (err) => {
         console.error('Error fetching tables:', err);
         this.errorMessage.set(this.t('qr.errorLoadTables'));
+        this.loading.set(false);
       },
     });
   }
@@ -99,7 +103,6 @@ export class QrCode implements OnInit {
     const shopId = table.shop_id || this.auth.getUser()?.shop?.id;
 
     if (target === 'client') {
-      // Prefer subdomain slug (?shop=) — backend resolves tenant from it.
       if (shopSubdomain) {
         return `${baseUrl}/menu?shop=${encodeURIComponent(shopSubdomain)}&table=${table.table_number}`;
       }
